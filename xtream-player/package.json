@@ -1,0 +1,21 @@
+{
+  "name": "xtream-player",
+  "version": "1.0.0",
+  "description": "Xtream Codes IPTV player for VIDAA TVs (web) and Android (APK)",
+  "scripts": {
+    "start": "node proxy/server.js",
+    "sync": "cap sync android",
+    "apk": "cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/core": "^7.6.10",
+    "hls.js": "^1.7.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.10"
+  }
+}

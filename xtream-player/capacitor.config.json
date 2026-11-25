@@ -1,0 +1,11 @@
+{
+  "appId": "com.xtream.player",
+  "appName": "Xtream Player",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}

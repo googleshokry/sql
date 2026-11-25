@@ -1,0 +1,59 @@
+name: Build Xtream Player APK
+
+on:
+  push:
+    paths:
+      - 'xtream-player/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: xtream-player
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync web app into Android project
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: xtream-player/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk XtreamPlayer.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XtreamPlayer-apk
+          path: xtream-player/XtreamPlayer.apk
+
+      - name: Package TV web app (VIDAA)
+        run: |
+          mkdir -p dist
+          cp -r www proxy dist/
+          cd dist && zip -qr ../XtreamPlayer-TV.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XtreamPlayer-TV
+          path: xtream-player/XtreamPlayer-TV.zip

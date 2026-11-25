@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xtream Player</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============ تسجيل الدخول ============ -->
+<div id="login" class="screen">
+  <div class="login-box">
+    <h1>Xtream <span>Player</span></h1>
+    <div id="saved-accounts"></div>
+    <label>رابط السيرفر</label>
+    <input id="f-server" class="focusable" type="url" placeholder="http://example.com:8080" autocomplete="off">
+    <label>اسم المستخدم</label>
+    <input id="f-user" class="focusable" type="text" autocomplete="off" autocapitalize="off">
+    <label>كلمة المرور</label>
+    <input id="f-pass" class="focusable" type="password" autocomplete="off">
+    <button id="btn-login" class="focusable btn primary">دخول</button>
+    <p class="hint">يمكنك لصق رابط M3U كامل في خانة السيرفر وسيتم استخراج البيانات تلقائياً.</p>
+    <div id="login-msg" class="msg"></div>
+  </div>
+</div>
+
+<!-- ============ الشاشة الرئيسية ============ -->
+<div id="main" class="screen hidden">
+  <header>
+    <nav id="tabs">
+      <button class="tab focusable" data-section="live">📺 قنوات</button>
+      <button class="tab focusable" data-section="movie">🎬 أفلام</button>
+      <button class="tab focusable" data-section="series">🎞️ مسلسلات</button>
+      <button class="tab focusable" data-section="fav">⭐ المفضلة</button>
+      <button class="tab focusable" data-section="settings">⚙️ الإعدادات</button>
+    </nav>
+    <input id="search" class="focusable" type="search" placeholder="🔍 بحث...">
+  </header>
+  <div class="body">
+    <aside id="cats"></aside>
+    <section id="content">
+      <div id="grid"></div>
+      <div id="empty" class="msg hidden">لا يوجد محتوى</div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ التفاصيل (فيلم / مسلسل) ============ -->
+<div id="details" class="screen hidden">
+  <div class="det-head">
+    <img id="det-poster" alt="">
+    <div class="det-info">
+      <h2 id="det-title"></h2>
+      <div id="det-meta" class="meta"></div>
+      <p id="det-plot"></p>
+      <div class="det-actions">
+        <button id="det-play" class="focusable btn primary">▶ تشغيل</button>
+        <button id="det-fav" class="focusable btn">☆ مفضلة</button>
+        <button id="det-back" class="focusable btn">رجوع</button>
+      </div>
+    </div>
+  </div>
+  <div id="seasons"></div>
+  <div id="episodes"></div>
+</div>
+
+<!-- ============ الإعدادات ============ -->
+<div id="settings" class="screen hidden">
+  <div class="login-box">
+    <h2>الإعدادات</h2>
+    <div id="acc-info" class="meta"></div>
+    <label>صيغة البث المباشر</label>
+    <div class="row">
+      <button class="focusable btn opt" data-fmt="m3u8">HLS (m3u8)</button>
+      <button class="focusable btn opt" data-fmt="ts">MPEG-TS (ts)</button>
+    </div>
+    <label>رابط البروكسي (اختياري — للتلفزيون لو السيرفر بيرفض الاتصال)</label>
+    <input id="s-proxy" class="focusable" type="url" placeholder="http://192.168.1.10:8080">
+    <div class="row">
+      <button id="s-save" class="focusable btn primary">حفظ</button>
+      <button id="s-reload" class="focusable btn">تحديث القوائم</button>
+      <button id="s-logout" class="focusable btn danger">تسجيل خروج</button>
+      <button id="s-back" class="focusable btn">رجوع</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ المشغل ============ -->
+<div id="player" class="screen hidden">
+  <video id="video" playsinline autoplay></video>
+  <div id="osd">
+    <div id="osd-title"></div>
+    <div id="osd-epg"></div>
+    <div class="osd-bar"><div id="osd-progress"></div></div>
+    <div id="osd-time"></div>
+    <div class="osd-hint">◀ ▶ تقديم/ترجيع · ▲ ▼ تغيير القناة · OK إيقاف/تشغيل · رجوع للخروج</div>
+  </div>
+  <div id="spinner" class="hidden"></div>
+  <div id="player-err" class="msg hidden"></div>
+  <!-- أزرار اللمس للموبايل -->
+  <div id="touch-ctl">
+    <button data-act="close">✕</button>
+    <button data-act="prev">⏮</button>
+    <button data-act="toggle">⏯</button>
+    <button data-act="next">⏭</button>
+    <button data-act="fs">⛶</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/lib/capacitor.js"></script>
+<script src="js/lib/hls.min.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/player.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
