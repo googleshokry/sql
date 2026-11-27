@@ -30,3 +30,9 @@ DEALLOCATE PREPARE stmt1;
 
 
 ```
+
+---
+
+## Gym Manager
+
+نظام إدارة الجيم (Laravel + Filament + MySQL) موجود في مجلد [`gym-app`](gym-app/README.md).

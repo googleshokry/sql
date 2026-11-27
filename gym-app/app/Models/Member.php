@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+
+class Member extends Model
+{
+    use SoftDeletes;
+
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'birth_date' => 'date',
+        'joined_at' => 'date',
+        'is_blocked' => 'boolean',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Member $member) {
+            if (blank($member->code)) {
+                $member->code = (string) (1000 + (int) static::withTrashed()->max('id') + 1);
+                while (static::withTrashed()->where('code', $member->code)->exists()) {
+                    $member->code = (string) ((int) $member->code + 1);
+                }
+            }
+            $member->joined_at ??= now()->toDateString();
+        });
+    }
+
+    public function trainer(): BelongsTo
+    {
+        return $this->belongsTo(Trainer::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class)->latest('start_date');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('paid_at');
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class)->latest('check_in_at');
+    }
+
+    public function measurements(): HasMany
+    {
+        return $this->hasMany(BodyMeasurement::class)->latest('measured_at');
+    }
+
+    public function latestSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)->ofMany(['end_date' => 'max', 'id' => 'max']);
+    }
+
+    /** The subscription that is valid today (active or frozen). */
+    public function currentSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->whereNotIn('status', [Subscription::STATUS_CANCELLED])
+            ->whereDate('start_date', '<=', today())
+            ->whereDate('end_date', '>=', today())
+            ->orderByDesc('end_date')
+            ->first();
+    }
+
+    public function openAttendance(): ?Attendance
+    {
+        return $this->attendances()->whereNull('check_out_at')->where('is_guest', false)->first();
+    }
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo) {
+            return Storage::disk('public')->url($this->photo);
+        }
+
+        return \App\Support\Avatar::for($this->name);
+    }
+
+    public function getAgeAttribute(): ?int
+    {
+        return $this->birth_date?->age;
+    }
+
+    public function getBalanceAttribute(): float
+    {
+        return (float) $this->subscriptions()->get()->sum(fn (Subscription $s) => $s->remaining_amount);
+    }
+
+    public function whatsappLink(?string $message = null): string
+    {
+        $phone = preg_replace('/\D/', '', $this->phone);
+        if (str_starts_with($phone, '01') && strlen($phone) === 11) {
+            $phone = '2'.$phone; // Egypt
+        }
+
+        return 'https://wa.me/'.$phone.($message ? '?text='.rawurlencode($message) : '');
+    }
+
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->where(fn (Builder $q) => $q
+            ->where('code', $term)
+            ->orWhere('phone', $term)
+            ->orWhere('national_id', $term)
+            ->orWhere('name', 'like', "%{$term}%"));
+    }
+
+    public function scopeWithActiveSubscription(Builder $query): Builder
+    {
+        return $query->whereHas('subscriptions', fn (Builder $q) => $q->currentlyValid());
+    }
+}
