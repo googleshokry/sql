@@ -12,7 +12,7 @@ class AttendanceResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'member' => $this->whenLoaded('member', fn () => ['id' => $this->member->id, 'name' => $this->member->name, 'code' => $this->member->code, 'photo_url' => $this->member->photo_url]),
+            'member' => $this->whenLoaded('member', fn () => ['id' => $this->member->id, 'name' => $this->member->name, 'code' => $this->member->code, 'photo_url' => $this->member->photo ? $this->member->photo_url : null]),
             'check_in_at' => $this->check_in_at->toIso8601String(),
             'check_out_at' => $this->check_out_at?->toIso8601String(),
             'duration' => $this->duration,

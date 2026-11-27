@@ -22,7 +22,7 @@ class MemberResource extends JsonResource
             'gender' => $this->gender,
             'birth_date' => $this->birth_date?->toDateString(),
             'age' => $this->age,
-            'photo_url' => $this->photo_url,
+            'photo_url' => $this->photo ? $this->photo_url : null,
             'height' => $this->height ? (float) $this->height : null,
             'weight' => $this->weight ? (float) $this->weight : null,
             'trainer' => $this->trainer ? ['name' => $this->trainer->name, 'phone' => $this->trainer->phone] : null,

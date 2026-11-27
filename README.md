@@ -35,4 +35,6 @@ DEALLOCATE PREPARE stmt1;
 
 ## Gym Manager
 
-نظام إدارة الجيم (Laravel + Filament + MySQL) موجود في مجلد [`gym-app`](gym-app/README.md).
+نظام إدارة الجيم (Laravel + Filament + MySQL، عربي وإنجليزي) موجود في مجلد [`gym-app`](gym-app/README.md).
+
+تطبيق الموبايل (iOS و Android — React Native / Expo) المربوط بالسيستم موجود في مجلد [`mobile-app`](mobile-app/README.md).

@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Gym Manager",
+    "slug": "gym-manager",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gymmanager.app",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#111827",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.gymmanager.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-status-bar",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Gym Manager to use the camera to scan member cards / يحتاج التطبيق الكاميرا لمسح كارت المشترك",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": false
+        }
+      ]
+    ],
+    "scheme": "gymmanager",
+    "extra": {
+      "apiUrl": "http://localhost:8000"
+    }
+  }
+}
