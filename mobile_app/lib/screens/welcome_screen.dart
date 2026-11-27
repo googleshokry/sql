@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/api.dart';
 import '../core/session.dart';
 import '../widgets/common.dart';
+import 'restaurant_code_screen.dart';
 import '../core/i18n.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -29,7 +30,8 @@ class WelcomeScreen extends StatelessWidget {
               child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 const Icon(Icons.restaurant_menu, size: 90, color: kBrand),
                 const SizedBox(height: 12),
-                Text(tr('أهلاً بيك'), textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                Text(tr('أهلاً بيك'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: Colors.grey)),
+                const CurrentRestaurant(),
                 const SizedBox(height: 40),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(padding: const EdgeInsets.all(18)),
@@ -116,7 +118,9 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
       body: ListView(padding: const EdgeInsets.all(24), children: [
         if (widget.driverApp) ...[
           const Icon(Icons.delivery_dining, size: 90, color: kBrand),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
+          const CurrentRestaurant(),
+          const SizedBox(height: 16),
         ],
         TextField(
           controller: email,

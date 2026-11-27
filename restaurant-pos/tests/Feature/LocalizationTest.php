@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +14,7 @@ class LocalizationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(DatabaseSeeder::class);
+        $this->createTenant('test');
     }
 
     public function test_every_translation_key_used_in_code_has_an_english_value(): void
@@ -43,35 +42,35 @@ class LocalizationTest extends TestCase
         $admin = User::firstWhere('email', 'admin@pos.test');
         $this->actingAs($admin);
 
-        $this->get('/admin/orders')->assertOk()->assertSee('dir="rtl"', false)->assertSee('الطلبات');
+        $this->get('/app/test/orders')->assertOk()->assertSee('dir="rtl"', false)->assertSee('الطلبات');
 
-        $this->get('/locale/en')->assertRedirect();
+        $this->get('/app/test/locale/en')->assertRedirect();
         $this->assertSame('en', $admin->fresh()->locale);
 
-        $this->get('/admin/orders')->assertOk()->assertSee('dir="ltr"', false)->assertSee('App orders')->assertSee('Sales')->assertSee('Settings')->assertDontSee('الإعدادات')->assertDontSee('طلبات التطبيق');
-        $this->get('/admin/pos')->assertOk()->assertSee('Pay &amp; print', false)->assertSee('Chicken Shawarma');
+        $this->get('/app/test/orders')->assertOk()->assertSee('dir="ltr"', false)->assertSee('App orders')->assertSee('Sales')->assertSee('Settings')->assertDontSee('الإعدادات')->assertDontSee('طلبات التطبيق');
+        $this->get('/app/test/pos')->assertOk()->assertSee('Pay &amp; print', false)->assertSee('Chicken Shawarma');
 
-        $this->get('/locale/xx')->assertNotFound();
+        $this->get('/app/test/locale/xx')->assertNotFound();
     }
 
     public function test_api_follows_accept_language(): void
     {
-        $this->getJson('/api/menu', ['Accept-Language' => 'en'])->assertOk()
+        $this->getJson('/api/test/menu', ['Accept-Language' => 'en'])->assertOk()
             ->assertJsonPath('data.0.name', 'Sandwiches')
             ->assertJsonPath('data.0.products.0.name_en', fn ($v) => is_string($v));
-        $this->getJson('/api/delivery-areas', ['Accept-Language' => 'en'])->assertJsonFragment(['name' => 'Nasr City']);
-        $this->getJson('/api/menu', ['Accept-Language' => 'en'])
+        $this->getJson('/api/test/delivery-areas', ['Accept-Language' => 'en'])->assertJsonFragment(['name' => 'Nasr City']);
+        $this->getJson('/api/test/menu', ['Accept-Language' => 'en'])
             ->assertJsonPath('data.0.products.0.name_ar', fn ($v) => is_string($v));
-        $this->getJson('/api/menu', ['Accept-Language' => 'ar'])->assertJsonPath('data.0.name', 'سندوتشات');
+        $this->getJson('/api/test/menu', ['Accept-Language' => 'ar'])->assertJsonPath('data.0.name', 'سندوتشات');
 
-        $this->postJson('/api/staff/login', ['email' => 'admin@pos.test', 'password' => 'x'], ['Accept-Language' => 'en'])
+        $this->postJson('/api/test/staff/login', ['email' => 'admin@pos.test', 'password' => 'x'], ['Accept-Language' => 'en'])
             ->assertJsonPath('errors.email.0', 'Invalid login details');
-        $this->postJson('/api/customer/register', [], ['Accept-Language' => 'ar'])
+        $this->postJson('/api/test/customer/register', [], ['Accept-Language' => 'ar'])
             ->assertJsonPath('errors.phone.0', 'حقل الموبايل مطلوب.');
 
-        $token = $this->postJson('/api/staff/login', ['email' => 'cashier@pos.test', 'password' => 'password'])->json('token');
+        $token = $this->postJson('/api/test/staff/login', ['email' => 'cashier@pos.test', 'password' => 'password'])->json('token');
         $p = Product::firstWhere('name_en', 'Tea');
-        $this->withToken($token)->postJson('/api/pos/orders', [
+        $this->withToken($token)->postJson('/api/test/pos/orders', [
             'type' => 'takeaway', 'items' => [['product_id' => $p->id, 'qty' => 1]],
         ], ['Accept-Language' => 'en'])
             ->assertCreated()

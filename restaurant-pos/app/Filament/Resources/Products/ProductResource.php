@@ -57,7 +57,7 @@ class ProductResource extends Resource
             TextInput::make('name_en')->label(__('الاسم بالإنجليزي'))->maxLength(255),
             TextInput::make('price')->label(__('سعر البيع'))->numeric()->minValue(0)->required(),
             TextInput::make('cost')->label(__('التكلفة'))->numeric()->minValue(0)->default(0),
-            FileUpload::make('image')->label(__('الصورة'))->image()->disk('public')->directory('products'),
+            FileUpload::make('image')->label(__('الصورة'))->image()->disk('public')->directory(fn () => 'tenants/'.tenant()?->slug.'/products'),
             Toggle::make('is_active')->label(__('متاح للبيع'))->default(true),
         ]);
     }

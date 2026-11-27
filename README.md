@@ -1,8 +1,8 @@
-# نظام كاشير المطاعم والدليفري
+# منصة كاشير المطاعم والدليفري (SaaS)
 
 | المجلد | الوصف |
 |---|---|
-| [`restaurant-pos/`](restaurant-pos/README.md) | النظام الأساسي: Laravel + Filament + MySQL — كاشير الويب، لوحة الإدارة، والـ API |
+| [`restaurant-pos/`](restaurant-pos/README.md) | المنصة: Laravel + Filament + MySQL — صفحة التسجيل والباقات، لوحة كل مطعم (`/app/{كود}`)، لوحة مدير المنصة (`/admin`)، والـ API. كل مطعم بقاعدة بيانات منفصلة |
 | [`mobile_app/`](mobile_app/README.md) | تطبيق Flutter واحد لـ Android و iOS: كاشير، مالك، طيار، وعميل |
 
 ## البناء التلقائي (GitHub Actions)

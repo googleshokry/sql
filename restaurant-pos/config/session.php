@@ -73,7 +73,8 @@ return [
     |
     */
 
-    'connection' => env('SESSION_CONNECTION'),
+    // الجلسات دايماً في القاعدة المركزية
+    'connection' => env('SESSION_CONNECTION', env('DB_CONNECTION')),
 
     /*
     |--------------------------------------------------------------------------

@@ -35,7 +35,7 @@ void main() {
   });
 
   testWidgets('shows welcome screen when logged out', (tester) async {
-    SharedPreferences.setMockInitialValues({'lang': 'ar'});
+    SharedPreferences.setMockInitialValues({'lang': 'ar', 'tenant': 'demo'});
     final session = Session();
     await session.boot();
     await tester.pumpWidget(MultiProvider(
@@ -59,7 +59,7 @@ void main() {
   });
 
   testWidgets('switching to English flips direction and texts', (tester) async {
-    SharedPreferences.setMockInitialValues({'lang': 'ar'});
+    SharedPreferences.setMockInitialValues({'lang': 'ar', 'tenant': 'demo'});
     final session = Session();
     await session.boot();
     await tester.pumpWidget(MultiProvider(
@@ -81,5 +81,22 @@ void main() {
     await tester.tap(find.text('ع'));
     await tester.pumpAndSettle();
     expect(Directionality.of(tester.element(find.text('اطلب أكلك (عميل)'))), TextDirection.rtl);
+  });
+
+  testWidgets('asks for the restaurant code first', (tester) async {
+    SharedPreferences.setMockInitialValues({'lang': 'ar'});
+    final session = Session();
+    await session.boot();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: session),
+        ChangeNotifierProvider(create: (_) => Cart()),
+      ],
+      child: const PosApp(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('كود المطعم'), findsOneWidget);
+    expect(find.text('متابعة'), findsOneWidget);
+    expect(find.text('اطلب أكلك (عميل)'), findsNothing);
   });
 }

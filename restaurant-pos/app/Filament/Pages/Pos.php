@@ -271,9 +271,9 @@ class Pos extends Page
         }
         Notification::make()->success()->title($msg)->persistent()->send();
 
-        $js = "window.open('".route('orders.receipt', $order)."', '_blank');";
+        $js = "window.open('".route('orders.receipt', ['order' => $order])."', '_blank');";
         if ($this->printKitchen) {
-            $js .= "window.open('".route('orders.kitchen', $order)."', '_blank');";
+            $js .= "window.open('".route('orders.kitchen', ['order' => $order])."', '_blank');";
         }
         $this->js($js);
 

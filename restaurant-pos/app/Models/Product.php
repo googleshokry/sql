@@ -17,6 +17,11 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(fn () => \App\Tenancy\PlanLimits::ensure('products'));
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

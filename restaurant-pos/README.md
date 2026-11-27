@@ -1,4 +1,4 @@
-# برنامج كاشير للمطاعم والدليفري (Laravel + Filament + MySQL)
+# منصة كاشير المطاعم والدليفري — SaaS (Laravel + Filament + MySQL)
 
 نظام نقطة بيع (POS) للمطاعم: صالة، تيك أواي، ودليفري — مبني على **Laravel 13** و **Filament 5** وقاعدة بيانات **MySQL**، بواجهة عربية (RTL).
 
@@ -25,9 +25,29 @@
 - الترجمات في `lang/en.json`. المفتاح هو النص العربي نفسه، فلو أضفت نص جديد في الكود بـ `__('...')` ضيف ترجمته هناك (فيه اختبار بيفشل لو نسيت).
 - الـ API بيرد بلغة الهيدر `Accept-Language` (`ar` أو `en`).
 
+## منصة SaaS متعددة المطاعم (Multi-tenant)
+
+النظام منصة واحدة بتخدم مطاعم كتير، و**كل مطعم ليه قاعدة بيانات MySQL منفصلة**:
+
+| الجزء | الرابط | مين |
+|---|---|---|
+| الصفحة الرئيسية + الباقات + التسجيل | `/` ، `/register` | الزوار |
+| لوحة المطعم (الكاشير، الطلبات، المنيو، الإعدادات، الاشتراك) | `/app/{كود-المطعم}` | مدير وكاشير المطعم |
+| لوحة مدير المنصة (المطاعم، الباقات، المدفوعات) | `/admin` | صاحب المنصة |
+| API تطبيقات الموبايل | `/api/{كود-المطعم}/...` | التطبيقات |
+
+- **قاعدة مركزية** (`DB_DATABASE`): المطاعم، الباقات، المدفوعات، مدراء المنصة، الجلسات.
+- **قاعدة لكل مطعم** (`pos_{كود_المطعم}`): المستخدمين، المنيو، الطلبات، العملاء، الطيارين… بتتعمل أوتوماتيك وقت التسجيل.
+- جلسة الدخول في مطعم ما تفتحش مطعم تاني، وتوكن التطبيق مربوط بمطعمه.
+- **التسجيل الذاتي:** صاحب المطعم يسجل من `/register` ويبدأ **تجربة مجانية** (14 يوم افتراضياً) بمنيو تجريبي اختياري.
+- **الاشتراكات:** الباقات ليها حدود (مستخدمين، طيارين، أصناف، طلبات شهرياً، تطبيق العملاء). لما الاشتراك ينتهي، المدير يتحول لصفحة **الاشتراك**، والكاشير والـ API بيتقفلوا (402) لحد التجديد.
+- **الدفع:**
+  - **يدوي:** المطعم يحوّل (InstaPay / محفظة / بنك) ويسجل رقم العملية من صفحة الاشتراك، ومدير المنصة يأكد من **المدفوعات** ← الاشتراك يتجدد. أو مدير المنصة يجدد مباشرة من زر **تجديد / تفعيل**.
+  - **أونلاين (Paymob):** بيتفعل لما تحط مفاتيح Paymob في `.env`. المطعم يختار الباقة والمدة ← صفحة دفع Paymob ← الإشعار (موقّع بـ HMAC) يجدد الاشتراك أوتوماتيك.
+
 ## التثبيت
 
-المتطلبات: PHP 8.3+، Composer، MySQL 8 (أو MariaDB 10.6+).
+المتطلبات: PHP 8.3+، Composer، MySQL 8 (أو MariaDB 10.6+). مستخدم MySQL لازم يكون عنده صلاحية `CREATE DATABASE` (عشان قواعد المطاعم).
 
 ```bash
 cd restaurant-pos
@@ -36,58 +56,54 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-أنشئ قاعدة البيانات:
+أنشئ القاعدة المركزية وحط بيانات الاتصال في `.env`:
 
 ```sql
 CREATE DATABASE restaurant_pos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-عدّل بيانات الاتصال في `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=restaurant_pos
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
 ثم:
 
 ```bash
-php artisan migrate --seed
+php artisan migrate --seed     # القاعدة المركزية + الباقات + مدير المنصة + مطعم تجريبي (demo)
 php artisan storage:link
 php artisan serve
 ```
 
-افتح: <http://localhost:8000/admin>
-
-| المستخدم | البريد | كلمة المرور |
+| الرابط | الحساب | كلمة المرور |
 |---|---|---|
-| مدير | `admin@pos.test` | `password` |
-| كاشير | `cashier@pos.test` | `password` |
-| طيار (تطبيق الموبايل فقط) | `driver@pos.test` | `password` |
+| <http://localhost:8000/admin> (مدير المنصة) | `owner@platform.test` | `password` |
+| <http://localhost:8000/app/demo> (مدير المطعم التجريبي) | `admin@pos.test` | `password` |
+| نفس الرابط (كاشير) | `cashier@pos.test` | `password` |
+| تطبيق الطيار (كود المطعم `demo`) | `driver@pos.test` | `password` |
 
-> البيانات التجريبية فيها منيو كامل، 10 طاولات، مناطق توصيل وطيارين. غيّر كلمات المرور بعد أول دخول.
+> غيّر حساب مدير المنصة من `SUPER_ADMIN_EMAIL` و `SUPER_ADMIN_PASSWORD` قبل `db:seed` في الإنتاج.
 
-## الإعدادات (`.env`)
+### بعد كل تحديث للنظام (Deploy)
 
-```env
-POS_RESTAURANT_NAME="مطعمي"        # يظهر في الفاتورة واللوحة
-POS_RESTAURANT_PHONE=
-POS_RESTAURANT_ADDRESS=
-POS_CURRENCY="ج.م"
-POS_TAX_RATE=0                     # نسبة الضريبة %
-POS_SERVICE_RATE=12                # نسبة الخدمة % (طلبات الصالة فقط)
-POS_RECEIPT_FOOTER="شكراً لزيارتكم"
-APP_TIMEZONE=Africa/Cairo
+```bash
+php artisan migrate --force      # القاعدة المركزية
+php artisan tenants:migrate      # قواعد كل المطاعم (أو --tenant=كود لمطعم واحد)
 ```
+
+### Paymob
+1. من لوحة Paymob خد: Secret key و Public key و HMAC secret، وأرقام الـ Integration (كارت/محافظ).
+2. حطهم في `.env` (`PAYMOB_*`).
+3. في Paymob اضبط:
+   - Transaction processed callback = `https://دومينك/paymob/webhook`
+   - Transaction response callback = `https://دومينك/paymob/return`
+
+## إعدادات كل مطعم
+
+كل مطعم بيظبط من صفحة **إعدادات المطعم**: الاسم، التليفون، العنوان، العملة، الضريبة، الخدمة (صالة فقط)، رسالة الفاتورة، ومركز خريطة الطيارين. قيم `POS_*` في `.env` هي الافتراضية للمطاعم الجديدة بس.
 
 ## هيكل المشروع
 
 ```
 app/
+├── Tenancy/               # TenantManager (قاعدة لكل مطعم)، التسجيل، حدود الباقات
+├── Models/Central/        # Tenant, Plan, Payment, SuperAdmin (القاعدة المركزية)
+├── Billing/Paymob.php     # الدفع الأونلاين
 ├── Enums/                 # أنواع وحالات الطلب، طرق الدفع، حالة الطاولة، الصلاحيات
 ├── Models/                # Category, Product, RestaurantTable, Customer, DeliveryArea, Driver, Order, OrderItem
 ├── Support/OrderTotals.php# حساب الخصم والخدمة والضريبة والتوصيل
@@ -115,22 +131,22 @@ resources/views/
 
 ## API تطبيقات الموبايل
 
-تطبيق الموبايل (`../mobile_app`) بيتكلم مع النظام عن طريق `/api` بتوكن Sanctum (`Authorization: Bearer ...` + `Accept: application/json`).
+تطبيق الموبايل (`../mobile_app`) بيتكلم مع النظام عن طريق `/api/{كود-المطعم}` بتوكن Sanctum (التوكن صالح في مطعمه بس). `{t}` = كود المطعم. (`Authorization: Bearer ...` + `Accept: application/json`).
 
 | المسار | مين | الوظيفة |
 |---|---|---|
-| `GET /api/settings` ، `/api/menu` ، `/api/delivery-areas` | عام | الإعدادات والمنيو ومناطق التوصيل |
-| `POST /api/staff/login` | موظف | دخول مدير / كاشير / طيار |
-| `POST /api/customer/register` ، `/api/customer/login` | عميل | تسجيل / دخول برقم الموبايل |
-| `GET /api/me` ، `POST /api/logout` | الكل | |
-| `GET /api/pos/tables` ، `/api/pos/drivers` ، `/api/pos/customers/lookup?phone=` ، `POST /api/pos/orders` | كاشير، مدير | شاشة الكاشير |
-| `GET /api/orders?filter=open\|app\|unpaid\|today\|all` ، `GET /api/orders/{id}` | كاشير، مدير | الطلبات |
-| `POST /api/orders/{id}/pay` ، `/status` ، `/driver` | كاشير، مدير | تحصيل، حالة (الإلغاء للمدير فقط)، تعيين طيار |
-| `GET /api/dashboard?from=&to=` | مدير | تقارير المالك |
-| `GET /api/driver/orders` ، `POST /api/driver/shift` ، `POST /api/driver/location` | طيار | الطلبات، بدء/إنهاء الشيفت، إرسال الموقع |
-| `POST /api/driver/orders/{id}/pickup` ، `/arrived` ، `/delivered` ، `/failed` | طيار | مراحل التوصيل (failed بسبب = يرجع للمطعم) |
-| `GET /api/drivers/locations` ، `GET /api/drivers/{id}/trail` | كاشير، مدير | خريطة الطيارين وخط سير آخر 12 ساعة |
-| `GET/POST /api/customer/orders` ، `GET /api/customer/orders/{id}` ، `POST .../cancel` ، `PUT /api/customer/profile` | عميل | الطلب والتتبع |
+| `GET /api/{t}/settings` ، `/menu` ، `/delivery-areas` | عام | الإعدادات والمنيو ومناطق التوصيل |
+| `POST /api/{t}/staff/login` | موظف | دخول مدير / كاشير / طيار |
+| `POST /api/{t}/customer/register` ، `/api/{t}/customer/login` | عميل | تسجيل / دخول برقم الموبايل |
+| `GET /api/{t}/me` ، `POST /api/{t}/logout` | الكل | |
+| `GET /api/{t}/pos/tables` ، `/api/{t}/pos/drivers` ، `/api/{t}/pos/customers/lookup?phone=` ، `POST /api/{t}/pos/orders` | كاشير، مدير | شاشة الكاشير |
+| `GET /api/{t}/orders?filter=open\|app\|unpaid\|today\|all` ، `GET /api/{t}/orders/{id}` | كاشير، مدير | الطلبات |
+| `POST /api/{t}/orders/{id}/pay` ، `/status` ، `/driver` | كاشير، مدير | تحصيل، حالة (الإلغاء للمدير فقط)، تعيين طيار |
+| `GET /api/{t}/dashboard?from=&to=` | مدير | تقارير المالك |
+| `GET /api/{t}/driver/orders` ، `POST /api/{t}/driver/shift` ، `POST /api/{t}/driver/location` | طيار | الطلبات، بدء/إنهاء الشيفت، إرسال الموقع |
+| `POST /api/{t}/driver/orders/{id}/pickup` ، `/arrived` ، `/delivered` ، `/failed` | طيار | مراحل التوصيل (failed بسبب = يرجع للمطعم) |
+| `GET /api/{t}/drivers/locations` ، `GET /api/{t}/drivers/{id}/trail` | كاشير، مدير | خريطة الطيارين وخط سير آخر 12 ساعة |
+| `GET/POST /api/{t}/customer/orders` ، `GET /api/{t}/customer/orders/{id}` ، `POST .../cancel` ، `PUT /api/{t}/customer/profile` | عميل | الطلب والتتبع |
 
 - الأسعار دايماً بتتحسب على السيرفر من قاعدة البيانات (أي سعر جاي من التطبيق بيتجاهل).
 - طلبات تطبيق العملاء بتوصل بحالة **جديد** وبتظهر في تبويب **طلبات التطبيق** في صفحة الطلبات (على الويب والموبايل).

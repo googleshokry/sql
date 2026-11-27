@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'i18n.dart' as i18n;
+import 'i18n.dart';
 import 'models.dart';
 
 /// حالة تسجيل الدخول + البيانات المشتركة (المنيو والإعدادات)
@@ -56,7 +57,14 @@ class Session extends ChangeNotifier {
     }
     ready = true;
     notifyListeners();
-    if (loggedIn) await loadCatalog();
+    if (loggedIn) {
+      await loadCatalog();
+    } else if (hasRestaurant) {
+      try {
+        settings = AppSettings.fromJson(await api.get('settings'));
+        notifyListeners();
+      } catch (_) {}
+    }
   }
 
   Future<void> loadCatalog() async {
@@ -66,6 +74,39 @@ class Session extends ChangeNotifier {
     areas = (results[2]['data'] as List).map((a) => DeliveryArea.fromJson(a)).toList();
     notifyListeners();
   }
+
+  /// اسم المطعم الحالي (من الإعدادات)
+  String? get restaurantName => settings?.restaurantName;
+
+  /// يتأكد إن كود المطعم موجود ويحفظه
+  Future<void> setRestaurant(String code) async {
+    final clean = code.trim().toLowerCase();
+    if (clean.isEmpty) throw ApiException(tr('اكتب كود المطعم'));
+    final previous = api.tenant;
+    await api.setTenant(clean);
+    try {
+      final res = await api.get('settings');
+      settings = AppSettings.fromJson(res);
+      notifyListeners();
+    } on ApiException catch (e) {
+      // 402 = المطعم موجود بس الاشتراك منتهي
+      if (e.statusCode == 402) {
+        notifyListeners();
+        return;
+      }
+      await api.setTenant(previous);
+      throw ApiException(e.statusCode == 404 ? tr('كود المطعم غير موجود') : e.message, e.statusCode);
+    }
+  }
+
+  Future<void> clearRestaurant() async {
+    if (loggedIn) await logout();
+    await api.setTenant(null);
+    settings = null;
+    notifyListeners();
+  }
+
+  bool get hasRestaurant => (api.tenant ?? '').isNotEmpty;
 
   Future<void> staffLogin(String email, String password) =>
       _auth('staff/login', {'email': email, 'password': password, 'device_name': 'mobile'});

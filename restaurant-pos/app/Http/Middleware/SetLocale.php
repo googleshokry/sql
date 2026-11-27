@@ -8,7 +8,8 @@ use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * اللغة: الـ API من هيدر Accept-Language، والويب من اختيار المستخدم (session ثم حسابه).
+ * اللغة: الـ API من هيدر Accept-Language، والويب من الجلسة
+ * (لغة المستخدم المحفوظة بتتنقل للجلسة عند تسجيل الدخول).
  */
 class SetLocale
 {
@@ -18,14 +19,12 @@ class SetLocale
     {
         $locale = $request->is('api/*')
             ? $request->getPreferredLanguage(self::SUPPORTED)
-            : ($request->query('lang')
-                ?? ($request->hasSession() ? $request->session()->get('locale') : null)
-                ?? $request->user()?->locale);
+            : ($request->query('lang') ?? ($request->hasSession() ? $request->session()->get('locale') : null));
 
-        if (in_array($locale, self::SUPPORTED, true)) {
-            app()->setLocale($locale);
-            Carbon::setLocale($locale);
-        }
+        // لو مفيش اختيار نرجع للافتراضي (ما نعتمدش على حالة طلب سابق)
+        $locale = in_array($locale, self::SUPPORTED, true) ? $locale : config('app.default_locale', 'ar');
+        app()->setLocale($locale);
+        Carbon::setLocale($locale);
 
         return $next($request);
     }

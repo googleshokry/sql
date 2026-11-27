@@ -12,6 +12,7 @@ import 'screens/orders/drivers_map_screen.dart';
 import 'screens/orders/orders_screen.dart';
 import 'screens/owner/dashboard_screen.dart';
 import 'screens/pos/pos_screen.dart';
+import 'screens/restaurant_code_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'widgets/common.dart';
 import 'core/app_mode.dart';
@@ -70,6 +71,7 @@ class Root extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<Session>();
     if (!session.ready) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (!session.hasRestaurant) return const RestaurantCodeScreen();
     if (isDriverApp) {
       if (!session.loggedIn) return const StaffLoginScreen(driverApp: true);
       if (session.role != 'driver') return const _DriversOnly();

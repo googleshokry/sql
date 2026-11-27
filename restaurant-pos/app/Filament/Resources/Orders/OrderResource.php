@@ -173,9 +173,9 @@ class OrderResource extends Resource
                 ActionGroup::make([
                     ViewAction::make()->label(__('عرض')),
                     Action::make('receipt')->label(__('طباعة الفاتورة'))->icon(Heroicon::OutlinedPrinter)
-                        ->url(fn (Order $r) => route('orders.receipt', $r))->openUrlInNewTab(),
+                        ->url(fn (Order $r) => route('orders.receipt', ['order' => $r]))->openUrlInNewTab(),
                     Action::make('kitchen')->label(__('طباعة للمطبخ'))->icon(Heroicon::OutlinedFire)
-                        ->url(fn (Order $r) => route('orders.kitchen', $r))->openUrlInNewTab(),
+                        ->url(fn (Order $r) => route('orders.kitchen', ['order' => $r]))->openUrlInNewTab(),
                     Action::make('status')->label(__('تغيير الحالة'))->icon(Heroicon::OutlinedArrowPath)
                         ->visible(fn (Order $r) => $r->status !== OrderStatus::Cancelled)
                         ->fillForm(fn (Order $r) => ['status' => $r->status])

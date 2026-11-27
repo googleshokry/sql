@@ -10,6 +10,10 @@ import 'i18n.dart';
 /// أو وقت البناء: flutter build apk --dart-define=API_URL=https://pos.example.com
 const String kDefaultServerUrl = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:8000');
 
+/// كود المطعم ثابت في النسخة (تطبيق خاص بمطعم معين):
+/// flutter build apk --dart-define=TENANT=burger-house
+const String kLockedTenant = String.fromEnvironment('TENANT');
+
 class ApiException implements Exception {
   ApiException(this.message, [this.statusCode]);
   final String message;
@@ -26,13 +30,31 @@ class Api {
   String serverUrl = kDefaultServerUrl;
   String? token;
 
+  /// كود المطعم (المنصة فيها مطاعم كتير، كل واحد بقاعدة بيانات)
+  String? tenant;
+
   static const _kServer = 'server_url';
   static const _kToken = 'token';
+  static const _kTenant = 'tenant';
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     serverUrl = prefs.getString(_kServer) ?? kDefaultServerUrl;
     token = prefs.getString(_kToken);
+    tenant = kLockedTenant.isNotEmpty ? kLockedTenant : prefs.getString(_kTenant);
+  }
+
+  bool get tenantLocked => kLockedTenant.isNotEmpty;
+
+  Future<void> setTenant(String? code) async {
+    tenant = code?.trim().toLowerCase();
+    final prefs = await SharedPreferences.getInstance();
+    if (tenant == null || tenant!.isEmpty) {
+      tenant = null;
+      await prefs.remove(_kTenant);
+    } else {
+      await prefs.setString(_kTenant, tenant!);
+    }
   }
 
   Future<void> setServerUrl(String url) async {
@@ -53,7 +75,8 @@ class Api {
 
   Uri _uri(String path, [Map<String, dynamic>? query]) {
     final q = query?.map((k, v) => MapEntry(k, '$v'))?..removeWhere((k, v) => v == 'null' || v.isEmpty);
-    return Uri.parse('$serverUrl/api/$path').replace(queryParameters: (q == null || q.isEmpty) ? null : q);
+    if (tenant == null || tenant!.isEmpty) throw ApiException(tr('اكتب كود المطعم'));
+    return Uri.parse('$serverUrl/api/${Uri.encodeComponent(tenant!)}/$path').replace(queryParameters: (q == null || q.isEmpty) ? null : q);
   }
 
   Map<String, String> get _headers => {
@@ -76,6 +99,8 @@ class Api {
     http.Response res;
     try {
       res = await request().timeout(const Duration(seconds: 20));
+    } on ApiException {
+      rethrow;
     } catch (_) {
       throw ApiException(tr('تعذر الاتصال بالسيرفر — تأكد من الإنترنت ورابط السيرفر'));
     }

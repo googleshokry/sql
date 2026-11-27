@@ -23,6 +23,11 @@ class Driver extends Model
         'location_updated_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(fn () => \App\Tenancy\PlanLimits::ensure('drivers'));
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

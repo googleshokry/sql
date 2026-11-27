@@ -12,7 +12,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\RestaurantTable;
 use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -24,7 +23,7 @@ class PosTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(DatabaseSeeder::class);
+        $this->createTenant('test');
         config(['pos.tax_rate' => 0, 'pos.service_rate' => 10]);
     }
 
@@ -37,8 +36,8 @@ class PosTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        foreach (['/admin', '/admin/pos', '/admin/orders', '/admin/categories', '/admin/products',
-            '/admin/restaurant-tables', '/admin/customers', '/admin/drivers', '/admin/delivery-areas', '/admin/users'] as $url) {
+        foreach (['/app/test', '/app/test/pos', '/app/test/orders', '/app/test/categories', '/app/test/products',
+            '/app/test/restaurant-tables', '/app/test/customers', '/app/test/drivers', '/app/test/delivery-areas', '/app/test/users'] as $url) {
             $this->get($url)->assertOk();
         }
     }
@@ -46,10 +45,10 @@ class PosTest extends TestCase
     public function test_cashier_cannot_access_admin_resources(): void
     {
         $this->actingAs(User::where('email', 'cashier@pos.test')->first());
-        $this->get('/admin/pos')->assertOk();
-        $this->get('/admin/orders')->assertOk();
-        $this->get('/admin/products')->assertForbidden();
-        $this->get('/admin/users')->assertForbidden();
+        $this->get('/app/test/pos')->assertOk();
+        $this->get('/app/test/orders')->assertOk();
+        $this->get('/app/test/products')->assertForbidden();
+        $this->get('/app/test/users')->assertForbidden();
     }
 
     public function test_takeaway_paid_order(): void

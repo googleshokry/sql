@@ -30,6 +30,16 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    protected static function booted(): void
+    {
+        // حسابات الطيارين مربوطة بطيارين موجودين (الحد على عدد الطيارين نفسهم)
+        static::creating(function (User $user) {
+            if ($user->role !== UserRole::Driver) {
+                \App\Tenancy\PlanLimits::ensure('users');
+            }
+        });
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_active && $this->role !== UserRole::Driver;

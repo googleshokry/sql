@@ -12,6 +12,6 @@ class ManageProducts extends ManageRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        return [\App\Filament\Concerns\LimitedCreateAction::make('products')];
     }
 }

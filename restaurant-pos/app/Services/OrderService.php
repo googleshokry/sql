@@ -93,6 +93,10 @@ class OrderService
                 throw ValidationException::withMessages(['paid_amount' => __('المبلغ المدفوع أقل من الإجمالي')]);
             }
 
+            if (! $existing) {
+                \App\Tenancy\PlanLimits::ensure('orders_per_month');
+            }
+
             $order = $existing ?? Order::create([
                 'type' => $type,
                 'status' => $data['status'] ?? OrderStatus::Preparing,
