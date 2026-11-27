@@ -159,13 +159,13 @@ class GymActions
                 $record->forceFill(['password' => $pin])->save();
                 $record->tokens()->delete();
 
-                $message = __('مرحباً :name، بيانات دخولك لتطبيق :gym: الكود :code وكلمة المرور :pin', [
-                    'name' => $record->name, 'gym' => Setting::get('gym_name'), 'code' => $record->code, 'pin' => $pin,
+                $message = __('مرحباً :name، بيانات دخولك لتطبيق :gym: كود الجيم :gym_code، كود العضوية :code، كلمة المرور :pin', [
+                    'name' => $record->name, 'gym' => Setting::get('gym_name'), 'gym_code' => $record->gym->slug, 'code' => $record->code, 'pin' => $pin,
                 ]);
 
                 Notification::make()
                     ->title(__('كلمة المرور الجديدة: :pin', ['pin' => $pin]))
-                    ->body(__('كود الدخول: :code', ['code' => $record->code]))
+                    ->body(__('كود الجيم: :gym — كود العضوية: :code', ['gym' => $record->gym->slug, 'code' => $record->code]))
                     ->success()->persistent()
                     ->actions([Action::make('send')->label(__('إرسال على واتساب'))->url($record->whatsappLink($message), true)])
                     ->send();

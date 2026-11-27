@@ -3,9 +3,11 @@ import { api, apiConfig } from './api';
 import { storage } from './storage';
 import { Member, StaffUser } from './types';
 
+type GymRef = { slug: string; name: string };
+
 type Session =
-  | { type: 'member'; token: string; member: Member }
-  | { type: 'staff'; token: string; user: StaffUser };
+  | { type: 'member'; token: string; member: Member; gym: GymRef }
+  | { type: 'staff'; token: string; user: StaffUser; gym: GymRef };
 
 type Auth = {
   session: Session | null;
@@ -53,18 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading,
       async loginMember(login, password) {
-        const res = await api<{ token: string; member: Member }>('/auth/member/login', {
+        const res = await api<{ token: string; member: Member; gym: GymRef }>('/auth/member/login', {
           method: 'POST',
           body: { login, password, device_name: 'mobile-app' },
         });
-        await persist({ type: 'member', token: res.token, member: res.member });
+        await persist({ type: 'member', token: res.token, member: res.member, gym: res.gym });
       },
       async loginStaff(email, password) {
-        const res = await api<{ token: string; user: StaffUser }>('/auth/staff/login', {
+        const res = await api<{ token: string; user: StaffUser; gym: GymRef }>('/auth/staff/login', {
           method: 'POST',
           body: { email, password, device_name: 'mobile-app' },
         });
-        await persist({ type: 'staff', token: res.token, user: res.user });
+        // Staff may log in without a gym code when they work at a single gym; remember the one the server picked.
+        await apiConfig.setGym(res.gym.slug);
+        await persist({ type: 'staff', token: res.token, user: res.user, gym: res.gym });
       },
       async logout() {
         try {

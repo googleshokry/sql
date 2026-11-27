@@ -15,22 +15,27 @@ class ApiTest extends TestCase
 
     private function memberWithSubscription(): Member
     {
+        $gym = $this->createGym('api-gym');
         $member = Member::create(['name' => 'Ali', 'phone' => '01000000000', 'password' => 'secret1']);
         $plan = Plan::create(['name' => 'Month', 'duration_days' => 30, 'price' => 400]);
-        $this->actingAs(User::create(['name' => 'a', 'email' => 'a@a.com', 'password' => 'x', 'role' => 'admin']));
+        $this->actingAs($gym->owner);
         SubscriptionService::create($member, ['plan_id' => $plan->id, 'paid_amount' => 100]);
         auth()->logout();
+        \App\Support\Tenancy::set(null); // API requests resolve the gym themselves
+        $this->withHeader('X-Gym', 'api-gym');
 
         return $member;
     }
 
-    public function test_public_endpoints(): void
+    public function test_public_endpoints_need_a_gym_code(): void
     {
-        Plan::create(['name' => 'Month', 'duration_days' => 30, 'price' => 400]);
+        $this->createGym('api-gym');
+        \App\Support\Tenancy::set(null);
 
-        $this->getJson('/api/v1/gym')->assertOk()->assertJsonStructure(['name', 'currency']);
-        $this->getJson('/api/v1/plans')->assertOk()->assertJsonPath('data.0.name', 'Month');
-        $this->getJson('/api/v1/announcements')->assertOk();
+        $this->getJson('/api/v1/gym')->assertStatus(422);
+        $this->getJson('/api/v1/gym', ['X-Gym' => 'api-gym'])->assertOk()->assertJsonPath('slug', 'api-gym');
+        $this->getJson('/api/v1/plans', ['X-Gym' => 'api-gym'])->assertOk()->assertJsonCount(5, 'data');
+        $this->getJson('/api/v1/announcements', ['X-Gym' => 'api-gym'])->assertOk();
     }
 
     public function test_member_login_and_home_in_both_languages(): void
@@ -59,7 +64,8 @@ class ApiTest extends TestCase
     public function test_staff_can_check_members_in_and_out(): void
     {
         $member = $this->memberWithSubscription();
-        User::create(['name' => 'r', 'email' => 'r@gym.com', 'password' => 'password', 'role' => 'receptionist']);
+        $receptionist = User::create(['name' => 'r', 'email' => 'r@gym.com', 'password' => 'password']);
+        $receptionist->gyms()->attach(\App\Models\Gym::where('slug', 'api-gym')->value('id'), ['role' => 'receptionist']);
 
         $token = $this->postJson('/api/v1/auth/staff/login', ['email' => 'r@gym.com', 'password' => 'password'])
             ->assertOk()->json('token');

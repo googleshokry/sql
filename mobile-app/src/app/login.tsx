@@ -14,6 +14,7 @@ export default function Login() {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [server, setServer] = useState(apiConfig.getBaseUrl());
+  const [gymCode, setGymCode] = useState(apiConfig.getGym());
   const [showServer, setShowServer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -25,6 +26,7 @@ export default function Login() {
     setBusy(true);
     try {
       if (server !== apiConfig.getBaseUrl()) await apiConfig.setBaseUrl(server);
+      await apiConfig.setGym(gymCode);
       if (mode === 'member') await loginMember(login.trim(), password);
       else await loginStaff(login.trim(), password);
     } catch (e) {
@@ -65,6 +67,15 @@ export default function Login() {
           <T style={{ color: colors.muted }}>{mode === 'member' ? t('memberLoginHint') : t('staffLoginHint')}</T>
 
           <Input
+            label={mode === 'member' ? t('gymCode') : `${t('gymCode')} (${t('optional')})`}
+            value={gymCode}
+            onChangeText={setGymCode}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="my-gym"
+            testID="gym-input"
+          />
+          <Input
             label={mode === 'member' ? t('codeOrPhone') : t('email')}
             value={login}
             onChangeText={setLogin}
@@ -77,7 +88,7 @@ export default function Login() {
 
           {error && <T style={{ color: colors.danger }}>{error}</T>}
 
-          <Button title={t('signIn')} onPress={submit} loading={busy} disabled={!login || !password} />
+          <Button title={t('signIn')} onPress={submit} loading={busy} disabled={!login || !password || (mode === 'member' && !gymCode.trim())} />
         </Card>
 
         <Pressable onPress={() => setShowServer((s) => !s)} style={{ alignSelf: 'center', padding: 8 }}>

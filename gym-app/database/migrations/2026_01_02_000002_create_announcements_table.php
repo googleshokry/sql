@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('body')->nullable();
             $table->string('title_en')->nullable();

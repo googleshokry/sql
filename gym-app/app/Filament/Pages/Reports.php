@@ -76,6 +76,7 @@ class Reports extends Page
         $salesTotal = (float) (clone $sales)->sum('total');
         $salesCost = (float) SaleItem::join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->join('products', 'products.id', '=', 'sale_items.product_id')
+            ->where('sales.gym_id', \App\Support\Tenancy::id())
             ->whereBetween('sales.sold_at', $range)
             ->sum(DB::raw('sale_items.quantity * products.cost_price'));
 

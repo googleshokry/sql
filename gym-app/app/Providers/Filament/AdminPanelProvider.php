@@ -14,6 +14,11 @@ use App\Models\Setting;
 use App\Support\LocalAvatarProvider;
 use Illuminate\Support\Facades\Storage;
 use App\Enums\NavGroup;
+use App\Filament\Pages\Billing;
+use App\Filament\Pages\Tenancy\RegisterGym;
+use App\Http\Middleware\ApplyTenancy;
+use App\Http\Middleware\EnsureGymHasAccess;
+use App\Models\Gym;
 use Filament\Navigation\NavigationGroup;
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
@@ -34,7 +39,17 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->passwordReset()
             ->profile()
+            // Multi-tenancy: every gym is a tenant at /admin/{gym-slug}.
+            ->tenant(Gym::class, slugAttribute: 'slug')
+            ->tenantRegistration(RegisterGym::class)
+            ->tenantMenuItems([
+                Action::make('billing')->label(fn () => __('الاشتراك والفواتير'))->icon('heroicon-o-credit-card')
+                    ->url(fn () => Billing::getUrl()),
+            ])
+            ->tenantMiddleware([ApplyTenancy::class, EnsureGymHasAccess::class], isPersistent: true)
             ->brandName(fn () => Setting::get('gym_name'))
             ->brandLogo(fn () => Setting::get('gym_logo') ? Storage::disk('public')->url(Setting::get('gym_logo')) : null)
             ->brandLogoHeight('2.5rem')
@@ -58,6 +73,8 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn () => route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar')),
             ])
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.language-links'))
+            ->renderHook(PanelsRenderHook::AUTH_REGISTER_FORM_AFTER, fn () => view('filament.language-links'))
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.trial-banner'))
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, fn () => view('filament.language-links'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

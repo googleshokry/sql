@@ -44,8 +44,8 @@ class StaffController extends Controller
             'force' => ['nullable', 'boolean'],
         ]);
 
-        $member = Member::where('code', $data['code'])->orWhere('phone', $data['code'])
-            ->orWhere('national_id', $data['code'])->first();
+        $member = Member::where(fn ($q) => $q->where('code', $data['code'])->orWhere('phone', $data['code'])
+            ->orWhere('national_id', $data['code']))->first();
 
         if (! $member) {
             return response()->json(['ok' => false, 'action' => null, 'message' => __('لا يوجد مشترك بهذا الكود / الرقم'), 'member' => null], 404);
@@ -76,9 +76,10 @@ class StaffController extends Controller
         );
     }
 
-    public function member(Member $member): MemberResource
+    public function member(int $member): MemberResource
     {
-        return new MemberResource($member->load('trainer'));
+        // Looked up inside the tenant scope (route-model binding would run before it is applied).
+        return new MemberResource(Member::with('trainer')->findOrFail($member));
     }
 
     public function inside(): AnonymousResourceCollection
@@ -88,8 +89,9 @@ class StaffController extends Controller
         );
     }
 
-    public function checkout(Attendance $attendance): JsonResponse
+    public function checkout(int $attendance): JsonResponse
     {
+        $attendance = Attendance::findOrFail($attendance);
         if (! $attendance->check_out_at) {
             $attendance->update(['check_out_at' => now()]);
         }

@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Middleware\ApplyTokenTenancy;
+use App\Http\Middleware\ResolveGymFromRequest;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,16 +13,17 @@ use Illuminate\Support\Facades\Route;
 | and "Authorization: Bearer <token>" for authenticated endpoints.
 */
 Route::prefix('v1')->name('api.')->group(function () {
-    Route::get('gym', [PublicController::class, 'gym']);
-    Route::get('plans', [PublicController::class, 'plans']);
-    Route::get('announcements', [PublicController::class, 'announcements']);
-
-    Route::middleware('throttle:10,1')->group(function () {
-        Route::post('auth/member/login', [AuthController::class, 'memberLogin']);
-        Route::post('auth/staff/login', [AuthController::class, 'staffLogin']);
+    // Public endpoints and member login identify the gym with the "X-Gym: <gym code>" header.
+    Route::middleware(ResolveGymFromRequest::class)->group(function () {
+        Route::get('gym', [PublicController::class, 'gym']);
+        Route::get('plans', [PublicController::class, 'plans']);
+        Route::get('announcements', [PublicController::class, 'announcements']);
+        Route::post('auth/member/login', [AuthController::class, 'memberLogin'])->middleware('throttle:10,1');
     });
+    Route::post('auth/staff/login', [AuthController::class, 'staffLogin'])
+        ->middleware([ResolveGymFromRequest::class.':optional', 'throttle:10,1']);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', ApplyTokenTenancy::class])->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
         Route::middleware('abilities:member')->prefix('member')->group(function () {

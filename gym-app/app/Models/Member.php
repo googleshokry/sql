@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGym;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Member extends Authenticatable
 {
+    use BelongsToGym;
     use HasApiTokens, SoftDeletes;
 
     protected $guarded = ['id'];
@@ -30,11 +32,16 @@ class Member extends Authenticatable
     protected static function booted(): void
     {
         static::creating(function (Member $member) {
+            $gym = Gym::find($member->gym_id);
+            $count = static::withoutGlobalScopes()->where('gym_id', $member->gym_id)->whereNull('deleted_at')->count();
+            if ($gym && ! $gym->withinLimit('max_members', $count)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'name' => __('وصلت للحد الأقصى لعدد المشتركين في باقتك (:max). قم بترقية الباقة.', ['max' => $gym->saasPlan->max_members]),
+                ]);
+            }
+
             if (blank($member->code)) {
-                $member->code = (string) (1000 + (int) static::withTrashed()->max('id') + 1);
-                while (static::withTrashed()->where('code', $member->code)->exists()) {
-                    $member->code = (string) ((int) $member->code + 1);
-                }
+                $member->code = (string) \App\Support\Sequence::next(static::class, $member->gym_id, 'code', 1001);
             }
             $member->joined_at ??= now()->toDateString();
         });

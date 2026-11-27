@@ -61,6 +61,14 @@ class MemberResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    /** Hide "create" once the gym reaches its plan's member limit. */
+    public static function canCreate(): bool
+    {
+        $gym = \App\Support\Tenancy::gym();
+
+        return ! $gym || $gym->withinLimit('max_members', Member::count());
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'code', 'phone', 'national_id'];
@@ -79,14 +87,14 @@ class MemberResource extends Resource
                     ->columnSpan(1),
                 Grid::make(2)->columnSpan(2)->schema([
                     TextInput::make('name')->label(__('الاسم بالكامل'))->required()->maxLength(255),
-                    TextInput::make('code')->label(__('كود العضوية / الكارت'))->unique(ignoreRecord: true)
+                    TextInput::make('code')->label(__('كود العضوية / الكارت'))->scopedUnique(ignoreRecord: true)
                         ->helperText(__('يُولد تلقائياً إذا تُرك فارغاً')),
-                    TextInput::make('phone')->label(__('الموبايل'))->tel()->required()->unique(ignoreRecord: true),
+                    TextInput::make('phone')->label(__('الموبايل'))->tel()->required()->scopedUnique(ignoreRecord: true),
                     TextInput::make('phone2')->label(__('موبايل آخر'))->tel(),
                     Select::make('gender')->label(__('النوع'))->options(['male' => __('ذكر'), 'female' => __('أنثى')])->default('male')->required(),
                     DatePicker::make('birth_date')->label(__('تاريخ الميلاد'))->maxDate(now()),
                 ]),
-                TextInput::make('national_id')->label(__('الرقم القومي'))->length(14)->unique(ignoreRecord: true),
+                TextInput::make('national_id')->label(__('الرقم القومي'))->length(14)->scopedUnique(ignoreRecord: true),
                 TextInput::make('email')->label(__('البريد الإلكتروني'))->email(),
                 TextInput::make('address')->label(__('العنوان')),
                 Select::make('trainer_id')->label(__('المدرب المسؤول'))->relationship('trainer', 'name', fn (Builder $query) => $query->where('is_active', true))

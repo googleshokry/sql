@@ -18,6 +18,9 @@ export default function StaffSettings() {
         <T style={{ color: colors.muted }}>
           {session.user.email} — {session.user.role_label}
         </T>
+        <T style={{ color: colors.muted }}>
+          {session.gym.name} ({session.gym.slug})
+        </T>
         <T style={{ color: colors.muted, fontSize: 12 }}>
           {t('serverUrl')}: {apiConfig.getBaseUrl()}
         </T>

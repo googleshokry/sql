@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGym;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
+    use BelongsToGym;
+
     protected $guarded = ['id'];
 
     protected $casts = [

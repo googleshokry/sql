@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGym;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Support\Carbon;
 
 class Subscription extends Model
 {
+    use BelongsToGym;
+
     public const STATUS_ACTIVE = 'active';
     public const STATUS_UPCOMING = 'upcoming';
     public const STATUS_FROZEN = 'frozen';

@@ -19,13 +19,21 @@ const DEFAULT_URL =
 let baseUrl = DEFAULT_URL;
 let token: string | null = null;
 let lang = 'ar';
+let gym = '';
 let onUnauthorized: (() => void) | null = null;
 
 export const apiConfig = {
   defaultUrl: DEFAULT_URL,
   async load() {
     baseUrl = (await storage.get('server_url')) || DEFAULT_URL;
+    gym = (await storage.get('gym_code')) || '';
     return baseUrl;
+  },
+  getGym: () => gym,
+  /** The gym (tenant) code sent as X-Gym; one app serves every gym on the platform. */
+  async setGym(code: string) {
+    gym = code.trim().toLowerCase();
+    await storage.set('gym_code', gym);
   },
   getBaseUrl: () => baseUrl,
   async setBaseUrl(url: string) {
@@ -51,6 +59,7 @@ export async function api<T>(path: string, options: { method?: string; body?: un
       headers: {
         Accept: 'application/json',
         'Accept-Language': lang,
+        ...(gym ? { 'X-Gym': gym } : {}),
         ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

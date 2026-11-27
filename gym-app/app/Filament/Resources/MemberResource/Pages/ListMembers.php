@@ -19,7 +19,7 @@ class ListMembers extends ListRecords
     {
         return [
             Action::make('export')->label(__('تصدير Excel (CSV)'))->icon(Heroicon::OutlinedArrowDownTray)->color('gray')
-                ->url(route('export.members'), true),
+                ->url(fn () => route('export.members', ['gym' => \Filament\Facades\Filament::getTenant()]), true),
             CreateAction::make()->label(__('إضافة مشترك')),
         ];
     }

@@ -3,6 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Attendance;
+use App\Models\Gym;
+use App\Models\SaasPlan;
+use App\Services\GymOnboarding;
+use App\Support\Tenancy;
 use App\Models\ExpenseCategory;
 use App\Models\Member;
 use App\Models\Plan;
@@ -16,31 +20,33 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(['email' => 'admin@gym.com'], [
-            'name' => 'مدير النظام', 'password' => 'password', 'role' => User::ROLE_ADMIN,
-        ]);
-        User::updateOrCreate(['email' => 'reception@gym.com'], [
-            'name' => 'موظف الاستقبال', 'password' => 'password', 'role' => User::ROLE_RECEPTIONIST,
+        User::updateOrCreate(['email' => 'super@gym.com'], [
+            'name' => 'Platform Admin', 'password' => 'password', 'is_super_admin' => true,
         ]);
 
         foreach ([
-            ['name' => 'شهر', 'duration_days' => 30, 'price' => 400, 'freeze_days' => 7, 'guest_invitations' => 1, 'color' => '#22c55e'],
-            ['name' => '3 شهور', 'duration_days' => 90, 'price' => 1000, 'freeze_days' => 15, 'guest_invitations' => 3, 'color' => '#3b82f6'],
-            ['name' => '6 شهور', 'duration_days' => 180, 'price' => 1800, 'freeze_days' => 30, 'guest_invitations' => 5, 'color' => '#8b5cf6'],
-            ['name' => 'سنة', 'duration_days' => 365, 'price' => 3000, 'freeze_days' => 60, 'guest_invitations' => 10, 'color' => '#f59e0b'],
-            ['name' => '12 حصة', 'duration_days' => 30, 'price' => 250, 'sessions_count' => 12, 'color' => '#06b6d4'],
-            ['name' => 'شهر + مدرب خاص', 'duration_days' => 30, 'price' => 1200, 'includes_trainer' => true, 'color' => '#ef4444'],
+            ['name' => 'أساسية', 'name_en' => 'Basic', 'price_monthly' => 499, 'price_yearly' => 4990, 'max_members' => 200, 'max_staff' => 3, 'max_branches' => 1, 'mobile_app' => false, 'sort' => 1],
+            ['name' => 'احترافية', 'name_en' => 'Pro', 'price_monthly' => 999, 'price_yearly' => 9990, 'max_members' => 1000, 'max_staff' => 10, 'max_branches' => 2, 'sort' => 2],
+            ['name' => 'سلاسل الجيمات', 'name_en' => 'Chains', 'price_monthly' => 2499, 'price_yearly' => 24990, 'max_members' => null, 'max_staff' => null, 'max_branches' => 10, 'sort' => 3],
         ] as $plan) {
-            Plan::firstOrCreate(['name' => $plan['name']], $plan);
+            SaasPlan::updateOrCreate(['name' => $plan['name']], $plan + ['currency' => 'EGP']);
         }
 
-        foreach (['إيجار', 'كهرباء ومياه', 'مرتبات', 'صيانة أجهزة', 'نظافة', 'دعاية وإعلان', 'أخرى'] as $c) {
-            ExpenseCategory::firstOrCreate(['name' => $c]);
+        if (! app()->environment('local') || Gym::exists()) {
+            return;
         }
 
-        if (app()->environment('local') && Member::count() === 0) {
-            $this->demo();
-        }
+        // Two demo gyms to show tenant isolation.
+        $owner = User::create(['name' => 'مدير جيم الأبطال', 'email' => 'admin@gym.com', 'password' => 'password']);
+        $gym = GymOnboarding::create($owner, ['name' => 'جيم الأبطال', 'slug' => 'champions', 'phone' => '01000000000',
+            'address' => 'القاهرة - مدينة نصر', 'saas_plan_id' => SaasPlan::where('name_en', 'Pro')->value('id')]);
+        $reception = User::create(['name' => 'موظف الاستقبال', 'email' => 'reception@gym.com', 'password' => 'password']);
+        $gym->users()->attach($reception->id, ['role' => User::ROLE_RECEPTIONIST]);
+        Tenancy::run($gym, fn () => $this->demo());
+
+        $owner2 = User::create(['name' => 'Power Gym Owner', 'email' => 'owner2@gym.com', 'password' => 'password', 'locale' => 'en']);
+        $gym2 = GymOnboarding::create($owner2, ['name' => 'Power Gym', 'slug' => 'power-gym', 'locale' => 'en', 'currency' => 'EGP']);
+        Tenancy::run($gym2, fn () => Member::create(['name' => 'John Smith', 'phone' => '01222222222', 'password' => '123456']));
     }
 
     private function demo(): void
@@ -87,5 +93,11 @@ class DatabaseSeeder extends Seeder
             }
         }
         SubscriptionService::refreshAll();
+
+        Member::where('code', '1002')->first()?->forceFill(['password' => '123456'])->save();
+        \App\Models\Announcement::create([
+            'title' => 'عرض الصيف: خصم 20% على باقة 3 شهور', 'title_en' => 'Summer offer: 20% off the 3-month plan',
+            'body' => 'العرض ساري حتى نهاية الشهر', 'body_en' => 'Valid until the end of the month', 'published_at' => now(),
+        ]);
     }
 }

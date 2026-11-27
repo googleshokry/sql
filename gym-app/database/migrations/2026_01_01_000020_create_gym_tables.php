@@ -10,13 +10,16 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
+            $table->string('key');
             $table->text('value')->nullable();
             $table->timestamps();
+            $table->unique(['gym_id', 'key']);
         });
 
         Schema::create('trainers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
@@ -34,6 +37,7 @@ return new class extends Migration
 
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->unsignedInteger('duration_days');
             $table->decimal('price', 10, 2);
@@ -50,9 +54,10 @@ return new class extends Migration
 
         Schema::create('members', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
+            $table->string('code');
             $table->string('name');
-            $table->string('phone')->index();
+            $table->string('phone');
             $table->string('phone2')->nullable();
             $table->string('email')->nullable();
             $table->string('national_id')->nullable()->index();
@@ -72,12 +77,19 @@ return new class extends Migration
             $table->string('blocked_reason')->nullable();
             $table->date('joined_at')->nullable();
             $table->string('referral_source')->nullable();
+            $table->string('password')->nullable();
+            $table->string('locale', 5)->default('ar');
+            $table->timestamp('last_app_login_at')->nullable();
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+            $table->unique(['gym_id', 'code']);
+            $table->index(['gym_id', 'phone']);
         });
 
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignId('member_id')->constrained()->cascadeOnDelete();
             $table->foreignId('plan_id')->constrained()->restrictOnDelete();
             $table->foreignId('trainer_id')->nullable()->constrained()->nullOnDelete();
@@ -103,6 +115,7 @@ return new class extends Migration
 
         Schema::create('subscription_freezes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignId('subscription_id')->constrained()->cascadeOnDelete();
             $table->date('start_date');
             $table->date('end_date');
@@ -114,7 +127,8 @@ return new class extends Migration
 
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->string('receipt_number')->unique();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
+            $table->string('receipt_number');
             $table->foreignId('member_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('amount', 10, 2);
@@ -124,24 +138,28 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->index('paid_at');
+            $table->index(['gym_id', 'paid_at']);
+            $table->unique(['gym_id', 'receipt_number']);
         });
 
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignId('member_id')->constrained()->cascadeOnDelete();
             $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
-            $table->dateTime('check_in_at')->index();
+            $table->dateTime('check_in_at');
             $table->dateTime('check_out_at')->nullable();
             $table->boolean('is_guest')->default(false);
             $table->string('guest_name')->nullable();
             $table->foreignId('recorded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('notes')->nullable();
             $table->timestamps();
+            $table->index(['gym_id', 'check_in_at']);
         });
 
         Schema::create('body_measurements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignId('member_id')->constrained()->cascadeOnDelete();
             $table->date('measured_at');
             $table->decimal('weight', 5, 2)->nullable();
@@ -159,12 +177,14 @@ return new class extends Migration
 
         Schema::create('expense_categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
         });
 
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignId('expense_category_id')->nullable()->constrained()->nullOnDelete();
             $table->string('title');
             $table->decimal('amount', 10, 2);
@@ -178,8 +198,9 @@ return new class extends Migration
 
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('sku')->nullable()->unique();
+            $table->string('sku')->nullable();
             $table->string('category')->nullable();
             $table->decimal('cost_price', 10, 2)->default(0);
             $table->decimal('sale_price', 10, 2);
@@ -188,11 +209,13 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->unique(['gym_id', 'sku']);
         });
 
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number')->unique();
+            $table->foreignId('gym_id')->constrained()->cascadeOnDelete();
+            $table->string('invoice_number');
             $table->foreignId('member_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('discount', 10, 2)->default(0);
@@ -202,6 +225,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
+            $table->unique(['gym_id', 'invoice_number']);
         });
 
         Schema::create('sale_items', function (Blueprint $table) {

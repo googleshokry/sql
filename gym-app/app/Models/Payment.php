@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGym;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Payment extends Model
 {
+    use BelongsToGym;
+
     public const METHODS = [
         'cash' => 'كاش',
         'card' => 'فيزا / بطاقة',
@@ -53,7 +56,7 @@ class Payment extends Model
             }
         });
         static::created(function (Payment $p) {
-            $p->receipt_number = 'R'.str_pad((string) $p->id, 6, '0', STR_PAD_LEFT);
+            $p->receipt_number = 'R'.str_pad((string) \App\Support\Sequence::next(static::class, $p->gym_id, 'receipt_number'), 6, '0', STR_PAD_LEFT);
             $p->saveQuietly();
         });
     }

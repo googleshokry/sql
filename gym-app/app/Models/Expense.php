@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGym;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Expense extends Model
 {
+    use BelongsToGym;
+
     protected $guarded = ['id'];
 
     protected $casts = ['spent_at' => 'date', 'amount' => 'decimal:2'];

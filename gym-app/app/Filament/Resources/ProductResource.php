@@ -62,7 +62,7 @@ class ProductResource extends Resource
         return $schema->components([
             Grid::make(3)->columnSpanFull()->schema([
                 TextInput::make('name')->label(__('اسم المنتج'))->required()->columnSpan(2),
-                TextInput::make('sku')->label(__('الكود / الباركود'))->unique(ignoreRecord: true),
+                TextInput::make('sku')->label(__('الكود / الباركود'))->scopedUnique(ignoreRecord: true),
                 TextInput::make('category')->label(__('التصنيف'))->placeholder(__('مكملات، مشروبات، ملابس ...'))
                     ->datalist(fn () => Product::query()->distinct()->pluck('category')->filter()->all()),
                 TextInput::make('cost_price')->label(__('سعر التكلفة'))->numeric()->default(0)->suffix(Setting::currency()),

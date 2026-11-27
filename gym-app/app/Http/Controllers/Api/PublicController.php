@@ -16,6 +16,7 @@ class PublicController extends Controller
         $s = Setting::allSettings();
 
         return response()->json([
+            'slug' => \App\Support\Tenancy::gym()?->slug,
             'name' => $s['gym_name'],
             'phone' => $s['gym_phone'],
             'address' => $s['gym_address'],

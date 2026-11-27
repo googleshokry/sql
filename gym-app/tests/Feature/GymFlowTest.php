@@ -20,7 +20,8 @@ class GymFlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(User::create(['name' => 'a', 'email' => 'a@a.com', 'password' => 'x', 'role' => 'admin']));
+        $gym = $this->createGym();
+        $this->actingAs($gym->owner);
     }
 
     public function test_member_gets_auto_code_and_cannot_enter_without_subscription(): void
