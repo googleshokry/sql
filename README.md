@@ -1,3 +1,16 @@
+# نظام كاشير المطاعم والدليفري
+
+| المجلد | الوصف |
+|---|---|
+| [`restaurant-pos/`](restaurant-pos/README.md) | النظام الأساسي: Laravel + Filament + MySQL — كاشير الويب، لوحة الإدارة، والـ API |
+| [`mobile_app/`](mobile_app/README.md) | تطبيق Flutter واحد لـ Android و iOS: كاشير، مالك، طيار، وعميل |
+
+## البناء التلقائي (GitHub Actions)
+- **Backend tests (MySQL)**: بيشغل اختبارات النظام على MySQL 8 مع كل تعديل.
+- **Mobile apps (Android APK + iOS)**: من تبويب Actions ← Run workflow ← نزّل الـ APK من Artifacts.
+
+---
+
 ```shell
 BEGIN
    SET FOREIGN_KEY_CHECKS = 0;

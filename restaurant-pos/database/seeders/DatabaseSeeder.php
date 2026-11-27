@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         foreach ($menu as $categoryName => $products) {
             $category = Category::updateOrCreate(['name' => $categoryName], ['sort' => $sort++]);
             foreach ($products as $name => $price) {
-                $category->products()->updateOrCreate(['name' => $name], ['price' => $price]);
+                $category->products()->updateOrCreate(['name' => $name], ['price' => $price, 'cost' => round($price * 0.4, 2)]);
             }
         }
 
@@ -49,5 +49,11 @@ class DatabaseSeeder extends Seeder
         foreach (['أحمد' => '01000000001', 'محمود' => '01000000002', 'كريم' => '01000000003'] as $name => $phone) {
             Driver::firstOrCreate(['name' => $name], ['phone' => $phone]);
         }
+
+        // حساب تجريبي لتطبيق الطيار مربوط بالطيار "أحمد"
+        $driverUser = User::updateOrCreate(['email' => 'driver@pos.test'], [
+            'name' => 'أحمد (طيار)', 'password' => 'password', 'role' => UserRole::Driver,
+        ]);
+        Driver::where('name', 'أحمد')->update(['user_id' => $driverUser->id]);
     }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class Order extends Model
 {
     protected $fillable = [
-        'number', 'type', 'status', 'user_id', 'restaurant_table_id', 'customer_id',
+        'number', 'type', 'status', 'source', 'user_id', 'restaurant_table_id', 'customer_id',
         'delivery_area_id', 'driver_id', 'delivery_address', 'subtotal', 'discount',
         'tax', 'service', 'delivery_fee', 'total', 'payment_method', 'is_paid',
         'paid_amount', 'change_amount', 'notes', 'paid_at',

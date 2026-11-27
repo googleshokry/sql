@@ -1,0 +1,62 @@
+# تطبيق الموبايل (Android + iOS) — Flutter
+
+تطبيق واحد مربوط بنظام الكاشير (`restaurant-pos`) عن طريق الـ API، وبيفتح الشاشات حسب نوع الحساب:
+
+| الحساب | اللي بيظهر |
+|---|---|
+| **عميل** (يسجل بنفسه برقم الموبايل) | المنيو، السلة، طلب دليفري أو استلام، تتبع حالة الطلب لحظياً، طلباتي، تعديل العنوان |
+| **كاشير** | شاشة الكاشير (صالة/تيك أواي/دليفري، طاولات، خصم، دفع وباقي)، الطلبات (تحصيل، تغيير حالة، تعيين طيار، فاتورة) |
+| **مدير / مالك** | التقارير (مبيعات، ربح تقديري، غير محصل، حسب النوع وطريقة الدفع، الأكثر مبيعاً، الطيارين، بالفترة) + كل شاشات الكاشير |
+| **طيار** | الطلبات المسندة له، اتصال بالعميل، فتح العنوان على الخريطة، استلمت / تم التسليم، الكاش اللي معاه |
+
+على التابلت شاشة الكاشير بتتقسم نصين (المنيو + الطلب) زي الكاشير على الويب.
+
+## ربط التطبيق بالسيرفر
+
+1. ارفع نظام `restaurant-pos` على سيرفر (أو شغله على جهاز في شبكة المطعم: `php artisan serve --host=0.0.0.0 --port=8000`).
+2. في التطبيق: أيقونة السيرفر في أول شاشة ← اكتب الرابط (مثلاً `https://pos.example.com` أو `http://192.168.1.10:8000`).
+   أو حدده وقت البناء: `--dart-define=API_URL=https://pos.example.com`.
+
+## بناء الـ APK و iOS
+
+### الطريقة الأسهل: GitHub Actions (بدون ما تثبت حاجة)
+من تبويب **Actions** في GitHub ← **Mobile apps (Android APK + iOS)** ← **Run workflow** واكتب رابط السيرفر.
+بعد ما يخلص، نزّل من **Artifacts**:
+- `restaurant-pos-android-apk` ← ملف `app-release.apk` تثبته على أي موبايل أندرويد.
+- `restaurant-pos-ios-unsigned` ← نسخة iOS **غير موقعة**. Apple مش بتسمح بتثبيت أي تطبيق على iPhone من غير توقيع، فمحتاج
+  حساب Apple Developer (99$ في السنة) وتوقعه وترفعه على TestFlight / App Store، أو تبنيه من Xcode على Mac لجهازك.
+
+### محلياً
+```bash
+cd mobile_app
+flutter pub get
+flutter run                                   # على موبايل/محاكي متوصل
+flutter build apk --release --dart-define=API_URL=https://pos.example.com
+flutter build ios --release --dart-define=API_URL=https://pos.example.com   # على Mac فقط
+```
+
+> ملحوظة: الـ APK الحالي موقّع بمفتاح debug (مناسب للتثبيت المباشر). للنشر على Google Play اعمل keystore
+> واتبع: https://docs.flutter.dev/deployment/android#sign-the-app
+
+## حسابات تجريبية (بعد `php artisan migrate --seed`)
+- مدير: `admin@pos.test` / `password`
+- كاشير: `cashier@pos.test` / `password`
+- طيار: `driver@pos.test` / `password`
+- عميل: سجل حساب جديد من التطبيق.
+
+## هيكل الكود
+```
+lib/
+├── main.dart                 # التوجيه حسب نوع الحساب
+├── core/api.dart             # الاتصال بالسيرفر + التوكن
+├── core/session.dart         # تسجيل الدخول + المنيو والإعدادات
+├── core/cart.dart            # السلة + نفس معادلة الحساب اللي على السيرفر
+├── core/models.dart
+├── widgets/                  # المنيو، السلة، عناصر مشتركة
+└── screens/
+    ├── pos/                  # شاشة الكاشير
+    ├── orders/               # الطلبات وتفاصيلها
+    ├── owner/                # تقارير المالك
+    ├── driver/               # تطبيق الطيار
+    └── customer/             # تطبيق العميل
+```

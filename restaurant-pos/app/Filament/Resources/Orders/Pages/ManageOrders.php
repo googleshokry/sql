@@ -28,6 +28,10 @@ class ManageOrders extends ManageRecords
         return [
             'open' => Tab::make('المفتوحة')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', OrderStatus::open())),
+            'app' => Tab::make('طلبات التطبيق')
+                ->badge(fn () => \App\Models\Order::where('source', 'customer_app')->where('status', OrderStatus::Pending)->count() ?: null)
+                ->badgeColor('success')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('source', 'customer_app')->whereIn('status', OrderStatus::open())),
             'today' => Tab::make('اليوم')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereDate('created_at', today())),
             'dine_in' => Tab::make('صالة')

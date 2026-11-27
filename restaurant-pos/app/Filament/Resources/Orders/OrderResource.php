@@ -103,6 +103,10 @@ class OrderResource extends Resource
                 TextColumn::make('number')->label('رقم')->searchable()->weight('bold'),
                 TextColumn::make('type')->label('النوع')->badge(),
                 TextColumn::make('status')->label('الحالة')->badge(),
+                TextColumn::make('source')->label('المصدر')->badge()
+                    ->formatStateUsing(fn (string $state) => ['pos' => 'الكاشير', 'staff_app' => 'تطبيق الكاشير', 'customer_app' => 'تطبيق العملاء'][$state] ?? $state)
+                    ->color(fn (string $state) => $state === 'customer_app' ? 'success' : 'gray')
+                    ->toggleable(),
                 TextColumn::make('restaurantTable.name')->label('طاولة')->placeholder('-'),
                 TextColumn::make('customer.name')->label('العميل')->placeholder('-')
                     ->description(fn (Order $r) => $r->customer?->phone)

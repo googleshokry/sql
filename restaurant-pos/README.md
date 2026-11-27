@@ -59,6 +59,7 @@ php artisan serve
 |---|---|---|
 | مدير | `admin@pos.test` | `password` |
 | كاشير | `cashier@pos.test` | `password` |
+| طيار (تطبيق الموبايل فقط) | `driver@pos.test` | `password` |
 
 > البيانات التجريبية فيها منيو كامل، 10 طاولات، مناطق توصيل وطيارين. غيّر كلمات المرور بعد أول دخول.
 
@@ -99,3 +100,25 @@ resources/views/
 - طلب مدفوع (صالة/تيك أواي) يتقفل "مكتمل" مباشرة.
 - طلب "حفظ بدون دفع" يفضل مفتوح لحد ما يتحصل من شاشة الطلبات (زر **تحصيل**)، والطاولة ترجع متاحة تلقائياً بعد الدفع.
 - طلب الدليفري يفضل مفتوح لحد ما الطيار يرجع وتغير حالته لـ "مكتمل".
+
+## API تطبيقات الموبايل
+
+تطبيق الموبايل (`../mobile_app`) بيتكلم مع النظام عن طريق `/api` بتوكن Sanctum (`Authorization: Bearer ...` + `Accept: application/json`).
+
+| المسار | مين | الوظيفة |
+|---|---|---|
+| `GET /api/settings` ، `/api/menu` ، `/api/delivery-areas` | عام | الإعدادات والمنيو ومناطق التوصيل |
+| `POST /api/staff/login` | موظف | دخول مدير / كاشير / طيار |
+| `POST /api/customer/register` ، `/api/customer/login` | عميل | تسجيل / دخول برقم الموبايل |
+| `GET /api/me` ، `POST /api/logout` | الكل | |
+| `GET /api/pos/tables` ، `/api/pos/drivers` ، `/api/pos/customers/lookup?phone=` ، `POST /api/pos/orders` | كاشير، مدير | شاشة الكاشير |
+| `GET /api/orders?filter=open\|app\|unpaid\|today\|all` ، `GET /api/orders/{id}` | كاشير، مدير | الطلبات |
+| `POST /api/orders/{id}/pay` ، `/status` ، `/driver` | كاشير، مدير | تحصيل، حالة (الإلغاء للمدير فقط)، تعيين طيار |
+| `GET /api/dashboard?from=&to=` | مدير | تقارير المالك |
+| `GET /api/driver/orders` ، `POST /api/driver/orders/{id}/pickup` ، `/delivered` | طيار | طلبات الطيار |
+| `GET/POST /api/customer/orders` ، `GET /api/customer/orders/{id}` ، `POST .../cancel` ، `PUT /api/customer/profile` | عميل | الطلب والتتبع |
+
+- الأسعار دايماً بتتحسب على السيرفر من قاعدة البيانات (أي سعر جاي من التطبيق بيتجاهل).
+- طلبات تطبيق العملاء بتوصل بحالة **جديد** وبتظهر في تبويب **طلبات التطبيق** في صفحة الطلبات (على الويب والموبايل).
+- حساب الطيار: اعمل مستخدم بصلاحية **طيار** من صفحة المستخدمين، واربطه بالطيار من صفحة الطيارين. الطيار ما يقدرش يدخل لوحة الويب.
+- `receipt_url` في الطلب رابط موقّع للفاتورة صالح 24 ساعة، بيفتح من الموبايل للطباعة أو المشاركة.

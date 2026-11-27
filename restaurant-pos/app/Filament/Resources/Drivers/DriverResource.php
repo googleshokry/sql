@@ -36,6 +36,10 @@ class DriverResource extends Resource
         return $schema->components([
             TextInput::make('name')->label('الاسم')->required(),
             TextInput::make('phone')->label('الموبايل')->tel(),
+            \Filament\Forms\Components\Select::make('user_id')->label('حساب الدخول على تطبيق الطيار')
+                ->relationship('user', 'email', fn (Builder $query) => $query->where('role', \App\Enums\UserRole::Driver))
+                ->helperText('أنشئ مستخدم بصلاحية "طيار" من صفحة المستخدمين ثم اربطه هنا')
+                ->unique(ignoreRecord: true),
             Toggle::make('is_active')->label('متاح')->default(true),
         ]);
     }

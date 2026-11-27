@@ -12,13 +12,14 @@ use App\Models\Driver;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\RestaurantTable;
+use App\Services\OrderService;
 use App\Support\OrderTotals;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use UnitEnum;
 
@@ -117,10 +118,7 @@ class Pos extends Page
             return null;
         }
 
-        return Order::where('restaurant_table_id', $this->tableId)
-            ->whereIn('status', OrderStatus::open())
-            ->where('is_paid', false)
-            ->latest('id')->first();
+        return app(OrderService::class)->openTableOrder($this->tableId);
     }
 
     #[Computed]
@@ -228,94 +226,36 @@ class Pos extends Page
     // ---- حفظ الطلب ----
     public function checkout(bool $pay = true): void
     {
-        $type = OrderType::from($this->orderType);
-        $totals = $this->totals;
-        $dueTotal = $totals['total'] + (float) ($this->openTableOrder?->total ?? 0);
-
-        $error = match (true) {
-            empty($this->cart) => 'السلة فارغة',
-            $type === OrderType::DineIn && ! $this->tableId => 'اختر الطاولة',
-            $type === OrderType::Delivery && (blank($this->customerPhone) || blank($this->customerName)) => 'أدخل اسم وموبايل العميل',
-            $type === OrderType::Delivery && blank($this->customerAddress) => 'أدخل عنوان التوصيل',
-            $pay && $this->paymentMethod === PaymentMethod::Cash->value && filled($this->paidAmount)
-                && (float) $this->paidAmount < $dueTotal => 'المبلغ المدفوع أقل من الإجمالي',
-            default => null,
-        };
-
-        if ($error) {
-            Notification::make()->danger()->title($error)->send();
+        try {
+            $order = app(OrderService::class)->place([
+                'type' => $this->orderType,
+                'source' => 'pos',
+                'user_id' => auth()->id(),
+                'table_id' => $this->tableId,
+                'customer' => [
+                    'phone' => $this->customerPhone,
+                    'name' => $this->customerName,
+                    'address' => $this->customerAddress,
+                    'delivery_area_id' => $this->deliveryAreaId,
+                ],
+                'delivery_area_id' => $this->deliveryAreaId,
+                'address' => $this->customerAddress,
+                'driver_id' => $this->driverId,
+                'items' => array_map(fn ($i) => [
+                    'product_id' => $i['product_id'], 'qty' => $i['qty'], 'notes' => $i['notes'],
+                ], $this->cart),
+                'discount' => $this->discount ?: 0,
+                'discount_type' => $this->discountType,
+                'notes' => $this->notes,
+                'pay' => $pay,
+                'payment_method' => $this->paymentMethod,
+                'paid_amount' => $this->paidAmount,
+            ]);
+        } catch (ValidationException $e) {
+            Notification::make()->danger()->title(collect($e->errors())->flatten()->first())->send();
 
             return;
         }
-
-        $order = DB::transaction(function () use ($type, $totals, $pay) {
-            $customerId = null;
-            if (filled($this->customerPhone)) {
-                $customer = Customer::updateOrCreate(
-                    ['phone' => trim($this->customerPhone)],
-                    array_filter([
-                        'name' => $this->customerName ?: 'عميل',
-                        'address' => $this->customerAddress ?: null,
-                        'delivery_area_id' => $this->deliveryAreaId,
-                    ], fn ($v) => $v !== null),
-                );
-                $customerId = $customer->id;
-            }
-
-            // طلب صالة مفتوح على نفس الطاولة؟ نضيف عليه
-            $existing = $type === OrderType::DineIn
-                ? Order::where('restaurant_table_id', $this->tableId)
-                    ->whereIn('status', OrderStatus::open())
-                    ->where('is_paid', false)
-                    ->latest('id')->first()
-                : null;
-
-            $order = $existing ?? Order::create([
-                'type' => $type,
-                'status' => OrderStatus::Preparing,
-                'user_id' => auth()->id(),
-                'restaurant_table_id' => $type === OrderType::DineIn ? $this->tableId : null,
-                'customer_id' => $customerId,
-                'delivery_area_id' => $type === OrderType::Delivery ? $this->deliveryAreaId : null,
-                'driver_id' => $type === OrderType::Delivery ? $this->driverId : null,
-                'delivery_address' => $type === OrderType::Delivery ? $this->customerAddress : null,
-                'notes' => $this->notes ?: null,
-                ...$totals,
-            ]);
-
-            foreach ($this->cart as $item) {
-                $order->items()->create([
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['name'],
-                    'price' => $item['price'],
-                    'quantity' => $item['qty'],
-                    'total' => round($item['price'] * $item['qty'], 2),
-                    'notes' => $item['notes'] ?: null,
-                ]);
-            }
-
-            if ($existing) {
-                $existing->update([
-                    'discount' => (float) $existing->discount + $totals['discount'],
-                    'notes' => trim($existing->notes.' '.$this->notes) ?: null,
-                ]);
-                $existing->recalculate();
-            }
-
-            if ($type === OrderType::Delivery && $this->driverId) {
-                $order->update(['status' => OrderStatus::OutForDelivery]);
-            }
-
-            if ($pay) {
-                $order->refresh();
-                $order->markPaid(
-                    PaymentMethod::from($this->paymentMethod),
-                    filled($this->paidAmount) ? (float) $this->paidAmount : null,
-                );
-            }
-
-            return $order->fresh();
-        });
 
         $msg = $pay ? 'تم حفظ الطلب '.$order->number : 'تم إرسال الطلب '.$order->number.' (غير مدفوع)';
         if ($pay && $order->change_amount > 0) {
