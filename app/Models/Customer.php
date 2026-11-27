@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasPartyCode;
 use App\Services\Accounting;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Customer extends Model
 {
-    use HasPartyCode;
+    use BelongsToCompany, HasPartyCode;
 
     public const CODE_PREFIX = 'C';
 

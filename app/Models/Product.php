@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -27,7 +30,10 @@ class Product extends Model
     {
         static::creating(function (Product $p) {
             if (blank($p->sku)) {
-                $p->sku = 'P'.str_pad((string) ((int) static::query()->max('id') + 1), 6, '0', STR_PAD_LEFT);
+                $next = static::query()->count() + 1;
+                do {
+                    $p->sku = 'P'.str_pad((string) $next++, 6, '0', STR_PAD_LEFT);
+                } while (static::query()->where('sku', $p->sku)->exists());
             }
             if ($p->type === 'service') {
                 $p->track_stock = false;

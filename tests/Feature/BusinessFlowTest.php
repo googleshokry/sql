@@ -44,6 +44,7 @@ class BusinessFlowTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->seed(DemoSeeder::class);
+        $this->actAsDemoCompany();
         $this->actingAs(User::query()->where('email', 'admin@admin.com')->first());
     }
 

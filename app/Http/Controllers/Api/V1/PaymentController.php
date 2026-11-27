@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PaymentResource;
 use App\Models\Customer;
 use App\Models\Payment;
+use App\Support\TenantRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -29,8 +30,8 @@ class PaymentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'customer_id' => ['required', 'exists:customers,id'],
-            'treasury_id' => ['required', 'exists:treasuries,id'],
+            'customer_id' => ['required', TenantRule::exists('customers')],
+            'treasury_id' => ['required', TenantRule::exists('treasuries')],
             'amount' => ['required', 'numeric', 'gt:0'],
             'method' => ['nullable', Rule::in(array_keys(Payment::METHODS))],
             'reference' => ['nullable', 'string', 'max:100'],

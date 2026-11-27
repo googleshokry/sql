@@ -9,6 +9,7 @@ use App\Models\PurchaseInvoice;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Services\Posting;
+use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 
 /** بيانات تجريبية: أصناف وعملاء وموردين وفاتورة مشتريات مُرحّلة */
@@ -16,12 +17,17 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        Tenancy::run(DatabaseSeeder::demoCompany(), fn () => $this->seedDemoData());
+    }
+
+    protected function seedDemoData(): void
+    {
         if (Product::query()->exists()) {
             return;
         }
 
         $unit = Unit::query()->first();
-        $cat = Category::query()->where('name', 'إلكترونيات')->first();
+        $cat = Category::query()->firstOrCreate(['name' => 'إلكترونيات']);
 
         $products = [
             ['لابتوب HP ProBook', '6281000000011', 2500, 3200],

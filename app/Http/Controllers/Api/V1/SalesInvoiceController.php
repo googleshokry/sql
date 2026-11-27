@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\SalesInvoice;
 use App\Services\SalesCheckout;
+use App\Support\TenantRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -43,15 +44,15 @@ class SalesInvoiceController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'warehouse_id' => ['required', 'exists:warehouses,id'],
-            'treasury_id' => ['nullable', 'exists:treasuries,id'],
+            'customer_id' => ['nullable', TenantRule::exists('customers')],
+            'warehouse_id' => ['required', TenantRule::exists('warehouses')],
+            'treasury_id' => ['nullable', TenantRule::exists('treasuries')],
             'payment_method' => ['nullable', Rule::in(array_keys(Payment::METHODS))],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'paid' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.product_id' => ['required', TenantRule::exists('products')],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount_percent' => ['nullable', 'numeric', 'between:0,100'],
@@ -81,7 +82,7 @@ class SalesInvoiceController extends Controller
     {
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'gt:0', 'max:'.$salesInvoice->remainingAmount()],
-            'treasury_id' => ['required', 'exists:treasuries,id'],
+            'treasury_id' => ['required', TenantRule::exists('treasuries')],
             'method' => ['nullable', Rule::in(array_keys(Payment::METHODS))],
             'reference' => ['nullable', 'string', 'max:100'],
         ]);

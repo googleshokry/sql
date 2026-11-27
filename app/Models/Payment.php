@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasDocumentNumber;
 use App\Services\Accounting;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 /** سند قبض (in) أو سند صرف (out) */
 class Payment extends Model
 {
-    use HasDocumentNumber;
+    use BelongsToCompany, HasDocumentNumber;
 
     public const NUMBER_PREFIX = 'PAY';
 

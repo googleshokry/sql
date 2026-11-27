@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasRoleAccess;
 use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\EmployeeResource\Pages;
 use App\Models\Employee;
+use App\Support\Tenancy;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -21,6 +22,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class EmployeeResource extends Resource
@@ -48,7 +50,7 @@ class EmployeeResource extends Resource
     {
         return $schema->components([
             Section::make(__('البيانات الشخصية'))->columns(3)->columnSpanFull()->schema([
-                TextInput::make('code')->label(__('الرقم الوظيفي'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true),
+                TextInput::make('code')->label(__('الرقم الوظيفي'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('company_id', Tenancy::id())),
                 TextInput::make('name')->label(__('الاسم'))->required(),
                 TextInput::make('national_id')->label(__('رقم الهوية / الإقامة')),
                 TextInput::make('nationality')->label(__('الجنسية')),
@@ -60,7 +62,7 @@ class EmployeeResource extends Resource
                 Select::make('department_id')->label(__('القسم'))->relationship('department', 'name'),
                 Select::make('branch_id')->label(__('الفرع'))->relationship('branch', 'name'),
                 DatePicker::make('hire_date')->label(__('تاريخ التعيين')),
-                Select::make('user_id')->label(__('حساب المستخدم (لحساب العمولة)'))->relationship('user', 'name'),
+                Select::make('user_id')->label(__('حساب المستخدم (لحساب العمولة)'))->relationship('user', 'name', fn ($query) => $query->where('company_id', Tenancy::id())),
                 Toggle::make('is_active')->label(__('على رأس العمل'))->default(true)->inline(false),
             ]),
             Section::make(__('الراتب والبدلات'))->columns(3)->columnSpanFull()->schema([

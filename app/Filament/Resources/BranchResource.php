@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\BranchResource\Pages;
 use App\Models\Branch;
+use App\Support\Tenancy;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -39,6 +40,14 @@ class BranchResource extends Resource
     public static function canAccess(array $parameters = []): bool
     {
         return (bool) auth()->user()?->isAdmin();
+    }
+
+    /** Respects the plan's branches limit. */
+    public static function canCreate(): bool
+    {
+        $company = Tenancy::company();
+
+        return $company !== null && $company->canAdd('branches', Branch::query()->count());
     }
 
     public static function form(Schema $schema): Schema

@@ -23,6 +23,15 @@ class MoreScreen extends StatelessWidget {
           title: Text(state.userName ?? ''),
           subtitle: Text(state.userEmail ?? ''),
         ),
+        if (state.company != null)
+          ListTile(
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: Text(state.company!['name']?.toString() ?? ''),
+            subtitle: Text([
+              '${context.t('plan')}: ${state.company!['plan'] ?? '-'}',
+              if (state.company!['days_left'] != null) '${context.t('days_left')}: ${state.company!['days_left']}',
+            ].join(' • ')),
+          ),
         const Divider(),
         ListTile(
           leading: const Icon(Icons.inventory_2_outlined),

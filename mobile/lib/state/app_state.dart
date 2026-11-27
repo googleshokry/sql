@@ -23,6 +23,9 @@ class AppState extends ChangeNotifier {
   Locale locale = const Locale('ar');
   Lookups? lookups;
 
+  /// Company subscription info from the server (name, plan, status, days left).
+  Map<String, dynamic>? company;
+
   bool get isLoggedIn => token != null && serverUrl.isNotEmpty;
 
   ApiClient get api => ApiClient(baseUrl: serverUrl, token: token, locale: locale.languageCode);
@@ -36,6 +39,7 @@ class AppState extends ChangeNotifier {
     token = data['token'] as String;
     userName = data['user']['name']?.toString();
     userEmail = data['user']['email']?.toString();
+    company = data['user']['company'] as Map<String, dynamic>?;
     await _prefs.setString('server_url', serverUrl);
     await _prefs.setString('token', token!);
     await _prefs.setString('user_name', userName ?? '');
@@ -47,6 +51,13 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
 
     await loadLookups();
+    notifyListeners();
+  }
+
+  /// Refreshes the user's company / subscription details.
+  Future<void> loadProfile() async {
+    final data = await api.get('auth/me');
+    company = data['data']['company'] as Map<String, dynamic>?;
     notifyListeners();
   }
 

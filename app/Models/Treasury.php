@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Services\Accounting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Treasury extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = ['is_default' => 'boolean', 'is_active' => 'boolean', 'opening_balance' => 'decimal:2'];

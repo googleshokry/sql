@@ -19,6 +19,7 @@ use App\Models\SalesInvoice;
 use App\Models\Supplier;
 use App\Models\Treasury;
 use App\Services\Posting;
+use App\Support\Tenancy;
 use App\Support\Translate;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -197,7 +198,7 @@ class DocumentActions
             ->label(__('تقسيط الفاتورة'))
             ->icon(Heroicon::OutlinedCalendarDays)
             ->color('primary')
-            ->visible(fn (SalesInvoice $record) => $record->isPosted() && $record->customer_id && ! $record->installmentPlan && $record->remainingAmount() > 0)
+            ->visible(fn (SalesInvoice $record) => Tenancy::company()?->hasFeature('installments') && $record->isPosted() && $record->customer_id && ! $record->installmentPlan && $record->remainingAmount() > 0)
             ->fillForm(fn (SalesInvoice $record) => [
                 'total_amount' => $record->remainingAmount(),
                 'down_payment' => 0,

@@ -34,10 +34,10 @@ class SalesInvoiceResource extends JsonResource
             'is_pos' => (bool) $this->is_pos,
             'items' => SalesInvoiceItemResource::collection($this->whenLoaded('items')),
             'print_url' => URL::temporarySignedRoute('print.signed', now()->addDays(7), [
-                'type' => 'sales-invoice', 'id' => $this->id, 'lang' => app()->getLocale(),
+                'type' => 'sales-invoice', 'id' => $this->id, 'lang' => app()->getLocale(), 'company' => $this->company_id,
             ]),
             'receipt_url' => URL::temporarySignedRoute('print.signed', now()->addDays(7), [
-                'type' => 'sales-invoice', 'id' => $this->id, 'format' => 'thermal', 'lang' => app()->getLocale(),
+                'type' => 'sales-invoice', 'id' => $this->id, 'format' => 'thermal', 'lang' => app()->getLocale(), 'company' => $this->company_id,
             ]),
         ];
     }

@@ -7,6 +7,7 @@ use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\WarehouseResource\Pages;
 use App\Models\ProductStock;
 use App\Models\Warehouse;
+use App\Support\Tenancy;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -41,6 +42,14 @@ class WarehouseResource extends Resource
     protected static ?string $pluralModelLabel = 'المخازن';
 
     protected static array $roles = ['storekeeper', 'manager'];
+
+    /** Respects the plan's warehouses limit. */
+    public static function canCreate(): bool
+    {
+        $company = Tenancy::company();
+
+        return $company !== null && $company->canAdd('warehouses', Warehouse::query()->count());
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /** مسير الرواتب الشهري */
 class Payroll extends Model
 {
-    use HasDocumentNumber;
+    use BelongsToCompany, HasDocumentNumber;
 
     public const NUMBER_PREFIX = 'PAYROLL';
 

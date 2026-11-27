@@ -26,6 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final state = context.read<AppState>();
+      try {
+        await state.loadProfile();
+      } catch (_) {}
       if (state.lookups == null) {
         try {
           await state.loadLookups();

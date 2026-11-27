@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -18,7 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/admin/login');
         $middleware->web(append: [SetLocale::class]);
         $middleware->api(append: [SetLocale::class]);
-        $middleware->alias(['active' => EnsureUserIsActive::class]);
+        $middleware->alias([
+            'active' => EnsureUserIsActive::class,
+            'subscribed' => EnsureActiveSubscription::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

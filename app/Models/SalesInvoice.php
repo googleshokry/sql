@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\IsDocument;
 use App\Models\Concerns\IsPayable;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SalesInvoice extends Model
 {
-    use IsDocument, IsPayable;
+    use BelongsToCompany, IsDocument, IsPayable;
 
     public const NUMBER_PREFIX = 'INV';
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Services\Accounting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** سلفة موظف */
 class SalaryAdvance extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = ['date' => 'date', 'amount' => 'decimal:2', 'monthly_deduction' => 'decimal:2', 'deducted_amount' => 'decimal:2'];

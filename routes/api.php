@@ -17,7 +17,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me'])->name('auth.me');
         Route::put('auth/locale', [AuthController::class, 'updateLocale'])->name('auth.locale');
         Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    });
 
+    Route::middleware(['auth:sanctum', 'active', 'subscribed:mobile_app'])->group(function () {
         Route::get('lookups', LookupController::class)->name('lookups');
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 

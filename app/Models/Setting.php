@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
+use App\Support\Tenancy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     public const DEFAULTS = [
@@ -28,7 +32,8 @@ class Setting extends Model
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        $all = Cache::rememberForever('settings', fn () => static::query()->pluck('value', 'key')->all());
+        $companyId = Tenancy::id();
+        $all = $companyId ? Cache::rememberForever(static::cacheKey($companyId), fn () => static::query()->pluck('value', 'key')->all()) : [];
 
         return $all[$key] ?? $default ?? (static::DEFAULTS[$key] ?? null);
     }
@@ -38,7 +43,12 @@ class Setting extends Model
         foreach ($values as $key => $value) {
             static::query()->updateOrCreate(['key' => $key], ['value' => is_array($value) ? json_encode($value) : $value]);
         }
-        Cache::forget('settings');
+        Cache::forget(static::cacheKey(Tenancy::id()));
+    }
+
+    public static function cacheKey(?int $companyId): string
+    {
+        return 'settings.'.$companyId;
     }
 
     public static function values(): array

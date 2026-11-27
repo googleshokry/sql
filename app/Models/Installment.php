@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Installment extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = ['due_date' => 'date', 'paid_at' => 'date', 'amount' => 'decimal:2', 'paid_amount' => 'decimal:2'];

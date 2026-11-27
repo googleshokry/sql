@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CrmActivity extends Model
 {
+    use BelongsToCompany;
+
     public const TYPES = ['call' => 'مكالمة', 'meeting' => 'اجتماع', 'visit' => 'زيارة', 'email' => 'بريد / واتساب', 'task' => 'مهمة'];
 
     public const STATUSES = ['pending' => 'قيد الانتظار', 'done' => 'تمت', 'cancelled' => 'ملغاة'];

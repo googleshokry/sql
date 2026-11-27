@@ -25,6 +25,7 @@ class PanelSmokeTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->seed(DemoSeeder::class);
+        $this->actAsDemoCompany();
     }
 
     public function test_every_admin_page_renders_in_arabic_and_english(): void
@@ -92,7 +93,7 @@ class PanelSmokeTest extends TestCase
 
     public function test_print_views_render(): void
     {
-        $this->actingAs(User::query()->firstOrFail());
+        $this->actingAs(User::query()->where('email', 'admin@admin.com')->firstOrFail());
         $invoice = PurchaseInvoice::query()->firstOrFail();
 
         $this->get(route('print.document', ['purchase-invoice', $invoice->id]))->assertOk()->assertSee($invoice->number);
@@ -101,7 +102,7 @@ class PanelSmokeTest extends TestCase
 
     public function test_sales_invoice_view_and_print_with_qr(): void
     {
-        $this->actingAs(User::query()->firstOrFail());
+        $this->actingAs(User::query()->where('email', 'admin@admin.com')->firstOrFail());
         $invoice = SalesInvoice::create(['date' => now()->toDateString(), 'customer_id' => Customer::query()->first()->id]);
         $invoice->items()->create(['product_id' => Product::query()->first()->id, 'quantity' => 1, 'unit_price' => 100, 'tax_rate' => 15]);
         Posting::post($invoice->refresh());

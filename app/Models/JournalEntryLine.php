@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class JournalEntryLine extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = ['debit' => 'decimal:2', 'credit' => 'decimal:2'];

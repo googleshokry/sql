@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Exceptions\BusinessException;
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = ['is_group' => 'boolean', 'is_system' => 'boolean'];

@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Warehouse;
 use App\Services\Inventory;
+use App\Support\Tenancy;
 use BackedEnum;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -37,6 +38,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class ProductResource extends Resource
@@ -71,8 +73,8 @@ class ProductResource extends Resource
             Section::make(__('البيانات الأساسية'))->columns(3)->columnSpanFull()->schema([
                 TextInput::make('name')->label(__('اسم الصنف'))->required()->columnSpan(2),
                 Select::make('type')->label(__('النوع'))->options(['product' => __('منتج مخزني'), 'service' => __('خدمة')])->default('product')->live()->required(),
-                TextInput::make('sku')->label(__('الكود (SKU)'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true),
-                TextInput::make('barcode')->label(__('الباركود'))->unique(ignoreRecord: true),
+                TextInput::make('sku')->label(__('الكود (SKU)'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('company_id', Tenancy::id())),
+                TextInput::make('barcode')->label(__('الباركود'))->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('company_id', Tenancy::id())),
                 Select::make('category_id')->label(__('التصنيف'))->relationship('category', 'name')->searchable()->preload()
                     ->createOptionForm([TextInput::make('name')->label(__('الاسم'))->required()]),
                 Select::make('unit_id')->label(__('الوحدة'))->relationship('unit', 'name')->preload()

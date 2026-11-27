@@ -9,8 +9,10 @@ trait HasPartyCode
         static::creating(function ($model) {
             if (blank($model->code)) {
                 $prefix = static::CODE_PREFIX;
-                $next = (int) static::query()->max('id') + 1;
-                $model->code = $prefix.str_pad((string) $next, 5, '0', STR_PAD_LEFT);
+                $next = static::query()->count() + 1;
+                do {
+                    $model->code = $prefix.str_pad((string) $next++, 5, '0', STR_PAD_LEFT);
+                } while (static::query()->where('code', $model->code)->exists());
             }
         });
     }

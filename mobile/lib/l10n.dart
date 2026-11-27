@@ -118,6 +118,8 @@ class AppStrings {
     'confirm_clear': {'ar': 'تفريغ السلة؟', 'en': 'Clear the cart?'},
     'yes': {'ar': 'نعم', 'en': 'Yes'},
     'no': {'ar': 'لا', 'en': 'No'},
+    'plan': {'ar': 'الباقة', 'en': 'Plan'},
+    'days_left': {'ar': 'الأيام المتبقية', 'en': 'Days left'},
     'credit_requires_customer': {'ar': 'البيع الآجل يتطلب اختيار عميل', 'en': 'Credit sales require a customer'},
   };
 

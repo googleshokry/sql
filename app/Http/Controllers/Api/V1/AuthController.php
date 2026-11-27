@@ -27,7 +27,7 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages(['email' => __('بيانات الدخول غير صحيحة')]);
         }
-        if (! $user->is_active) {
+        if (! $user->is_active || $user->company_id === null) {
             throw ValidationException::withMessages(['email' => __('الحساب موقوف')]);
         }
 

@@ -28,7 +28,7 @@ class PaymentResource extends JsonResource
             'invoice' => $this->payable?->number,
             'notes' => $this->notes,
             'print_url' => URL::temporarySignedRoute('print.signed', now()->addDays(7), [
-                'type' => 'payment', 'id' => $this->id, 'lang' => app()->getLocale(),
+                'type' => 'payment', 'id' => $this->id, 'lang' => app()->getLocale(), 'company' => $this->company_id,
             ]),
         ];
     }

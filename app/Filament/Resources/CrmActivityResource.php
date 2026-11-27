@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasRoleAccess;
 use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\CrmActivityResource\Pages;
 use App\Models\CrmActivity;
+use App\Support\Tenancy;
 use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -49,7 +50,7 @@ class CrmActivityResource extends Resource
             Select::make('type')->label(__('النوع'))->options(Translate::options(CrmActivity::TYPES))->default('call')->required(),
             TextInput::make('subject')->label(__('الموضوع'))->required()->columnSpanFull(),
             DateTimePicker::make('scheduled_at')->label(__('الموعد'))->seconds(false),
-            Select::make('user_id')->label(__('المسؤول'))->relationship('user', 'name')->default(fn () => auth()->id()),
+            Select::make('user_id')->label(__('المسؤول'))->relationship('user', 'name', fn ($query) => $query->where('company_id', Tenancy::id()))->default(fn () => auth()->id()),
             Select::make('status')->label(__('الحالة'))->options(Translate::options(CrmActivity::STATUSES))->default('pending'),
             Textarea::make('notes')->label(__('ملاحظات / نتيجة المتابعة'))->columnSpanFull(),
         ]);

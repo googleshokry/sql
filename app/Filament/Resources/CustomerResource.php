@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasRoleAccess;
 use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
+use App\Support\Tenancy;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -25,6 +26,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class CustomerResource extends Resource
@@ -57,7 +59,7 @@ class CustomerResource extends Resource
     {
         return $schema->components([
             Section::make(__('البيانات الأساسية'))->columns(3)->columnSpanFull()->schema([
-                TextInput::make('code')->label(__('الكود'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true),
+                TextInput::make('code')->label(__('الكود'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('company_id', Tenancy::id())),
                 TextInput::make('name')->label(__('الاسم'))->required(),
                 TextInput::make('company_name')->label(__('اسم الشركة / المنشأة')),
                 TextInput::make('phone')->label(__('الهاتف'))->tel(),

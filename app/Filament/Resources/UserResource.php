@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\Tenancy;
 use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -20,6 +21,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -41,6 +44,24 @@ class UserResource extends Resource
     public static function canAccess(array $parameters = []): bool
     {
         return (bool) auth()->user()?->isAdmin();
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('company_id', Tenancy::id());
+    }
+
+    /** Respects the plan's user limit. */
+    public static function canCreate(): bool
+    {
+        $company = Tenancy::company();
+
+        return $company !== null && $company->canAdd('users', User::query()->where('company_id', $company->id)->count());
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return $record->getKey() !== auth()->id();
     }
 
     public static function form(Schema $schema): Schema

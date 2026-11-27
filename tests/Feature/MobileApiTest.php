@@ -21,6 +21,7 @@ class MobileApiTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->seed(DemoSeeder::class);
+        $this->actAsDemoCompany();
     }
 
     protected function token(): string

@@ -22,6 +22,14 @@ class UserResource extends JsonResource
             'role_label' => __(User::ROLES[$this->role] ?? $this->role),
             'locale' => $this->locale,
             'branch' => $this->branch?->name,
+            'company' => $this->company ? [
+                'id' => $this->company->id,
+                'name' => $this->company->name,
+                'plan' => $this->company->plan?->displayName(),
+                'status' => $this->company->status,
+                'access_ends_at' => $this->company->accessEndsAt()?->toDateString(),
+                'days_left' => $this->company->daysLeft(),
+            ] : null,
         ];
     }
 }

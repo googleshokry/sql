@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Tenancy;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -13,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'role', 'branch_id', 'is_active', 'locale'])]
+#[Fillable(['company_id', 'name', 'email', 'password', 'role', 'branch_id', 'is_active', 'locale', 'is_super_admin'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -30,12 +31,19 @@ class User extends Authenticatable implements FilamentUser
         'hr' => 'موارد بشرية',
     ];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'is_active' => true,
+        'is_super_admin' => false,
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_super_admin' => 'boolean',
         ];
     }
 
@@ -44,9 +52,29 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Branch::class);
     }
 
+    protected static function booted(): void
+    {
+        // users created inside a company (e.g. from the users screen) belong to it
+        static::creating(function (User $user) {
+            if (! $user->company_id && ! $user->is_super_admin) {
+                $user->company_id = Tenancy::id();
+            }
+        });
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /** Platform owners use /platform; company users use /admin. */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return $panel->getId() === 'platform' ? (bool) $this->is_super_admin : $this->company_id !== null;
     }
 
     public function isAdmin(): bool

@@ -8,6 +8,7 @@ use App\Filament\Pages\Reports\AccountLedger;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Services\Accounting;
+use App\Support\Tenancy;
 use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -26,6 +27,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 /** دليل الحسابات (شجرة الحسابات) */
@@ -60,7 +62,7 @@ class AccountResource extends Resource
                         $set('code', Accounting::nextChildCode($parent));
                     }
                 }),
-            TextInput::make('code')->label(__('رقم الحساب'))->required()->unique(ignoreRecord: true),
+            TextInput::make('code')->label(__('رقم الحساب'))->required()->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('company_id', Tenancy::id())),
             TextInput::make('name')->label(__('اسم الحساب'))->required(),
             Select::make('type')->label(__('النوع'))->options(Translate::options(Account::TYPES))->required()->disabled(fn (Get $get) => filled($get('parent_id')))->dehydrated(),
             Toggle::make('is_group')->label(__('حساب رئيسي (تجميعي)'))->helperText(__('الحسابات الرئيسية لا تقبل قيوداً مباشرة')),

@@ -2,7 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Register;
 use App\Filament\Pages\Dashboard;
+use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\SetLocale;
 use App\Models\Setting;
 use Filament\Actions\Action;
@@ -33,6 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration(config('saas.registration_enabled') ? Register::class : null)
             ->brandName(fn () => app()->getLocale() === 'en' && Setting::get('company_name_en') ? Setting::get('company_name_en') : Setting::get('company_name', config('app.name')))
             ->colors([
                 'primary' => Color::Indigo,
@@ -78,6 +81,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                EnsureActiveSubscription::class,
+            ])
+            ->renderHook(PanelsRenderHook::BODY_START, fn () => view('filament.partials.subscription-banner'));
     }
 }

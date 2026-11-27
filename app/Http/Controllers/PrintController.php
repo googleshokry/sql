@@ -11,6 +11,7 @@ use App\Models\Quotation;
 use App\Models\SalesInvoice;
 use App\Models\SalesReturn;
 use App\Models\Setting;
+use App\Support\Tenancy;
 use App\Support\Zatca;
 
 class PrintController extends Controller
@@ -26,6 +27,11 @@ class PrintController extends Controller
 
     public function document(string $type, int $id)
     {
+        // signed links (mobile app) carry the company; the signature prevents tampering
+        if (request()->routeIs('print.signed')) {
+            Tenancy::set((int) request()->query('company'));
+        }
+
         $settings = Setting::values();
 
         if ($type === 'payment') {

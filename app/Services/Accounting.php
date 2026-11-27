@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\BusinessException;
 use App\Models\Account;
 use App\Models\JournalEntry;
+use App\Support\Tenancy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -15,11 +16,12 @@ class Accounting
     /** حساب نظامي بالمفتاح (receivable, payable, sales, cogs, inventory, vat_output ...) */
     public static function account(string $key): Account
     {
-        if (isset(static::$cache[$key]) && static::$cache[$key]->exists) {
-            return static::$cache[$key];
+        $cacheKey = Tenancy::id().':'.$key;
+        if (isset(static::$cache[$cacheKey]) && static::$cache[$cacheKey]->exists) {
+            return static::$cache[$cacheKey];
         }
 
-        return static::$cache[$key] = Account::query()->where('system_key', $key)->firstOr(
+        return static::$cache[$cacheKey] = Account::query()->where('system_key', $key)->firstOr(
             fn () => throw new BusinessException(__('الحساب النظامي [:key] غير موجود. شغّل: php artisan db:seed --class=ChartOfAccountsSeeder', ['key' => $key]))
         );
     }
