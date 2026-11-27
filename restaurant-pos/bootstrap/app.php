@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [\App\Http\Middleware\SetLocale::class]);
+        $middleware->api(append: [\App\Http\Middleware\SetLocale::class]);
         $middleware->alias(['actor' => \App\Http\Middleware\EnsureActor::class]);
         $middleware->redirectGuestsTo(fn () => route('filament.admin.auth.login'));
     })

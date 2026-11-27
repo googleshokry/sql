@@ -1,3 +1,5 @@
+import 'i18n.dart';
+
 double _d(dynamic v) => v == null ? 0 : (v is num ? v.toDouble() : double.tryParse('$v') ?? 0);
 
 class AppSettings {
@@ -127,17 +129,17 @@ class Order {
   bool get isOpen => const ['pending', 'preparing', 'ready', 'out_for_delivery'].contains(status);
 }
 
-const Map<String, String> kStatusLabels = {
-  'pending': 'جديد',
-  'preparing': 'قيد التحضير',
-  'ready': 'جاهز',
-  'out_for_delivery': 'مع الطيار',
-  'completed': 'مكتمل',
-  'cancelled': 'ملغي',
+Map<String, String> kStatusLabels = {
+  'pending': tr('جديد'),
+  'preparing': tr('قيد التحضير'),
+  'ready': tr('جاهز'),
+  'out_for_delivery': tr('مع الطيار'),
+  'completed': tr('مكتمل'),
+  'cancelled': tr('ملغي'),
 };
 
-const Map<String, String> kPaymentLabels = {
-  'cash': 'كاش',
-  'card': 'فيزا',
-  'wallet': 'محفظة',
+Map<String, String> kPaymentLabels = {
+  'cash': tr('كاش'),
+  'card': tr('فيزا'),
+  'wallet': tr('محفظة'),
 };

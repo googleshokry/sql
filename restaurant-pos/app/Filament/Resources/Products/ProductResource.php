@@ -32,25 +32,33 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCake;
 
-    protected static string|UnitEnum|null $navigationGroup = 'المنيو';
-
-    protected static ?string $modelLabel = 'صنف';
-
-    protected static ?string $pluralModelLabel = 'الأصناف';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Menu;
 
     protected static ?int $navigationSort = 2;
+
+    public static function getModelLabel(): string
+    {
+        return __('صنف');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('الأصناف');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('category_id')->label('القسم')
+            Select::make('category_id')->label(__('القسم'))
                 ->relationship('category', 'name')
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->localized_name)
                 ->searchable()->preload()->required(),
-            TextInput::make('name')->label('اسم الصنف')->required()->maxLength(255),
-            TextInput::make('price')->label('سعر البيع')->numeric()->minValue(0)->required(),
-            TextInput::make('cost')->label('التكلفة')->numeric()->minValue(0)->default(0),
-            FileUpload::make('image')->label('الصورة')->image()->disk('public')->directory('products'),
-            Toggle::make('is_active')->label('متاح للبيع')->default(true),
+            TextInput::make('name')->label(__('اسم الصنف'))->required()->maxLength(255),
+            TextInput::make('name_en')->label(__('الاسم بالإنجليزي'))->maxLength(255),
+            TextInput::make('price')->label(__('سعر البيع'))->numeric()->minValue(0)->required(),
+            TextInput::make('cost')->label(__('التكلفة'))->numeric()->minValue(0)->default(0),
+            FileUpload::make('image')->label(__('الصورة'))->image()->disk('public')->directory('products'),
+            Toggle::make('is_active')->label(__('متاح للبيع'))->default(true),
         ]);
     }
 
@@ -59,14 +67,15 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('image')->label('')->disk('public')->circular(),
-                TextColumn::make('name')->label('الصنف')->searchable()->sortable(),
-                TextColumn::make('category.name')->label('القسم')->sortable(),
-                TextColumn::make('price')->label('السعر')->money(config('pos.currency_code', 'EGP'))->sortable(),
-                TextColumn::make('cost')->label('التكلفة')->numeric(2)->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_active')->label('متاح'),
+                TextColumn::make('name')->label(__('الصنف'))->searchable(['name', 'name_en'])->sortable()
+                    ->description(fn (Product $record) => $record->name_en),
+                TextColumn::make('category.name')->label(__('القسم'))->sortable(),
+                TextColumn::make('price')->label(__('السعر'))->money(config('pos.currency_code', 'EGP'))->sortable(),
+                TextColumn::make('cost')->label(__('التكلفة'))->numeric(2)->toggleable(isToggledHiddenByDefault: true),
+                ToggleColumn::make('is_active')->label(__('متاح')),
             ])
             ->filters([
-                SelectFilter::make('category_id')->label('القسم')->relationship('category', 'name'),
+                SelectFilter::make('category_id')->label(__('القسم'))->relationship('category', 'name'),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

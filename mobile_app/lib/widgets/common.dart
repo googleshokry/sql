@@ -1,9 +1,12 @@
 import 'package:intl/intl.dart' as intl;
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/api.dart';
 import '../core/models.dart';
+import '../core/session.dart';
+import '../core/i18n.dart';
 
 const kBrand = Color(0xFFF97316);
 
@@ -11,9 +14,9 @@ String money(num v) => intl.NumberFormat('#,##0.##', 'en').format(v);
 
 String timeAgo(DateTime d) {
   final diff = DateTime.now().difference(d);
-  if (diff.inMinutes < 1) return 'الآن';
-  if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} د';
-  if (diff.inHours < 24) return 'منذ ${diff.inHours} س';
+  if (diff.inMinutes < 1) return tr('الآن');
+  if (diff.inMinutes < 60) return tr('منذ {0} د', [diff.inMinutes]);
+  if (diff.inHours < 24) return tr('منذ {0} س', [diff.inHours]);
   return intl.DateFormat('d/M h:mm a').format(d);
 }
 
@@ -30,7 +33,7 @@ Future<T?> guard<T>(BuildContext context, Future<T> Function() fn) async {
   } on ApiException catch (e) {
     if (context.mounted) toast(context, e.message, error: true);
   } catch (e) {
-    if (context.mounted) toast(context, 'خطأ غير متوقع: $e', error: true);
+    if (context.mounted) toast(context, tr('خطأ غير متوقع: {0}', [e]), error: true);
   }
   return null;
 }
@@ -82,7 +85,7 @@ class ErrorView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('إعادة المحاولة')),
+            FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: Text(tr('إعادة المحاولة'))),
           ]),
         ),
       );
@@ -148,9 +151,23 @@ Future<bool> confirm(BuildContext context, String message) async =>
       builder: (c) => AlertDialog(
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('لا')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('نعم')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('لا'))),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('نعم'))),
         ],
       ),
     ) ??
     false;
+
+/// زر تبديل اللغة (EN / ع)
+class LangButton extends StatelessWidget {
+  const LangButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<Session>();
+    return TextButton(
+      onPressed: session.toggleLang,
+      child: Text(session.lang == 'ar' ? 'EN' : 'ع', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+    );
+  }
+}

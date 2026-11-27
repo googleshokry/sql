@@ -51,11 +51,11 @@ class OrderService
         $lines = $this->resolveItems($data['items'] ?? []);
 
         $error = match (true) {
-            $lines === [] => 'السلة فارغة',
-            $type === OrderType::DineIn && empty($data['table_id']) => 'اختر الطاولة',
+            $lines === [] => __('السلة فارغة'),
+            $type === OrderType::DineIn && empty($data['table_id']) => __('اختر الطاولة'),
             $type === OrderType::Delivery && empty($data['customer_id'])
-                && (blank($customer['phone'] ?? null) || blank($customer['name'] ?? null)) => 'أدخل اسم وموبايل العميل',
-            $type === OrderType::Delivery && blank($address) => 'أدخل عنوان التوصيل',
+                && (blank($customer['phone'] ?? null) || blank($customer['name'] ?? null)) => __('أدخل اسم وموبايل العميل'),
+            $type === OrderType::Delivery && blank($address) => __('أدخل عنوان التوصيل'),
             default => null,
         };
         if ($error) {
@@ -76,7 +76,7 @@ class OrderService
                 $customerId = Customer::updateOrCreate(
                     ['phone' => trim($customer['phone'])],
                     array_filter([
-                        'name' => ($customer['name'] ?? null) ?: 'عميل',
+                        'name' => ($customer['name'] ?? null) ?: __('عميل'),
                         'address' => $address ?: null,
                         'delivery_area_id' => $areaId,
                     ], fn ($v) => $v !== null),
@@ -90,7 +90,7 @@ class OrderService
             $dueTotal = $totals['total'] + (float) ($existing?->total ?? 0);
             if ($pay && ($data['payment_method'] ?? 'cash') === PaymentMethod::Cash->value
                 && filled($data['paid_amount'] ?? null) && (float) $data['paid_amount'] < $dueTotal) {
-                throw ValidationException::withMessages(['paid_amount' => 'المبلغ المدفوع أقل من الإجمالي']);
+                throw ValidationException::withMessages(['paid_amount' => __('المبلغ المدفوع أقل من الإجمالي')]);
             }
 
             $order = $existing ?? Order::create([
@@ -154,7 +154,7 @@ class OrderService
         foreach ($items as $item) {
             $product = $products->get($item['product_id']);
             if (! $product) {
-                throw ValidationException::withMessages(['items' => 'صنف غير متاح']);
+                throw ValidationException::withMessages(['items' => __('صنف غير متاح')]);
             }
             $qty = (int) $item['qty'];
             $lines[] = [

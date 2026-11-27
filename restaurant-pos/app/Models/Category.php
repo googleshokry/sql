@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedName;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'sort', 'is_active'];
+    use HasLocalizedName;
+
+    protected $fillable = ['name', 'name_en', 'sort', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 

@@ -5,6 +5,7 @@ import '../core/cart.dart';
 import '../core/models.dart';
 import '../core/session.dart';
 import 'common.dart';
+import '../core/i18n.dart';
 
 /// أقسام + بحث + شبكة أصناف — تضيف للسلة عند الضغط
 class MenuGrid extends StatefulWidget {
@@ -37,7 +38,7 @@ class _MenuGridState extends State<MenuGrid> {
             child: TextField(
               onChanged: (v) => setState(() => search = v.trim()),
               decoration: InputDecoration(
-                hintText: 'ابحث عن صنف...',
+                hintText: tr('ابحث عن صنف...'),
                 prefixIcon: const Icon(Icons.search),
                 isDense: true,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -52,14 +53,14 @@ class _MenuGridState extends State<MenuGrid> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               children: [
-                _chip('الكل', categoryId == null, () => setState(() => categoryId = null)),
+                _chip(tr('الكل'), categoryId == null, () => setState(() => categoryId = null)),
                 for (final c in session.menu) _chip(c.name, categoryId == c.id, () => setState(() => categoryId = c.id)),
               ],
             ),
           ),
         ),
         if (products.isEmpty)
-          const SliverFillRemaining(hasScrollBody: false, child: EmptyView('لا توجد أصناف', icon: Icons.no_food_outlined))
+          SliverFillRemaining(hasScrollBody: false, child: EmptyView(tr('لا توجد أصناف'), icon: Icons.no_food_outlined))
         else
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 100),
@@ -138,7 +139,7 @@ class CartLines extends StatelessWidget {
   Widget build(BuildContext context) {
     final cart = context.watch<Cart>();
     if (cart.isEmpty) {
-      return const Padding(padding: EdgeInsets.all(24), child: EmptyView('السلة فارغة', icon: Icons.shopping_cart_outlined));
+      return Padding(padding: EdgeInsets.all(24), child: EmptyView(tr('السلة فارغة'), icon: Icons.shopping_cart_outlined));
     }
     return Column(children: [
       for (final l in cart.lines)
@@ -149,7 +150,7 @@ class CartLines extends StatelessWidget {
           subtitle: Text(l.notes.isEmpty ? '${money(l.product.price)} × ${l.qty} = ${money(l.total)}' : '${money(l.total)} • ${l.notes}'),
           onLongPress: () => _editNote(context, l),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.edit_note), tooltip: 'ملاحظة', onPressed: () => _editNote(context, l)),
+            IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.edit_note), tooltip: tr('ملاحظة'), onPressed: () => _editNote(context, l)),
             IconButton.outlined(visualDensity: VisualDensity.compact, icon: const Icon(Icons.remove), onPressed: () => cart.dec(l)),
             SizedBox(width: 28, child: Text('${l.qty}', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold))),
             IconButton.outlined(visualDensity: VisualDensity.compact, icon: const Icon(Icons.add), onPressed: () => cart.inc(l)),
@@ -163,9 +164,9 @@ class CartLines extends StatelessWidget {
     final note = await showDialog<String>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text('ملاحظة: ${line.product.name}'),
-        content: TextField(controller: ctrl, autofocus: true, decoration: const InputDecoration(hintText: 'بدون بصل، سبايسي...')),
-        actions: [FilledButton(onPressed: () => Navigator.pop(c, ctrl.text), child: const Text('حفظ'))],
+        title: Text(tr('ملاحظة: {0}', [line.product.name])),
+        content: TextField(controller: ctrl, autofocus: true, decoration: InputDecoration(hintText: tr('بدون بصل، سبايسي...'))),
+        actions: [FilledButton(onPressed: () => Navigator.pop(c, ctrl.text), child: Text(tr('حفظ')))],
       ),
     );
     if (note != null && context.mounted) context.read<Cart>().setNotes(line, note);
@@ -174,9 +175,9 @@ class CartLines extends StatelessWidget {
 
 /// شريط أسفل الشاشة يعرض عدد الأصناف والإجمالي
 class CartBar extends StatelessWidget {
-  const CartBar({super.key, required this.onTap, this.label = 'إتمام الطلب'});
+  const CartBar({super.key, required this.onTap, this.label});
   final VoidCallback onTap;
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +194,7 @@ class CartBar extends StatelessWidget {
             CircleAvatar(radius: 14, backgroundColor: Colors.white,
                 child: Text('${cart.count}', style: const TextStyle(color: kBrand, fontWeight: FontWeight.bold, fontSize: 13))),
             const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(label ?? tr('إتمام الطلب'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const Spacer(),
             Text('${money(cart.subtotal)} $currency', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ]),

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedName;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['category_id', 'name', 'price', 'cost', 'image', 'is_active'];
+    use HasLocalizedName;
+
+    protected $fillable = ['category_id', 'name', 'name_en', 'price', 'cost', 'image', 'is_active'];
 
     protected $casts = [
         'price' => 'decimal:2',

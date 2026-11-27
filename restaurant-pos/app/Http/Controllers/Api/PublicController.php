@@ -12,10 +12,10 @@ class PublicController extends Controller
     public function settings()
     {
         return [
-            'restaurant_name' => config('pos.restaurant_name'),
+            'restaurant_name' => __(config('pos.restaurant_name')),
             'restaurant_phone' => config('pos.restaurant_phone'),
             'restaurant_address' => config('pos.restaurant_address'),
-            'currency' => config('pos.currency'),
+            'currency' => __(config('pos.currency')),
             'tax_rate' => (float) config('pos.tax_rate'),
             'service_rate' => (float) config('pos.service_rate'),
         ];
@@ -30,7 +30,7 @@ class PublicController extends Controller
         return [
             'data' => $categories->map(fn (Category $c) => [
                 'id' => $c->id,
-                'name' => $c->name,
+                'name' => $c->localized_name,
                 'products' => ProductResource::collection($c->products),
             ]),
         ];
@@ -38,7 +38,7 @@ class PublicController extends Controller
 
     public function deliveryAreas()
     {
-        return ['data' => DeliveryArea::where('is_active', true)->orderBy('name')->get(['id', 'name', 'fee'])
-            ->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'fee' => (float) $a->fee])];
+        return ['data' => DeliveryArea::where('is_active', true)->orderBy('name')->get()
+            ->map(fn ($a) => ['id' => $a->id, 'name' => $a->localized_name, 'fee' => (float) $a->fee])];
     }
 }

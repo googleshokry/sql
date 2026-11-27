@@ -15,7 +15,7 @@ class DriverController extends Controller
     private function driverId(Request $request): int
     {
         $driver = $request->user()->driver;
-        abort_unless($driver, 403, 'الحساب غير مربوط بطيار');
+        abort_unless($driver, 403, __('الحساب غير مربوط بطيار'));
 
         return $driver->id;
     }
@@ -24,7 +24,7 @@ class DriverController extends Controller
     {
         $driverId = $this->driverId($request);
 
-        $orders = Order::with(['items', 'customer', 'deliveryArea'])
+        $orders = Order::with(['items.product', 'customer', 'deliveryArea'])
             ->where('driver_id', $driverId)
             ->where(fn ($q) => $q->whereIn('status', OrderStatus::open())
                 ->orWhereDate('created_at', today()))
@@ -45,14 +45,14 @@ class DriverController extends Controller
     public function delivered(Request $request, Order $order)
     {
         abort_unless($order->driver_id === $this->driverId($request), 404);
-        abort_if($order->status === OrderStatus::Cancelled, 422, 'الطلب ملغي');
+        abort_if($order->status === OrderStatus::Cancelled, 422, __('الطلب ملغي'));
 
         if (! $order->is_paid) {
             $order->markPaid(PaymentMethod::Cash); // الطيار حصّل كاش من العميل
         }
         $order->update(['status' => OrderStatus::Completed]);
 
-        return new OrderResource($order->fresh(['items', 'customer', 'deliveryArea']));
+        return new OrderResource($order->fresh(['items.product', 'customer', 'deliveryArea']));
     }
 
     public function pickup(Request $request, Order $order)
@@ -60,6 +60,6 @@ class DriverController extends Controller
         abort_unless($order->driver_id === $this->driverId($request), 404);
         $order->update(['status' => OrderStatus::OutForDelivery]);
 
-        return new OrderResource($order->fresh(['items', 'customer', 'deliveryArea']));
+        return new OrderResource($order->fresh(['items.product', 'customer', 'deliveryArea']));
     }
 }

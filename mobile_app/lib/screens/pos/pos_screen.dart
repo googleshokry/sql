@@ -9,6 +9,7 @@ import '../../core/session.dart';
 import '../../widgets/common.dart';
 import '../../widgets/menu_grid.dart';
 import '../orders/order_details_screen.dart';
+import '../../core/i18n.dart';
 
 /// شاشة الكاشير: على التابلت قائمتين جنب بعض، وعلى الموبايل المنيو + صفحة الدفع
 class PosScreen extends StatelessWidget {
@@ -28,7 +29,7 @@ class PosScreen extends StatelessWidget {
         body: const MenuGrid(),
         bottomNavigationBar: CartBar(
           onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (_) => Scaffold(appBar: AppBar(title: const Text('الطلب')), body: const CheckoutPanel(popOnDone: true)),
+            builder: (_) => Scaffold(appBar: AppBar(title: Text(tr('الطلب'))), body: const CheckoutPanel(popOnDone: true)),
           )),
         ),
       );
@@ -100,7 +101,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
         address.text = c['address'] ?? '';
         areaId = c['delivery_area_id'];
       });
-      toast(context, 'عميل مسجل: ${c['name']}');
+      toast(context, tr('عميل مسجل: {0}', [c['name']]));
     });
   }
 
@@ -152,8 +153,8 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
     });
     _loadLists();
 
-    final change = order.changeAmount > 0 ? ' — الباقي ${money(order.changeAmount)}' : '';
-    toast(context, 'تم حفظ الطلب ${order.number}$change');
+    final change = order.changeAmount > 0 ? tr(' — الباقي {0}', [money(order.changeAmount)]) : '';
+    toast(context, tr('تم حفظ الطلب {0}{1}', [order.number, change]));
     if (widget.popOnDone) Navigator.pop(context);
     Navigator.push(context, MaterialPageRoute(builder: (_) => OrderDetailsScreen(orderId: order.id)));
   }
@@ -170,10 +171,10 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
 
     return ListView(padding: const EdgeInsets.all(12), children: [
       SegmentedButton<String>(
-        segments: const [
-          ButtonSegment(value: 'dine_in', label: Text('صالة'), icon: Icon(Icons.table_restaurant)),
-          ButtonSegment(value: 'takeaway', label: Text('تيك أواي'), icon: Icon(Icons.shopping_bag_outlined)),
-          ButtonSegment(value: 'delivery', label: Text('دليفري'), icon: Icon(Icons.delivery_dining)),
+        segments: [
+          ButtonSegment(value: 'dine_in', label: Text(tr('صالة')), icon: Icon(Icons.table_restaurant)),
+          ButtonSegment(value: 'takeaway', label: Text(tr('تيك أواي')), icon: Icon(Icons.shopping_bag_outlined)),
+          ButtonSegment(value: 'delivery', label: Text(tr('دليفري')), icon: Icon(Icons.delivery_dining)),
         ],
         selected: {type},
         onSelectionChanged: (s) => setState(() => type = s.first),
@@ -196,7 +197,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
             margin: const EdgeInsets.only(top: 8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8)),
-            child: Text('على الطاولة طلب مفتوح بقيمة ${money(openTable!.openOrderTotal!)} — الأصناف الجديدة هتتضاف عليه',
+            child: Text(tr('على الطاولة طلب مفتوح بقيمة {0} — الأصناف الجديدة هتتضاف عليه', [money(openTable!.openOrderTotal!)]),
                 style: TextStyle(color: Colors.amber.shade900, fontSize: 13)),
           ),
       ] else ...[
@@ -207,11 +208,11 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
               onChanged: _lookup,
               keyboardType: TextInputType.phone,
               textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: type == 'delivery' ? 'موبايل العميل' : 'الموبايل (اختياري)', isDense: true),
+              decoration: InputDecoration(labelText: type == 'delivery' ? tr('موبايل العميل') : tr('الموبايل (اختياري)'), isDense: true),
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(child: TextField(controller: name, decoration: const InputDecoration(labelText: 'الاسم', isDense: true))),
+          Expanded(child: TextField(controller: name, decoration: InputDecoration(labelText: tr('الاسم'), isDense: true))),
         ]),
       ],
       if (type == 'delivery') ...[
@@ -221,7 +222,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
             child: DropdownButtonFormField<int>(
               initialValue: areaId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'المنطقة', isDense: true),
+              decoration: InputDecoration(labelText: tr('المنطقة'), isDense: true),
               items: [for (final a in session.areas) DropdownMenuItem(value: a.id, child: Text('${a.name} (${money(a.fee)})'))],
               onChanged: (v) => setState(() => areaId = v),
             ),
@@ -231,9 +232,9 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
             child: DropdownButtonFormField<int?>(
               initialValue: driverId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'الطيار', isDense: true),
+              decoration: InputDecoration(labelText: tr('الطيار'), isDense: true),
               items: [
-                const DropdownMenuItem(value: null, child: Text('لاحقاً')),
+                DropdownMenuItem(value: null, child: Text(tr('لاحقاً'))),
                 for (final d in drivers) DropdownMenuItem(value: d.id, child: Text(d.name)),
               ],
               onChanged: (v) => setState(() => driverId = v),
@@ -241,7 +242,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
           ),
         ]),
         const SizedBox(height: 8),
-        TextField(controller: address, maxLines: 2, decoration: const InputDecoration(labelText: 'العنوان بالتفصيل', isDense: true)),
+        TextField(controller: address, maxLines: 2, decoration: InputDecoration(labelText: tr('العنوان بالتفصيل'), isDense: true)),
       ],
       const Divider(height: 24),
       const CartLines(),
@@ -253,7 +254,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
             onChanged: (_) => setState(() {}),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: 'خصم',
+              labelText: tr('خصم'),
               isDense: true,
               suffix: InkWell(
                 onTap: () => setState(() => discountPercent = !discountPercent),
@@ -263,16 +264,16 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: notes, decoration: const InputDecoration(labelText: 'ملاحظات الطلب', isDense: true))),
+        Expanded(child: TextField(controller: notes, decoration: InputDecoration(labelText: tr('ملاحظات الطلب'), isDense: true))),
       ]),
       const SizedBox(height: 12),
-      SumRow('المجموع', money(t.subtotal)),
-      if (t.discount > 0) SumRow('الخصم', '- ${money(t.discount)}'),
-      if (t.service > 0) SumRow('الخدمة', money(t.service)),
-      if (t.tax > 0) SumRow('الضريبة', money(t.tax)),
-      if (t.deliveryFee > 0) SumRow('التوصيل', money(t.deliveryFee)),
-      SumRow('الإجمالي', '${money(t.total)} $cur', bold: true, color: kBrand),
-      if (openTable?.openOrderTotal != null) SumRow('إجمالي الطاولة', money(due), bold: true),
+      SumRow(tr('المجموع'), money(t.subtotal)),
+      if (t.discount > 0) SumRow(tr('الخصم'), '- ${money(t.discount)}'),
+      if (t.service > 0) SumRow(tr('الخدمة'), money(t.service)),
+      if (t.tax > 0) SumRow(tr('الضريبة'), money(t.tax)),
+      if (t.deliveryFee > 0) SumRow(tr('التوصيل'), money(t.deliveryFee)),
+      SumRow(tr('الإجمالي'), '${money(t.total)} $cur', bold: true, color: kBrand),
+      if (openTable?.openOrderTotal != null) SumRow(tr('إجمالي الطاولة'), money(due), bold: true),
       const SizedBox(height: 12),
       Wrap(spacing: 6, children: [
         for (final m in kPaymentLabels.entries)
@@ -292,11 +293,11 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
               controller: paid,
               onChanged: (_) => setState(() {}),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'المبلغ المستلم', isDense: true),
+              decoration: InputDecoration(labelText: tr('المبلغ المستلم'), isDense: true),
             ),
           ),
           const SizedBox(width: 12),
-          Text('الباقي: ${money(paidValue > due ? paidValue - due : 0)}',
+          Text(tr('الباقي: {0}', [money(paidValue > due ? paidValue - due : 0)]),
               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
         ]),
         Wrap(spacing: 6, children: [
@@ -309,7 +310,7 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
         style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700, padding: const EdgeInsets.all(16)),
         onPressed: cart.isEmpty || sending ? null : () => _submit(true),
         icon: const Icon(Icons.payments_outlined),
-        label: Text('دفع (${money(due)})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        label: Text(tr('دفع ({0})', [money(due)]), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
       const SizedBox(height: 8),
       Row(children: [
@@ -317,16 +318,16 @@ class _CheckoutPanelState extends State<CheckoutPanel> {
           child: OutlinedButton.icon(
             onPressed: cart.isEmpty || sending ? null : () => _submit(false),
             icon: const Icon(Icons.save_outlined),
-            label: const Text('حفظ بدون دفع'),
+            label: Text(tr('حفظ بدون دفع')),
           ),
         ),
         const SizedBox(width: 8),
         TextButton.icon(
           onPressed: cart.isEmpty ? null : () async {
-            if (await confirm(context, 'مسح الطلب الحالي؟')) cart.clear();
+            if (await confirm(context, tr('مسح الطلب الحالي؟'))) cart.clear();
           },
           icon: const Icon(Icons.delete_outline),
-          label: const Text('مسح'),
+          label: Text(tr('مسح')),
         ),
       ]),
     ]);

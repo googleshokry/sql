@@ -1,6 +1,10 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
+import 'i18n.dart' as i18n;
 import 'models.dart';
 
 /// حالة تسجيل الدخول + البيانات المشتركة (المنيو والإعدادات)
@@ -18,7 +22,28 @@ class Session extends ChangeNotifier {
   bool get loggedIn => api.token != null && user != null;
   String get currency => settings?.currency ?? '';
 
+  String get lang => i18n.currentLang;
+
+  /// تغيير اللغة: يحفظ الاختيار ويعيد تحميل المنيو بالأسماء المترجمة
+  Future<void> setLang(String value) async {
+    i18n.currentLang = value == 'en' ? 'en' : 'ar';
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lang', i18n.currentLang);
+    notifyListeners();
+    if (loggedIn) {
+      try {
+        await loadCatalog();
+      } catch (_) {}
+    }
+  }
+
+  Future<void> toggleLang() => setLang(lang == 'ar' ? 'en' : 'ar');
+
   Future<void> boot() async {
+    final prefs = await SharedPreferences.getInstance();
+    // أول مرة: لغة الموبايل (عربي لو الموبايل عربي، غير كده إنجليزي)
+    i18n.currentLang = prefs.getString('lang') ??
+        (PlatformDispatcher.instance.locale.languageCode == 'ar' ? 'ar' : 'en');
     await api.load();
     if (api.token != null) {
       try {

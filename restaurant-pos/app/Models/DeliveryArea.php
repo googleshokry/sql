@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedName;
 use Illuminate\Database\Eloquent\Model;
 
 class DeliveryArea extends Model
 {
-    protected $fillable = ['name', 'fee', 'is_active'];
+    use HasLocalizedName;
+
+    protected $fillable = ['name', 'name_en', 'fee', 'is_active'];
 
     protected $casts = ['fee' => 'decimal:2', 'is_active' => 'boolean'];
 

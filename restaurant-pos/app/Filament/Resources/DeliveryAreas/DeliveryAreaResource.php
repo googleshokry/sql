@@ -26,18 +26,25 @@ class DeliveryAreaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
-    protected static string|UnitEnum|null $navigationGroup = 'الدليفري';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Delivery;
 
-    protected static ?string $modelLabel = 'منطقة توصيل';
+    public static function getModelLabel(): string
+    {
+        return __('منطقة توصيل');
+    }
 
-    protected static ?string $pluralModelLabel = 'مناطق التوصيل';
+    public static function getPluralModelLabel(): string
+    {
+        return __('مناطق التوصيل');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('المنطقة')->required(),
-            TextInput::make('fee')->label('رسوم التوصيل')->numeric()->minValue(0)->default(0)->required(),
-            Toggle::make('is_active')->label('مفعلة')->default(true),
+            TextInput::make('name')->label(__('المنطقة'))->required(),
+            TextInput::make('name_en')->label(__('الاسم بالإنجليزي')),
+            TextInput::make('fee')->label(__('رسوم التوصيل'))->numeric()->minValue(0)->default(0)->required(),
+            Toggle::make('is_active')->label(__('مفعلة'))->default(true),
         ]);
     }
 
@@ -45,9 +52,10 @@ class DeliveryAreaResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('المنطقة')->searchable(),
-                TextColumn::make('fee')->label('رسوم التوصيل')->numeric(2)->sortable(),
-                ToggleColumn::make('is_active')->label('مفعلة'),
+                TextColumn::make('name')->label(__('المنطقة'))->searchable(['name', 'name_en'])
+                    ->description(fn (DeliveryArea $record) => $record->name_en),
+                TextColumn::make('fee')->label(__('رسوم التوصيل'))->numeric(2)->sortable(),
+                ToggleColumn::make('is_active')->label(__('مفعلة')),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

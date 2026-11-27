@@ -37,13 +37,19 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static string|UnitEnum|null $navigationGroup = 'المبيعات';
-
-    protected static ?string $modelLabel = 'طلب';
-
-    protected static ?string $pluralModelLabel = 'الطلبات';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Sales;
 
     protected static ?int $navigationSort = 2;
+
+    public static function getModelLabel(): string
+    {
+        return __('طلب');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('الطلبات');
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -61,21 +67,21 @@ class OrderResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->schema([
-                TextEntry::make('number')->label('رقم الطلب'),
-                TextEntry::make('type')->label('النوع')->badge(),
-                TextEntry::make('status')->label('الحالة')->badge(),
-                TextEntry::make('created_at')->label('التاريخ')->dateTime('Y-m-d h:i A'),
-                TextEntry::make('restaurantTable.name')->label('الطاولة')->placeholder('-'),
-                TextEntry::make('customer.name')->label('العميل')->placeholder('-'),
-                TextEntry::make('customer.phone')->label('الموبايل')->placeholder('-'),
-                TextEntry::make('driver.name')->label('الطيار')->placeholder('-'),
-                TextEntry::make('delivery_address')->label('العنوان')->placeholder('-')->columnSpanFull(),
+                TextEntry::make('number')->label(__('رقم الطلب')),
+                TextEntry::make('type')->label(__('النوع'))->badge(),
+                TextEntry::make('status')->label(__('الحالة'))->badge(),
+                TextEntry::make('created_at')->label(__('التاريخ'))->dateTime('Y-m-d h:i A'),
+                TextEntry::make('restaurantTable.name')->label(__('الطاولة'))->placeholder('-'),
+                TextEntry::make('customer.name')->label(__('العميل'))->placeholder('-'),
+                TextEntry::make('customer.phone')->label(__('الموبايل'))->placeholder('-'),
+                TextEntry::make('driver.name')->label(__('الطيار'))->placeholder('-'),
+                TextEntry::make('delivery_address')->label(__('العنوان'))->placeholder('-')->columnSpanFull(),
             ]),
-            RepeatableEntry::make('items')->label('الأصناف')->columnSpanFull()->table([
-                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make('الصنف'),
-                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make('الكمية'),
-                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make('السعر'),
-                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make('الإجمالي'),
+            RepeatableEntry::make('items')->label(__('الأصناف'))->columnSpanFull()->table([
+                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make(__('الصنف')),
+                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make(__('الكمية')),
+                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make(__('السعر')),
+                \Filament\Infolists\Components\RepeatableEntry\TableColumn::make(__('الإجمالي')),
             ])->schema([
                 TextEntry::make('product_name'),
                 TextEntry::make('quantity'),
@@ -83,12 +89,12 @@ class OrderResource extends Resource
                 TextEntry::make('total')->numeric(2),
             ]),
             Grid::make(6)->schema([
-                TextEntry::make('subtotal')->label('المجموع')->numeric(2),
-                TextEntry::make('discount')->label('الخصم')->numeric(2),
-                TextEntry::make('tax')->label('الضريبة + الخدمة')->state(fn (Order $r) => number_format($r->tax + $r->service, 2)),
-                TextEntry::make('delivery_fee')->label('التوصيل')->numeric(2),
-                TextEntry::make('total')->label('الإجمالي')->numeric(2)->weight('bold'),
-                TextEntry::make('payment_method')->label('الدفع')->placeholder('غير مدفوع'),
+                TextEntry::make('subtotal')->label(__('المجموع'))->numeric(2),
+                TextEntry::make('discount')->label(__('الخصم'))->numeric(2),
+                TextEntry::make('tax')->label(__('الضريبة + الخدمة'))->state(fn (Order $r) => number_format($r->tax + $r->service, 2)),
+                TextEntry::make('delivery_fee')->label(__('التوصيل'))->numeric(2),
+                TextEntry::make('total')->label(__('الإجمالي'))->numeric(2)->weight('bold'),
+                TextEntry::make('payment_method')->label(__('الدفع'))->placeholder(__('غير مدفوع')),
             ]),
         ]);
     }
@@ -100,53 +106,53 @@ class OrderResource extends Resource
             ->poll('15s')
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['restaurantTable', 'customer', 'driver', 'user']))
             ->columns([
-                TextColumn::make('number')->label('رقم')->searchable()->weight('bold'),
-                TextColumn::make('type')->label('النوع')->badge(),
-                TextColumn::make('status')->label('الحالة')->badge(),
-                TextColumn::make('source')->label('المصدر')->badge()
-                    ->formatStateUsing(fn (string $state) => ['pos' => 'الكاشير', 'staff_app' => 'تطبيق الكاشير', 'customer_app' => 'تطبيق العملاء'][$state] ?? $state)
+                TextColumn::make('number')->label(__('رقم'))->searchable()->weight('bold'),
+                TextColumn::make('type')->label(__('النوع'))->badge(),
+                TextColumn::make('status')->label(__('الحالة'))->badge(),
+                TextColumn::make('source')->label(__('المصدر'))->badge()
+                    ->formatStateUsing(fn (string $state) => ['pos' => __('الكاشير'), 'staff_app' => __('تطبيق الكاشير'), 'customer_app' => __('تطبيق العملاء')][$state] ?? $state)
                     ->color(fn (string $state) => $state === 'customer_app' ? 'success' : 'gray')
                     ->toggleable(),
-                TextColumn::make('restaurantTable.name')->label('طاولة')->placeholder('-'),
-                TextColumn::make('customer.name')->label('العميل')->placeholder('-')
+                TextColumn::make('restaurantTable.name')->label(__('طاولة'))->placeholder('-'),
+                TextColumn::make('customer.name')->label(__('العميل'))->placeholder('-')
                     ->description(fn (Order $r) => $r->customer?->phone)
                     ->searchable(),
-                TextColumn::make('driver.name')->label('الطيار')->placeholder('-')->toggleable(),
-                TextColumn::make('total')->label('الإجمالي')->numeric(2)->sortable()
-                    ->summarize(Sum::make()->label('المجموع')->numeric(2)),
-                IconColumn::make('is_paid')->label('مدفوع')->boolean(),
-                TextColumn::make('payment_method')->label('الدفع')->toggleable(),
-                TextColumn::make('user.name')->label('الكاشير')->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')->label('الوقت')->dateTime('d/m h:i A')->sortable()
+                TextColumn::make('driver.name')->label(__('الطيار'))->placeholder('-')->toggleable(),
+                TextColumn::make('total')->label(__('الإجمالي'))->numeric(2)->sortable()
+                    ->summarize(Sum::make()->label(__('المجموع'))->numeric(2)),
+                IconColumn::make('is_paid')->label(__('مدفوع'))->boolean(),
+                TextColumn::make('payment_method')->label(__('الدفع'))->toggleable(),
+                TextColumn::make('user.name')->label(__('الكاشير'))->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')->label(__('الوقت'))->dateTime('d/m h:i A')->sortable()
                     ->description(fn (Order $r) => $r->created_at->diffForHumans()),
             ])
             ->filters([
-                SelectFilter::make('status')->label('الحالة')->options(OrderStatus::class)->multiple(),
-                SelectFilter::make('type')->label('النوع')->options(OrderType::class),
-                SelectFilter::make('payment_method')->label('طريقة الدفع')->options(PaymentMethod::class),
-                SelectFilter::make('driver_id')->label('الطيار')->relationship('driver', 'name'),
-                SelectFilter::make('user_id')->label('الكاشير')->relationship('user', 'name'),
-                Filter::make('date')->label('الفترة')
+                SelectFilter::make('status')->label(__('الحالة'))->options(OrderStatus::class)->multiple(),
+                SelectFilter::make('type')->label(__('النوع'))->options(OrderType::class),
+                SelectFilter::make('payment_method')->label(__('طريقة الدفع'))->options(PaymentMethod::class),
+                SelectFilter::make('driver_id')->label(__('الطيار'))->relationship('driver', 'name'),
+                SelectFilter::make('user_id')->label(__('الكاشير'))->relationship('user', 'name'),
+                Filter::make('date')->label(__('الفترة'))
                     ->schema([
-                        DatePicker::make('from')->label('من'),
-                        DatePicker::make('until')->label('إلى'),
+                        DatePicker::make('from')->label(__('من')),
+                        DatePicker::make('until')->label(__('إلى')),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))),
             ])
             ->recordActions([
-                Action::make('pay')->label('تحصيل')->icon(Heroicon::OutlinedBanknotes)->color('success')
+                Action::make('pay')->label(__('تحصيل'))->icon(Heroicon::OutlinedBanknotes)->color('success')
                     ->visible(fn (Order $r) => ! $r->is_paid && $r->status !== OrderStatus::Cancelled)
                     ->schema([
-                        Select::make('payment_method')->label('طريقة الدفع')
+                        Select::make('payment_method')->label(__('طريقة الدفع'))
                             ->options(PaymentMethod::class)->default(PaymentMethod::Cash)->required(),
-                        TextInput::make('paid_amount')->label('المبلغ المدفوع')->numeric()
+                        TextInput::make('paid_amount')->label(__('المبلغ المدفوع'))->numeric()
                             ->default(fn (Order $r) => $r->total)->required(),
                     ])
                     ->action(function (Order $r, array $data) {
                         if ((float) $data['paid_amount'] < (float) $r->total) {
-                            Notification::make()->danger()->title('المبلغ المدفوع أقل من الإجمالي')->send();
+                            Notification::make()->danger()->title(__('المبلغ المدفوع أقل من الإجمالي'))->send();
 
                             return;
                         }
@@ -154,26 +160,26 @@ class OrderResource extends Resource
                             ? $data['payment_method'] : PaymentMethod::from($data['payment_method']);
                         $r->markPaid($method, (float) $data['paid_amount']);
                         Notification::make()->success()
-                            ->title('تم التحصيل - الباقي: '.number_format($r->change_amount, 2))->send();
+                            ->title(__('تم التحصيل - الباقي: ').number_format($r->change_amount, 2))->send();
                     }),
                 ActionGroup::make([
-                    ViewAction::make()->label('عرض'),
-                    Action::make('receipt')->label('طباعة الفاتورة')->icon(Heroicon::OutlinedPrinter)
+                    ViewAction::make()->label(__('عرض')),
+                    Action::make('receipt')->label(__('طباعة الفاتورة'))->icon(Heroicon::OutlinedPrinter)
                         ->url(fn (Order $r) => route('orders.receipt', $r))->openUrlInNewTab(),
-                    Action::make('kitchen')->label('طباعة للمطبخ')->icon(Heroicon::OutlinedFire)
+                    Action::make('kitchen')->label(__('طباعة للمطبخ'))->icon(Heroicon::OutlinedFire)
                         ->url(fn (Order $r) => route('orders.kitchen', $r))->openUrlInNewTab(),
-                    Action::make('status')->label('تغيير الحالة')->icon(Heroicon::OutlinedArrowPath)
+                    Action::make('status')->label(__('تغيير الحالة'))->icon(Heroicon::OutlinedArrowPath)
                         ->visible(fn (Order $r) => $r->status !== OrderStatus::Cancelled)
                         ->fillForm(fn (Order $r) => ['status' => $r->status])
                         ->schema([
-                            Select::make('status')->label('الحالة')->options(OrderStatus::class)->required(),
+                            Select::make('status')->label(__('الحالة'))->options(OrderStatus::class)->required(),
                         ])
                         ->action(fn (Order $r, array $data) => $r->update(['status' => $data['status']])),
-                    Action::make('driver')->label('تعيين طيار')->icon(Heroicon::OutlinedTruck)
+                    Action::make('driver')->label(__('تعيين طيار'))->icon(Heroicon::OutlinedTruck)
                         ->visible(fn (Order $r) => $r->type === OrderType::Delivery)
                         ->fillForm(fn (Order $r) => ['driver_id' => $r->driver_id])
                         ->schema([
-                            Select::make('driver_id')->label('الطيار')
+                            Select::make('driver_id')->label(__('الطيار'))
                                 ->relationship('driver', 'name', fn (Builder $query) => $query->where('is_active', true))
                                 ->required(),
                         ])
@@ -181,7 +187,7 @@ class OrderResource extends Resource
                             'driver_id' => $data['driver_id'],
                             'status' => OrderStatus::OutForDelivery,
                         ])),
-                    Action::make('cancel')->label('إلغاء الطلب')->icon(Heroicon::OutlinedXCircle)->color('danger')
+                    Action::make('cancel')->label(__('إلغاء الطلب'))->icon(Heroicon::OutlinedXCircle)->color('danger')
                         ->requiresConfirmation()
                         ->visible(fn (Order $r) => $r->status !== OrderStatus::Cancelled && auth()->user()->isAdmin())
                         ->action(fn (Order $r) => $r->update(['status' => OrderStatus::Cancelled])),

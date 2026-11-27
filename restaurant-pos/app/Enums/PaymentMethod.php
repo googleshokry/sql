@@ -13,9 +13,9 @@ enum PaymentMethod: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Cash => 'كاش',
-            self::Card => 'فيزا',
-            self::Wallet => 'محفظة / إنستاباي',
+            self::Cash => __('كاش'),
+            self::Card => __('فيزا'),
+            self::Wallet => __('محفظة / إنستاباي'),
         };
     }
 }

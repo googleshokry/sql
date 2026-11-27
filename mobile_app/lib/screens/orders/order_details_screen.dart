@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// تفاصيل الطلب — للكاشير/المدير (مع الإجراءات) أو للعميل (تتبع الحالة)
 class OrderDetailsScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     final res = await guard(context, () => context.read<Session>().api.post(path, body));
     if (res != null && mounted) {
       setState(() => order = Order.fromJson(res['data']));
-      toast(context, 'تم');
+      toast(context, tr('تم'));
     }
   }
 
@@ -63,7 +64,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       context: context,
       builder: (c) => StatefulBuilder(
         builder: (c, set) => AlertDialog(
-          title: Text('تحصيل ${money(o.total)}'),
+          title: Text(tr('تحصيل {0}', [money(o.total)])),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             Wrap(spacing: 6, children: [
               for (final m in kPaymentLabels.entries)
@@ -73,12 +74,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               TextField(
                 controller: paid,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'المبلغ المستلم'),
+                decoration: InputDecoration(labelText: tr('المبلغ المستلم')),
               ),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('تحصيل')),
+            TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('إلغاء'))),
+            FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('تحصيل'))),
           ],
         ),
       ),
@@ -88,7 +89,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       'payment_method': method,
       if (method == 'cash' && paid.text.isNotEmpty) 'paid_amount': double.tryParse(paid.text),
     });
-    if (mounted && order!.changeAmount > 0) toast(context, 'الباقي للعميل: ${money(order!.changeAmount)}');
+    if (mounted && order!.changeAmount > 0) toast(context, tr('الباقي للعميل: {0}', [money(order!.changeAmount)]));
   }
 
   Future<void> _changeStatus() async {
@@ -109,7 +110,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
     );
     if (status == null || !mounted) return;
-    if (status == 'cancelled' && !await confirm(context, 'إلغاء الطلب؟')) return;
+    if (status == 'cancelled' && !await confirm(context, tr('إلغاء الطلب؟'))) return;
     await _action('orders/${order!.id}/status', {'status': status});
   }
 
@@ -137,10 +138,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(o == null ? 'الطلب' : 'طلب #${o.number}'),
+        title: Text(o == null ? tr('الطلب') : tr('طلب #{0}', [o.number])),
         actions: [
           if (o != null)
-            IconButton(tooltip: 'الفاتورة / طباعة', icon: const Icon(Icons.receipt_long), onPressed: () => openUrl(o.receiptUrl)),
+            IconButton(tooltip: tr('الفاتورة / طباعة'), icon: const Icon(Icons.receipt_long), onPressed: () => openUrl(o.receiptUrl)),
         ],
       ),
       body: o == null
@@ -156,7 +157,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   Text(timeAgo(o.createdAt), style: const TextStyle(color: Colors.grey)),
                 ]),
                 const SizedBox(height: 12),
-                if (o.tableName != null) ListTile(leading: const Icon(Icons.table_restaurant), title: Text('طاولة ${o.tableName}')),
+                if (o.tableName != null) ListTile(leading: const Icon(Icons.table_restaurant), title: Text(tr('طاولة {0}', [o.tableName]))),
                 if (o.customerName != null && !widget.customer)
                   ListTile(
                     leading: const Icon(Icons.person_outline),
@@ -173,7 +174,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 if (o.driverName != null)
                   ListTile(
                     leading: const Icon(Icons.delivery_dining),
-                    title: Text('الطيار: ${o.driverName}'),
+                    title: Text(tr('الطيار: {0}', [o.driverName])),
                     trailing: o.driverPhone == null ? null : IconButton(icon: const Icon(Icons.call), onPressed: () => callPhone(o.driverPhone!)),
                   ),
                 const Divider(),
@@ -187,24 +188,24 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     trailing: Text(money(i.total)),
                   ),
                 const Divider(),
-                SumRow('المجموع', money(o.subtotal)),
-                if (o.discount > 0) SumRow('الخصم', '- ${money(o.discount)}'),
-                if (o.service > 0) SumRow('الخدمة', money(o.service)),
-                if (o.tax > 0) SumRow('الضريبة', money(o.tax)),
-                if (o.deliveryFee > 0) SumRow('التوصيل', money(o.deliveryFee)),
-                SumRow('الإجمالي', '${money(o.total)} $cur', bold: true, color: kBrand),
-                SumRow('الدفع', o.isPaid ? (o.paymentLabel ?? 'مدفوع') : 'غير مدفوع', color: o.isPaid ? Colors.green : Colors.red),
-                if (o.notes != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('ملاحظات: ${o.notes}')),
+                SumRow(tr('المجموع'), money(o.subtotal)),
+                if (o.discount > 0) SumRow(tr('الخصم'), '- ${money(o.discount)}'),
+                if (o.service > 0) SumRow(tr('الخدمة'), money(o.service)),
+                if (o.tax > 0) SumRow(tr('الضريبة'), money(o.tax)),
+                if (o.deliveryFee > 0) SumRow(tr('التوصيل'), money(o.deliveryFee)),
+                SumRow(tr('الإجمالي'), '${money(o.total)} $cur', bold: true, color: kBrand),
+                SumRow(tr('الدفع'), o.isPaid ? (o.paymentLabel ?? tr('مدفوع')) : tr('غير مدفوع'), color: o.isPaid ? Colors.green : Colors.red),
+                if (o.notes != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr('ملاحظات: {0}', [o.notes]))),
                 const SizedBox(height: 20),
                 if (widget.customer) ...[
                   if (o.status == 'pending')
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                       onPressed: () async {
-                        if (await confirm(context, 'إلغاء الطلب؟')) _action('customer/orders/${o.id}/cancel');
+                        if (await confirm(context, tr('إلغاء الطلب؟'))) _action('customer/orders/${o.id}/cancel');
                       },
                       icon: const Icon(Icons.close),
-                      label: const Text('إلغاء الطلب'),
+                      label: Text(tr('إلغاء الطلب')),
                     ),
                 ] else if (o.status != 'cancelled') ...[
                   if (!o.isPaid)
@@ -212,14 +213,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700, padding: const EdgeInsets.all(14)),
                       onPressed: _pay,
                       icon: const Icon(Icons.payments_outlined),
-                      label: const Text('تحصيل'),
+                      label: Text(tr('تحصيل')),
                     ),
                   const SizedBox(height: 8),
                   Row(children: [
-                    Expanded(child: OutlinedButton.icon(onPressed: _changeStatus, icon: const Icon(Icons.sync), label: const Text('تغيير الحالة'))),
+                    Expanded(child: OutlinedButton.icon(onPressed: _changeStatus, icon: const Icon(Icons.sync), label: Text(tr('تغيير الحالة')))),
                     if (o.type == 'delivery') ...[
                       const SizedBox(width: 8),
-                      Expanded(child: OutlinedButton.icon(onPressed: _assignDriver, icon: const Icon(Icons.delivery_dining), label: const Text('تعيين طيار'))),
+                      Expanded(child: OutlinedButton.icon(onPressed: _assignDriver, icon: const Icon(Icons.delivery_dining), label: Text(tr('تعيين طيار')))),
                     ],
                   ]),
                 ],
@@ -237,13 +238,13 @@ class _Tracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (order.status == 'cancelled') {
-      return const Card(color: Color(0xFFFEE2E2), child: ListTile(leading: Icon(Icons.cancel, color: Colors.red), title: Text('تم إلغاء الطلب')));
+      return Card(color: Color(0xFFFEE2E2), child: ListTile(leading: Icon(Icons.cancel, color: Colors.red), title: Text(tr('تم إلغاء الطلب'))));
     }
     final steps = [
-      ('pending', 'تم الاستلام', Icons.receipt_long),
-      ('preparing', 'بيتحضر', Icons.soup_kitchen),
-      if (order.type == 'delivery') ('out_for_delivery', 'في الطريق', Icons.delivery_dining) else ('ready', 'جاهز للاستلام', Icons.shopping_bag),
-      ('completed', 'تم التسليم', Icons.check_circle),
+      ('pending', tr('تم الاستلام'), Icons.receipt_long),
+      ('preparing', tr('بيتحضر'), Icons.soup_kitchen),
+      if (order.type == 'delivery') ('out_for_delivery', tr('في الطريق'), Icons.delivery_dining) else ('ready', tr('جاهز للاستلام'), Icons.shopping_bag),
+      ('completed', tr('تم التسليم'), Icons.check_circle),
     ];
     const order_ = ['pending', 'preparing', 'ready', 'out_for_delivery', 'completed'];
     final current = order_.indexOf(order.status);
@@ -261,7 +262,7 @@ class _Tracker extends StatelessWidget {
                     fontWeight: order_.indexOf(s.$1) <= current ? FontWeight.bold : FontWeight.normal)),
               ]),
             ),
-            if (i < steps.length - 1) Icon(Icons.chevron_left, color: Colors.grey.shade400),
+            if (i < steps.length - 1) Icon(Icons.chevron_right, color: Colors.grey.shade400),
           ],
         ]),
       ),

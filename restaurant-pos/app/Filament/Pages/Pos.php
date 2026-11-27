@@ -29,15 +29,21 @@ class Pos extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
 
-    protected static string|UnitEnum|null $navigationGroup = 'المبيعات';
-
-    protected static ?string $navigationLabel = 'شاشة الكاشير';
-
-    protected static ?string $title = 'شاشة الكاشير';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Sales;
 
     protected static ?int $navigationSort = 1;
 
     protected Width|string|null $maxContentWidth = Width::Full;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('شاشة الكاشير');
+    }
+
+    public function getTitle(): string
+    {
+        return __('شاشة الكاشير');
+    }
 
     // ---- حالة الشاشة ----
     public ?int $categoryId = null;
@@ -87,7 +93,9 @@ class Pos extends Page
     {
         return Product::where('is_active', true)
             ->when($this->categoryId, fn ($q) => $q->where('category_id', $this->categoryId))
-            ->when($this->search !== '', fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+            ->when($this->search !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', '%'.$this->search.'%')
+                ->orWhere('name_en', 'like', '%'.$this->search.'%')))
             ->orderBy('name')
             ->get();
     }
@@ -154,7 +162,7 @@ class Pos extends Page
         $product = Product::findOrFail($productId);
         $this->cart[] = [
             'product_id' => $product->id,
-            'name' => $product->name,
+            'name' => $product->localized_name,
             'price' => (float) $product->price,
             'qty' => 1,
             'notes' => '',
@@ -217,7 +225,7 @@ class Pos extends Page
             $this->customerName = $customer->name;
             $this->customerAddress = (string) $customer->address;
             $this->deliveryAreaId = $customer->delivery_area_id;
-            Notification::make()->success()->title('عميل مسجل: '.$customer->name)->send();
+            Notification::make()->success()->title(__('عميل مسجل: ').$customer->name)->send();
         } else {
             $this->customerId = null;
         }
@@ -257,9 +265,9 @@ class Pos extends Page
             return;
         }
 
-        $msg = $pay ? 'تم حفظ الطلب '.$order->number : 'تم إرسال الطلب '.$order->number.' (غير مدفوع)';
+        $msg = $pay ? __('تم حفظ الطلب ').$order->number : __('تم إرسال الطلب ').$order->number.__(' (غير مدفوع)');
         if ($pay && $order->change_amount > 0) {
-            $msg .= ' | الباقي للعميل: '.number_format($order->change_amount, 2);
+            $msg .= __(' | الباقي للعميل: ').number_format($order->change_amount, 2);
         }
         Notification::make()->success()->title($msg)->persistent()->send();
 

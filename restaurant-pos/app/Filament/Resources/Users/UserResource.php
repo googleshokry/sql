@@ -28,22 +28,28 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static string|UnitEnum|null $navigationGroup = 'الإعدادات';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Settings;
 
-    protected static ?string $modelLabel = 'مستخدم';
+    public static function getModelLabel(): string
+    {
+        return __('مستخدم');
+    }
 
-    protected static ?string $pluralModelLabel = 'المستخدمين';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المستخدمين');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('الاسم')->required(),
-            TextInput::make('email')->label('البريد / اسم الدخول')->email()->required()->unique(ignoreRecord: true),
-            TextInput::make('password')->label('كلمة المرور')->password()->revealable()
+            TextInput::make('name')->label(__('الاسم'))->required(),
+            TextInput::make('email')->label(__('البريد / اسم الدخول'))->email()->required()->unique(ignoreRecord: true),
+            TextInput::make('password')->label(__('كلمة المرور'))->password()->revealable()
                 ->required(fn (string $operation) => $operation === 'create')
                 ->dehydrated(fn (?string $state) => filled($state)),
-            Select::make('role')->label('الصلاحية')->options(UserRole::class)->default(UserRole::Cashier)->required(),
-            Toggle::make('is_active')->label('نشط')->default(true),
+            Select::make('role')->label(__('الصلاحية'))->options(UserRole::class)->default(UserRole::Cashier)->required(),
+            Toggle::make('is_active')->label(__('نشط'))->default(true),
         ]);
     }
 
@@ -51,10 +57,10 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('email')->label('البريد'),
-                TextColumn::make('role')->label('الصلاحية')->badge(),
-                IconColumn::make('is_active')->label('نشط')->boolean(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('email')->label(__('البريد')),
+                TextColumn::make('role')->label(__('الصلاحية'))->badge(),
+                IconColumn::make('is_active')->label(__('نشط'))->boolean(),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <title>@yield('title')</title>
@@ -13,9 +13,9 @@
         .muted { color: #333; font-size: 11px; }
         hr { border: 0; border-top: 1px dashed #000; margin: 6px 0; }
         table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 2px 0; vertical-align: top; text-align: right; }
+        td, th { padding: 2px 0; vertical-align: top; text-align: start; }
         th { border-bottom: 1px solid #000; }
-        .num { text-align: left; white-space: nowrap; }
+        .num { text-align: end; white-space: nowrap; }
         .total { font-size: 16px; font-weight: bold; }
         .big { font-size: 22px; font-weight: bold; text-align: center; }
         .actions { text-align: center; margin: 10px; }
@@ -30,8 +30,8 @@
 </head>
 <body>
 <div class="actions">
-    <button onclick="window.print()">🖨️ طباعة</button>
-    <button onclick="window.close()">إغلاق</button>
+    <button onclick="window.print()">🖨️ {{ __('طباعة') }}</button>
+    <button onclick="window.close()">{{ __('إغلاق') }}</button>
 </div>
 <div class="paper">
     @yield('content')

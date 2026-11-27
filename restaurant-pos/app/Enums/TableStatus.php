@@ -13,8 +13,8 @@ enum TableStatus: string implements HasLabel, HasColor
     public function getLabel(): string
     {
         return match ($this) {
-            self::Available => 'متاحة',
-            self::Occupied => 'مشغولة',
+            self::Available => __('متاحة'),
+            self::Occupied => __('مشغولة'),
         };
     }
 

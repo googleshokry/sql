@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart' show Directionality, TextDirection;
 import 'package:provider/provider.dart';
 import 'package:restaurant_pos_app/core/cart.dart';
+import 'package:restaurant_pos_app/core/i18n.dart';
 import 'package:restaurant_pos_app/core/models.dart';
 import 'package:restaurant_pos_app/core/session.dart';
 import 'package:restaurant_pos_app/main.dart';
@@ -33,7 +35,7 @@ void main() {
   });
 
   testWidgets('shows welcome screen when logged out', (tester) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'lang': 'ar'});
     final session = Session();
     await session.boot();
     await tester.pumpWidget(MultiProvider(
@@ -46,5 +48,38 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('اطلب أكلك (عميل)'), findsOneWidget);
     expect(find.textContaining('دخول الموظفين'), findsOneWidget);
+  });
+
+  test('tr translates with placeholders and falls back to Arabic', () {
+    currentLang = 'en';
+    expect(tr('طلب #{0}', [42]), 'Order #42');
+    expect(tr('نص غير مترجم'), 'نص غير مترجم');
+    currentLang = 'ar';
+    expect(tr('طلب #{0}', [42]), 'طلب #42');
+  });
+
+  testWidgets('switching to English flips direction and texts', (tester) async {
+    SharedPreferences.setMockInitialValues({'lang': 'ar'});
+    final session = Session();
+    await session.boot();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: session),
+        ChangeNotifierProvider(create: (_) => Cart()),
+      ],
+      child: const PosApp(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('اطلب أكلك (عميل)'), findsOneWidget);
+
+    await tester.tap(find.text('EN'));
+    await tester.pumpAndSettle();
+    expect(find.text('Order food (customer)'), findsOneWidget);
+    expect(find.text('Staff login (cashier / admin / driver)'), findsOneWidget);
+    expect(Directionality.of(tester.element(find.text('Order food (customer)'))), TextDirection.ltr);
+
+    await tester.tap(find.text('ع'));
+    await tester.pumpAndSettle();
+    expect(Directionality.of(tester.element(find.text('اطلب أكلك (عميل)'))), TextDirection.rtl);
   });
 }

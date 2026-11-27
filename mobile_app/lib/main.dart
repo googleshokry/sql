@@ -13,6 +13,7 @@ import 'screens/owner/dashboard_screen.dart';
 import 'screens/pos/pos_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'widgets/common.dart';
+import 'core/i18n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +35,13 @@ class PosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<Session>().lang;
     return MaterialApp(
-      title: 'كاشير المطعم',
+      // تغيير اللغة يعيد بناء التطبيق بالكامل (الاتجاه والنصوص)
+      key: ValueKey(lang),
+      title: tr('كاشير المطعم'),
       debugShowCheckedModeBanner: false,
-      locale: const Locale('ar'),
+      locale: Locale(lang),
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -67,15 +71,15 @@ class Root extends StatelessWidget {
     if (!session.loggedIn) return const WelcomeScreen();
     return switch (session.role) {
       'customer' => const CustomerHome(),
-      'driver' => const StaffShell(pages: [AppPage('طلباتي', Icons.delivery_dining, DriverScreen())]),
-      'admin' => const StaffShell(pages: [
-          AppPage('التقارير', Icons.insights, DashboardScreen()),
-          AppPage('الكاشير', Icons.point_of_sale, PosScreen()),
-          AppPage('الطلبات', Icons.receipt_long, OrdersScreen()),
+      'driver' => StaffShell(pages: [AppPage(tr('طلباتي'), Icons.delivery_dining, DriverScreen())]),
+      'admin' => StaffShell(pages: [
+          AppPage(tr('التقارير'), Icons.insights, DashboardScreen()),
+          AppPage(tr('الكاشير'), Icons.point_of_sale, PosScreen()),
+          AppPage(tr('الطلبات'), Icons.receipt_long, OrdersScreen()),
         ]),
-      _ => const StaffShell(pages: [
-          AppPage('الكاشير', Icons.point_of_sale, PosScreen()),
-          AppPage('الطلبات', Icons.receipt_long, OrdersScreen()),
+      _ => StaffShell(pages: [
+          AppPage(tr('الكاشير'), Icons.point_of_sale, PosScreen()),
+          AppPage(tr('الطلبات'), Icons.receipt_long, OrdersScreen()),
         ]),
     };
   }
@@ -108,12 +112,13 @@ class _StaffShellState extends State<StaffShell> {
       appBar: AppBar(
         title: Text(page.title),
         actions: [
+          const LangButton(),
           Center(child: Text(session.user?['name'] ?? '', style: const TextStyle(fontSize: 13))),
           IconButton(
-            tooltip: 'تسجيل الخروج',
+            tooltip: tr('تسجيل الخروج'),
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              if (await confirm(context, 'تسجيل الخروج؟')) {
+              if (await confirm(context, tr('تسجيل الخروج؟'))) {
                 if (context.mounted) context.read<Cart>().clear();
                 session.logout();
               }

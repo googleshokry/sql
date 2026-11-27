@@ -7,16 +7,17 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../widgets/common.dart';
 import 'order_details_screen.dart';
+import '../../core/i18n.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
 
-  static const tabs = {
-    'open': 'المفتوحة',
-    'app': 'طلبات التطبيق',
-    'unpaid': 'غير مدفوع',
-    'today': 'اليوم',
-    'all': 'الكل',
+  static Map<String, String> get tabs => {
+    'open': tr('المفتوحة'),
+    'app': tr('طلبات التطبيق'),
+    'unpaid': tr('غير مدفوع'),
+    'today': tr('اليوم'),
+    'all': tr('الكل'),
   };
 
   @override
@@ -92,14 +93,14 @@ class _OrdersListState extends State<OrdersList> with AutomaticKeepAliveClientMi
               load();
             },
             decoration: InputDecoration(
-              hintText: 'رقم الطلب أو موبايل العميل',
+              hintText: tr('رقم الطلب أو موبايل العميل'),
               prefixIcon: const Icon(Icons.search),
               isDense: true,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
-        if (orders!.isEmpty) const Padding(padding: EdgeInsets.only(top: 80), child: EmptyView('لا توجد طلبات')),
+        if (orders!.isEmpty) Padding(padding: EdgeInsets.only(top: 80), child: EmptyView(tr('لا توجد طلبات'))),
         for (final o in orders!)
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -132,7 +133,7 @@ class _OrdersListState extends State<OrdersList> with AutomaticKeepAliveClientMi
               ].join(' • ')),
               trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
                 Text('${money(o.total)} $cur', style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(o.isPaid ? 'مدفوع' : 'غير مدفوع',
+                Text(o.isPaid ? tr('مدفوع') : tr('غير مدفوع'),
                     style: TextStyle(fontSize: 12, color: o.isPaid ? Colors.green : Colors.red)),
               ]),
             ),

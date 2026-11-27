@@ -28,13 +28,13 @@ class CustomerController extends Controller
     public function orders(Request $request)
     {
         return OrderResource::collection(
-            $request->user()->orders()->with(['items', 'deliveryArea', 'driver'])->latest('id')->paginate(20)
+            $request->user()->orders()->with(['items.product', 'deliveryArea', 'driver'])->latest('id')->paginate(20)
         );
     }
 
     public function show(Request $request, int $id)
     {
-        return new OrderResource($request->user()->orders()->with(['items', 'deliveryArea', 'driver'])->findOrFail($id));
+        return new OrderResource($request->user()->orders()->with(['items.product', 'deliveryArea', 'driver'])->findOrFail($id));
     }
 
     public function store(Request $request, OrderService $service)
@@ -61,7 +61,7 @@ class CustomerController extends Controller
             'delivery_area_id' => $data['delivery_area_id'] ?? null,
             'address' => $data['address'] ?? null,
             'notes' => trim(($data['notes'] ?? '').(($data['payment_method'] ?? 'cash') !== 'cash'
-                ? ' | الدفع: '.$data['payment_method'] : '')) ?: null,
+                ? __(' | الدفع: ').$data['payment_method'] : '')) ?: null,
             'pay' => false,
         ]);
 
@@ -70,15 +70,15 @@ class CustomerController extends Controller
             $customer->update(['address' => $data['address'], 'delivery_area_id' => $data['delivery_area_id']]);
         }
 
-        return (new OrderResource($order->load(['items', 'deliveryArea'])))->response()->setStatusCode(201);
+        return (new OrderResource($order->load(['items.product', 'deliveryArea'])))->response()->setStatusCode(201);
     }
 
     public function cancel(Request $request, int $id)
     {
         $order = $request->user()->orders()->findOrFail($id);
-        abort_unless($order->status === OrderStatus::Pending, 422, 'لا يمكن إلغاء الطلب بعد بدء التحضير');
+        abort_unless($order->status === OrderStatus::Pending, 422, __('لا يمكن إلغاء الطلب بعد بدء التحضير'));
         $order->update(['status' => OrderStatus::Cancelled]);
 
-        return new OrderResource($order->fresh(['items']));
+        return new OrderResource($order->fresh(['items.product']));
     }
 }

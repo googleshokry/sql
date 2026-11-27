@@ -22,7 +22,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $data['email'])->first();
         if (! $user || ! Hash::check($data['password'], $user->password) || ! $user->is_active) {
-            throw ValidationException::withMessages(['email' => 'بيانات الدخول غير صحيحة']);
+            throw ValidationException::withMessages(['email' => __('بيانات الدخول غير صحيحة')]);
         }
 
         return [
@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         $customer = Customer::firstWhere('phone', $data['phone']);
         if ($customer?->password) {
-            throw ValidationException::withMessages(['phone' => 'رقم الموبايل مسجل بالفعل، سجل دخول']);
+            throw ValidationException::withMessages(['phone' => __('رقم الموبايل مسجل بالفعل، سجل دخول')]);
         }
 
         // لو العميل طلب قبل كده من الكاشير، نكمل على نفس الحساب
@@ -67,7 +67,7 @@ class AuthController extends Controller
 
         $customer = Customer::firstWhere('phone', $data['phone']);
         if (! $customer?->password || ! Hash::check($data['password'], $customer->password)) {
-            throw ValidationException::withMessages(['phone' => 'بيانات الدخول غير صحيحة']);
+            throw ValidationException::withMessages(['phone' => __('بيانات الدخول غير صحيحة')]);
         }
 
         return [

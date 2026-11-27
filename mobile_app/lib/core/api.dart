@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'i18n.dart' as i18n;
+import 'i18n.dart';
+
 /// رابط السيرفر الافتراضي — يمكن تغييره من داخل التطبيق
 /// أو وقت البناء: flutter build apk --dart-define=API_URL=https://pos.example.com
 const String kDefaultServerUrl = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:8000');
@@ -56,6 +59,7 @@ class Api {
   Map<String, String> get _headers => {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Accept-Language': i18n.currentLang,
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
@@ -73,7 +77,7 @@ class Api {
     try {
       res = await request().timeout(const Duration(seconds: 20));
     } catch (_) {
-      throw ApiException('تعذر الاتصال بالسيرفر — تأكد من الإنترنت ورابط السيرفر');
+      throw ApiException(tr('تعذر الاتصال بالسيرفر — تأكد من الإنترنت ورابط السيرفر'));
     }
 
     dynamic body;
@@ -85,7 +89,7 @@ class Api {
 
     if (res.statusCode >= 200 && res.statusCode < 300) return body;
 
-    String message = 'حدث خطأ (${res.statusCode})';
+    String message = tr('حدث خطأ ({0})', [res.statusCode]);
     if (body is Map) {
       final errors = body['errors'];
       if (errors is Map && errors.isNotEmpty) {
@@ -95,7 +99,7 @@ class Api {
         message = body['message'];
       }
     }
-    if (res.statusCode == 401) message = 'انتهت الجلسة، سجل الدخول مرة أخرى';
+    if (res.statusCode == 401) message = tr('انتهت الجلسة، سجل الدخول مرة أخرى');
     throw ApiException(message, res.statusCode);
   }
 }

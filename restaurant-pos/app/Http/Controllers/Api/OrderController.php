@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 /** إدارة الطلبات (كاشير / مدير) */
 class OrderController extends Controller
 {
-    private const RELATIONS = ['items', 'customer', 'restaurantTable', 'driver', 'deliveryArea'];
+    private const RELATIONS = ['items.product', 'customer', 'restaurantTable', 'driver', 'deliveryArea'];
 
     public function index(Request $request)
     {
@@ -49,10 +49,10 @@ class OrderController extends Controller
         ]);
 
         if ($order->is_paid || $order->status === OrderStatus::Cancelled) {
-            throw ValidationException::withMessages(['order' => 'الطلب مدفوع أو ملغي']);
+            throw ValidationException::withMessages(['order' => __('الطلب مدفوع أو ملغي')]);
         }
         if (isset($data['paid_amount']) && (float) $data['paid_amount'] < (float) $order->total) {
-            throw ValidationException::withMessages(['paid_amount' => 'المبلغ المدفوع أقل من الإجمالي']);
+            throw ValidationException::withMessages(['paid_amount' => __('المبلغ المدفوع أقل من الإجمالي')]);
         }
 
         $order->markPaid(PaymentMethod::from($data['payment_method']), isset($data['paid_amount']) ? (float) $data['paid_amount'] : null);
@@ -65,7 +65,7 @@ class OrderController extends Controller
         $data = $request->validate(['status' => ['required', Rule::enum(OrderStatus::class)]]);
 
         if ($data['status'] === OrderStatus::Cancelled->value && ! $request->user()->isAdmin()) {
-            abort(403, 'الإلغاء للمدير فقط');
+            abort(403, __('الإلغاء للمدير فقط'));
         }
 
         $order->update(['status' => $data['status']]);
@@ -76,7 +76,7 @@ class OrderController extends Controller
     public function assignDriver(Request $request, Order $order)
     {
         $data = $request->validate(['driver_id' => ['required', 'exists:drivers,id']]);
-        abort_unless($order->type === OrderType::Delivery, 422, 'الطلب ليس دليفري');
+        abort_unless($order->type === OrderType::Delivery, 422, __('الطلب ليس دليفري'));
 
         $order->update(['driver_id' => $data['driver_id'], 'status' => OrderStatus::OutForDelivery]);
 

@@ -24,23 +24,29 @@ class CustomerResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
-    protected static string|UnitEnum|null $navigationGroup = 'الدليفري';
-
-    protected static ?string $modelLabel = 'عميل';
-
-    protected static ?string $pluralModelLabel = 'العملاء';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Delivery;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getModelLabel(): string
+    {
+        return __('عميل');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('العملاء');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('الاسم')->required(),
-            TextInput::make('phone')->label('الموبايل')->tel()->required()->unique(ignoreRecord: true),
-            TextInput::make('phone2')->label('موبايل آخر')->tel(),
-            Select::make('delivery_area_id')->label('المنطقة')->relationship('deliveryArea', 'name')->preload(),
-            Textarea::make('address')->label('العنوان')->columnSpanFull(),
-            Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
+            TextInput::make('name')->label(__('الاسم'))->required(),
+            TextInput::make('phone')->label(__('الموبايل'))->tel()->required()->unique(ignoreRecord: true),
+            TextInput::make('phone2')->label(__('موبايل آخر'))->tel(),
+            Select::make('delivery_area_id')->label(__('المنطقة'))->relationship('deliveryArea', 'name')->getOptionLabelFromRecordUsing(fn ($record) => $record->localized_name)->preload(),
+            Textarea::make('address')->label(__('العنوان'))->columnSpanFull(),
+            Textarea::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
         ]);
     }
 
@@ -48,15 +54,15 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('phone')->label('الموبايل')->searchable(),
-                TextColumn::make('deliveryArea.name')->label('المنطقة'),
-                TextColumn::make('address')->label('العنوان')->limit(40),
-                TextColumn::make('orders_count')->label('عدد الطلبات')->counts('orders')->sortable(),
-                TextColumn::make('orders_sum_total')->label('إجمالي المشتريات')->sum('orders', 'total')->numeric(2)->sortable(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('phone')->label(__('الموبايل'))->searchable(),
+                TextColumn::make('deliveryArea.name')->label(__('المنطقة')),
+                TextColumn::make('address')->label(__('العنوان'))->limit(40),
+                TextColumn::make('orders_count')->label(__('عدد الطلبات'))->counts('orders')->sortable(),
+                TextColumn::make('orders_sum_total')->label(__('إجمالي المشتريات'))->sum('orders', 'total')->numeric(2)->sortable(),
             ])
             ->filters([
-                SelectFilter::make('delivery_area_id')->label('المنطقة')->relationship('deliveryArea', 'name'),
+                SelectFilter::make('delivery_area_id')->label(__('المنطقة'))->relationship('deliveryArea', 'name'),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()->visible(fn () => auth()->user()->isAdmin())]);
     }

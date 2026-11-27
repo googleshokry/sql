@@ -25,22 +25,28 @@ class DriverResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static string|UnitEnum|null $navigationGroup = 'الدليفري';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Delivery;
 
-    protected static ?string $modelLabel = 'طيار';
+    public static function getModelLabel(): string
+    {
+        return __('طيار');
+    }
 
-    protected static ?string $pluralModelLabel = 'الطيارين';
+    public static function getPluralModelLabel(): string
+    {
+        return __('الطيارين');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('الاسم')->required(),
-            TextInput::make('phone')->label('الموبايل')->tel(),
-            \Filament\Forms\Components\Select::make('user_id')->label('حساب الدخول على تطبيق الطيار')
+            TextInput::make('name')->label(__('الاسم'))->required(),
+            TextInput::make('phone')->label(__('الموبايل'))->tel(),
+            \Filament\Forms\Components\Select::make('user_id')->label(__('حساب الدخول على تطبيق الطيار'))
                 ->relationship('user', 'email', fn (Builder $query) => $query->where('role', \App\Enums\UserRole::Driver))
-                ->helperText('أنشئ مستخدم بصلاحية "طيار" من صفحة المستخدمين ثم اربطه هنا')
+                ->helperText(__('أنشئ مستخدم بصلاحية "طيار" من صفحة المستخدمين ثم اربطه هنا'))
                 ->unique(ignoreRecord: true),
-            Toggle::make('is_active')->label('متاح')->default(true),
+            Toggle::make('is_active')->label(__('متاح'))->default(true),
         ]);
     }
 
@@ -53,11 +59,11 @@ class DriverResource extends Resource
                 ->withSum(['orders as today_orders_total' => fn ($q) => $q
                     ->where('type', OrderType::Delivery)->whereDate('created_at', today())], 'total'))
             ->columns([
-                TextColumn::make('name')->label('الطيار')->searchable(),
-                TextColumn::make('phone')->label('الموبايل'),
-                TextColumn::make('today_orders_count')->label('طلبات اليوم'),
-                TextColumn::make('today_orders_total')->label('تحصيل اليوم')->numeric(2)->default(0),
-                ToggleColumn::make('is_active')->label('متاح'),
+                TextColumn::make('name')->label(__('الطيار'))->searchable(),
+                TextColumn::make('phone')->label(__('الموبايل')),
+                TextColumn::make('today_orders_count')->label(__('طلبات اليوم')),
+                TextColumn::make('today_orders_total')->label(__('تحصيل اليوم'))->numeric(2)->default(0),
+                ToggleColumn::make('is_active')->label(__('متاح')),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()->visible(fn () => auth()->user()->isAdmin())]);
     }

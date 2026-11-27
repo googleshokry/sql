@@ -14,9 +14,9 @@ enum OrderType: string implements HasLabel, HasColor
     public function getLabel(): string
     {
         return match ($this) {
-            self::DineIn => 'صالة',
-            self::Takeaway => 'تيك أواي',
-            self::Delivery => 'دليفري',
+            self::DineIn => __('صالة'),
+            self::Takeaway => __('تيك أواي'),
+            self::Delivery => __('دليفري'),
         };
     }
 

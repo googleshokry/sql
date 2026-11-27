@@ -24,7 +24,7 @@ class EnsureActor
             default => false,
         };
 
-        abort_unless($allowed, 403, 'غير مسموح');
+        abort_unless($allowed, 403, __('غير مسموح'));
 
         return $next($request);
     }

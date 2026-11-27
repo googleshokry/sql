@@ -66,7 +66,7 @@ class PosController extends Controller
 
         $order = $service->place([...$data, 'source' => 'staff_app', 'user_id' => $request->user()->id]);
 
-        return (new OrderResource($order->load(['items', 'customer', 'restaurantTable', 'driver'])))
+        return (new OrderResource($order->load(['items.product', 'customer', 'restaurantTable', 'driver'])))
             ->response()->setStatusCode(201);
     }
 }

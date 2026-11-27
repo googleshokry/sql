@@ -39,7 +39,8 @@ class ApiTest extends TestCase
     public function test_public_menu_and_settings(): void
     {
         $this->getJson('/api/menu')->assertOk()->assertJsonStructure(['data' => [['id', 'name', 'products' => [['id', 'name', 'price']]]]]);
-        $this->getJson('/api/settings')->assertOk()->assertJsonPath('currency', 'ج.م');
+        $this->getJson('/api/settings', ['Accept-Language' => 'ar'])->assertOk()->assertJsonPath('currency', 'ج.م');
+        $this->getJson('/api/settings', ['Accept-Language' => 'en'])->assertJsonPath('currency', 'EGP');
         $this->getJson('/api/delivery-areas')->assertOk()->assertJsonCount(5, 'data');
     }
 

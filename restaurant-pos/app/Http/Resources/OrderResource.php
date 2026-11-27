@@ -26,7 +26,7 @@ class OrderResource extends JsonResource
             'driver' => $this->whenLoaded('driver', fn () => $this->driver ? [
                 'id' => $this->driver->id, 'name' => $this->driver->name, 'phone' => $this->driver->phone,
             ] : null),
-            'delivery_area' => $this->whenLoaded('deliveryArea', fn () => $this->deliveryArea?->name),
+            'delivery_area' => $this->whenLoaded('deliveryArea', fn () => $this->deliveryArea?->localized_name),
             'delivery_address' => $this->delivery_address,
             'subtotal' => (float) $this->subtotal,
             'discount' => (float) $this->discount,
@@ -43,13 +43,13 @@ class OrderResource extends JsonResource
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($i) => [
                 'id' => $i->id,
                 'product_id' => $i->product_id,
-                'name' => $i->product_name,
+                'name' => $i->relationLoaded('product') && $i->product ? $i->product->localized_name : $i->product_name,
                 'price' => (float) $i->price,
                 'qty' => $i->quantity,
                 'total' => (float) $i->total,
                 'notes' => $i->notes,
             ])),
-            'receipt_url' => \Illuminate\Support\Facades\URL::temporarySignedRoute('orders.receipt.signed', now()->addDay(), ['order' => $this->id]),
+            'receipt_url' => \Illuminate\Support\Facades\URL::temporarySignedRoute('orders.receipt.signed', now()->addDay(), ['order' => $this->id, 'lang' => app()->getLocale()]),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

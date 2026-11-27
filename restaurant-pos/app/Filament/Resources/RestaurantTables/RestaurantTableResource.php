@@ -26,18 +26,24 @@ class RestaurantTableResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
-    protected static string|UnitEnum|null $navigationGroup = 'الإعدادات';
+    protected static string|UnitEnum|null $navigationGroup = \App\Filament\NavGroup::Settings;
 
-    protected static ?string $modelLabel = 'طاولة';
+    public static function getModelLabel(): string
+    {
+        return __('طاولة');
+    }
 
-    protected static ?string $pluralModelLabel = 'الطاولات';
+    public static function getPluralModelLabel(): string
+    {
+        return __('الطاولات');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('اسم / رقم الطاولة')->required(),
-            TextInput::make('seats')->label('عدد الكراسي')->numeric()->default(4),
-            Select::make('status')->label('الحالة')->options(TableStatus::class)->default(TableStatus::Available)->required(),
+            TextInput::make('name')->label(__('اسم / رقم الطاولة'))->required(),
+            TextInput::make('seats')->label(__('عدد الكراسي'))->numeric()->default(4),
+            Select::make('status')->label(__('الحالة'))->options(TableStatus::class)->default(TableStatus::Available)->required(),
         ]);
     }
 
@@ -45,9 +51,9 @@ class RestaurantTableResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الطاولة')->searchable(),
-                TextColumn::make('seats')->label('الكراسي'),
-                TextColumn::make('status')->label('الحالة')->badge(),
+                TextColumn::make('name')->label(__('الطاولة'))->searchable(),
+                TextColumn::make('seats')->label(__('الكراسي')),
+                TextColumn::make('status')->label(__('الحالة'))->badge(),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

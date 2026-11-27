@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/session.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// تطبيق المالك: مبيعات وأرباح وتقارير بالفترة
 class DashboardScreen extends StatefulWidget {
@@ -59,9 +60,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onRefresh: load,
       child: ListView(padding: const EdgeInsets.all(12), children: [
         Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-          ActionChip(label: const Text('اليوم'), onPressed: () => _preset(0)),
-          ActionChip(label: const Text('7 أيام'), onPressed: () => _preset(6)),
-          ActionChip(label: const Text('30 يوم'), onPressed: () => _preset(29)),
+          ActionChip(label: Text(tr('اليوم')), onPressed: () => _preset(0)),
+          ActionChip(label: Text(tr('7 أيام')), onPressed: () => _preset(6)),
+          ActionChip(label: Text(tr('30 يوم')), onPressed: () => _preset(29)),
           ActionChip(
             avatar: const Icon(Icons.date_range, size: 18),
             label: Text('${_fmt.format(range.start)} ← ${_fmt.format(range.end)}'),
@@ -83,37 +84,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisSpacing: 8,
           childAspectRatio: 1.7,
           children: [
-            _Stat('المبيعات', '${money(n('sales'))} $cur', Icons.payments, Colors.green),
-            _Stat('عدد الطلبات', '${d['orders_count']}', Icons.receipt_long, Colors.blue),
-            _Stat('متوسط الطلب', money(n('average_order')), Icons.trending_up, Colors.purple),
-            _Stat('ربح تقديري', money(n('estimated_profit')), Icons.savings, Colors.teal),
-            _Stat('غير محصل', money(n('unpaid')), Icons.hourglass_bottom, Colors.red),
-            _Stat('طلبات مفتوحة', '${d['open_orders']}', Icons.pending_actions, Colors.orange),
-            _Stat('الخصومات', money(n('discounts')), Icons.discount, Colors.pink),
-            _Stat('ملغي', '${d['cancelled']}', Icons.cancel, Colors.grey),
+            _Stat(tr('المبيعات'), '${money(n('sales'))} $cur', Icons.payments, Colors.green),
+            _Stat(tr('عدد الطلبات'), '${d['orders_count']}', Icons.receipt_long, Colors.blue),
+            _Stat(tr('متوسط الطلب'), money(n('average_order')), Icons.trending_up, Colors.purple),
+            _Stat(tr('ربح تقديري'), money(n('estimated_profit')), Icons.savings, Colors.teal),
+            _Stat(tr('غير محصل'), money(n('unpaid')), Icons.hourglass_bottom, Colors.red),
+            _Stat(tr('طلبات مفتوحة'), '${d['open_orders']}', Icons.pending_actions, Colors.orange),
+            _Stat(tr('الخصومات'), money(n('discounts')), Icons.discount, Colors.pink),
+            _Stat(tr('ملغي'), '${d['cancelled']}', Icons.cancel, Colors.grey),
           ],
         ),
-        if (daily.length > 1) _Section('المبيعات اليومية', [
+        if (daily.length > 1) _Section(tr('المبيعات اليومية'), [
           for (final x in daily)
             _Bar(label: (x['day'] as String).substring(5), value: (x['total'] as num).toDouble(), max: maxDay),
         ]),
-        _Section('حسب نوع الطلب', [
+        _Section(tr('حسب نوع الطلب'), [
           for (final x in (d['by_type'] as List))
-            ListTile(dense: true, title: Text(x['label']), subtitle: Text('${x['count']} طلب'), trailing: Text(money(x['total']))),
+            ListTile(dense: true, title: Text(x['label']), subtitle: Text(tr('{0} طلب', [x['count']])), trailing: Text(money(x['total']))),
         ]),
-        _Section('طرق الدفع', [
+        _Section(tr('طرق الدفع'), [
           for (final x in (d['by_payment'] as List))
             ListTile(dense: true, title: Text(x['label'] ?? '-'), trailing: Text(money(x['total']))),
         ]),
-        _Section('الأكثر مبيعاً', [
+        _Section(tr('الأكثر مبيعاً'), [
           for (final (i, x) in (d['top_products'] as List).indexed)
             ListTile(dense: true, leading: CircleAvatar(radius: 13, child: Text('${i + 1}', style: const TextStyle(fontSize: 12))),
-                title: Text(x['name']), subtitle: Text('${x['qty']} قطعة'), trailing: Text(money(x['total']))),
+                title: Text(x['name']), subtitle: Text(tr('{0} قطعة', [x['qty']])), trailing: Text(money(x['total']))),
         ]),
-        _Section('الطيارين', [
+        _Section(tr('الطيارين'), [
           for (final x in (d['drivers'] as List))
             ListTile(dense: true, leading: const Icon(Icons.delivery_dining), title: Text(x['name']),
-                subtitle: Text('${x['orders']} طلب'), trailing: Text(money(x['total']))),
+                subtitle: Text(tr('{0} طلب', [x['orders']])), trailing: Text(money(x['total']))),
         ]),
       ]),
     );

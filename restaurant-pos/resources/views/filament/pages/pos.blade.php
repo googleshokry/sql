@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     @php
         $t = $this->totals;
-        $cur = config('pos.currency');
+        $cur = __(config('pos.currency'));
         $open = $this->openTableOrder;
     @endphp
 
@@ -57,12 +57,12 @@
     <div class="pos">
         {{-- ========= المنتجات ========= --}}
         <div class="pos-card">
-            <input type="search" class="pos-input" placeholder="🔍 ابحث عن صنف..." wire:model.live.debounce.300ms="search" autofocus>
+            <input type="search" class="pos-input" placeholder="🔍 {{ __('ابحث عن صنف...') }}" wire:model.live.debounce.300ms="search" autofocus>
 
             <div class="pos-row pos-cats" style="margin-top:10px">
-                <button class="pos-chip {{ $categoryId === null ? 'active' : '' }}" wire:click="$set('categoryId', null)">الكل</button>
+                <button class="pos-chip {{ $categoryId === null ? 'active' : '' }}" wire:click="$set('categoryId', null)">{{ __('الكل') }}</button>
                 @foreach($this->categories as $cat)
-                    <button class="pos-chip {{ $categoryId === $cat->id ? 'active' : '' }}" wire:click="$set('categoryId', {{ $cat->id }})">{{ $cat->name }}</button>
+                    <button class="pos-chip {{ $categoryId === $cat->id ? 'active' : '' }}" wire:click="$set('categoryId', {{ $cat->id }})">{{ $cat->localized_name }}</button>
                 @endforeach
             </div>
 
@@ -74,11 +74,11 @@
                         @else
                             <div class="ph">🍽️</div>
                         @endif
-                        <div class="n">{{ $product->name }}</div>
+                        <div class="n">{{ $product->localized_name }}</div>
                         <div class="p">{{ number_format($product->price, 2) }}</div>
                     </button>
                 @empty
-                    <div class="pos-empty" style="grid-column:1/-1">لا توجد أصناف</div>
+                    <div class="pos-empty" style="grid-column:1/-1">{{ __('لا توجد أصناف') }}</div>
                 @endforelse
             </div>
         </div>
@@ -104,36 +104,36 @@
                 </div>
                 @if($open)
                     <div class="pos-alert">
-                        الطاولة عليها طلب مفتوح #{{ $open->number }} بقيمة {{ number_format($open->total, 2) }} — الأصناف الجديدة ستضاف عليه.
+                        {{ __('الطاولة عليها طلب مفتوح #:number بقيمة :total — الأصناف الجديدة ستضاف عليه.', ['number' => $open->number, 'total' => number_format($open->total, 2)]) }}
                     </div>
                 @endif
             @endif
 
             {{-- بيانات العميل --}}
             @if($orderType !== 'dine_in')
-                <span class="pos-label">العميل {{ $orderType === 'takeaway' ? '(اختياري)' : '' }}</span>
+                <span class="pos-label">{{ __('العميل') }} {{ $orderType === 'takeaway' ? __('(اختياري)') : '' }}</span>
                 <div class="pos-2">
-                    <input class="pos-input" placeholder="📞 الموبايل" wire:model.live.debounce.600ms="customerPhone" inputmode="tel">
-                    <input class="pos-input" placeholder="الاسم" wire:model="customerName">
+                    <input class="pos-input" placeholder="📞 {{ __('الموبايل') }}" wire:model.live.debounce.600ms="customerPhone" inputmode="tel">
+                    <input class="pos-input" placeholder="{{ __('الاسم') }}" wire:model="customerName">
                 </div>
             @endif
 
             @if($orderType === 'delivery')
                 <div class="pos-2" style="margin-top:8px">
                     <select class="pos-input" wire:model.live="deliveryAreaId">
-                        <option value="">-- المنطقة --</option>
+                        <option value="">-- {{ __('المنطقة') }} --</option>
                         @foreach($this->areas as $area)
-                            <option value="{{ $area->id }}">{{ $area->name }} ({{ number_format($area->fee, 0) }})</option>
+                            <option value="{{ $area->id }}">{{ $area->localized_name }} ({{ number_format($area->fee, 0) }})</option>
                         @endforeach
                     </select>
                     <select class="pos-input" wire:model="driverId">
-                        <option value="">-- الطيار (لاحقاً) --</option>
+                        <option value="">-- {{ __('الطيار (لاحقاً)') }} --</option>
                         @foreach($this->drivers as $driver)
                             <option value="{{ $driver->id }}">{{ $driver->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <textarea class="pos-input" style="margin-top:8px" rows="2" placeholder="العنوان بالتفصيل" wire:model="customerAddress"></textarea>
+                <textarea class="pos-input" style="margin-top:8px" rows="2" placeholder="{{ __('العنوان بالتفصيل') }}" wire:model="customerAddress"></textarea>
             @endif
 
             {{-- السلة --}}
@@ -152,17 +152,17 @@
                                 <button type="button" class="del" wire:click="removeItem({{ $i }})">✕</button>
                             </div>
                         </div>
-                        <input class="pos-input pos-note" placeholder="ملاحظة (بدون بصل، سبايسي...)" wire:model.blur="cart.{{ $i }}.notes">
+                        <input class="pos-input pos-note" placeholder="{{ __('ملاحظة (بدون بصل، سبايسي...)') }}" wire:model.blur="cart.{{ $i }}.notes">
                     </div>
                 @empty
-                    <div class="pos-empty">🛒 السلة فارغة — اضغط على الأصناف لإضافتها</div>
+                    <div class="pos-empty">🛒 {{ __('السلة فارغة — اضغط على الأصناف لإضافتها') }}</div>
                 @endforelse
             </div>
 
             {{-- الخصم والملاحظات --}}
             <div class="pos-2">
                 <div>
-                    <span class="pos-label">الخصم</span>
+                    <span class="pos-label">{{ __('الخصم') }}</span>
                     <div style="display:flex;gap:4px">
                         <input type="number" min="0" step="0.5" class="pos-input" wire:model.live.debounce.400ms="discount">
                         <select class="pos-input" style="width:70px" wire:model.live="discountType">
@@ -172,26 +172,26 @@
                     </div>
                 </div>
                 <div>
-                    <span class="pos-label">ملاحظات الطلب</span>
+                    <span class="pos-label">{{ __('ملاحظات الطلب') }}</span>
                     <input class="pos-input" wire:model="notes">
                 </div>
             </div>
 
             {{-- الإجماليات --}}
             <div class="pos-sum" style="margin-top:10px">
-                <div><span>المجموع</span><span>{{ number_format($t['subtotal'], 2) }}</span></div>
-                @if($t['discount'] > 0)<div><span>الخصم</span><span>- {{ number_format($t['discount'], 2) }}</span></div>@endif
-                @if($t['service'] > 0)<div><span>الخدمة</span><span>{{ number_format($t['service'], 2) }}</span></div>@endif
-                @if($t['tax'] > 0)<div><span>الضريبة</span><span>{{ number_format($t['tax'], 2) }}</span></div>@endif
-                @if($t['delivery_fee'] > 0)<div><span>التوصيل</span><span>{{ number_format($t['delivery_fee'], 2) }}</span></div>@endif
-                <div class="grand"><span>الإجمالي</span><span>{{ number_format($t['total'], 2) }} {{ $cur }}</span></div>
+                <div><span>{{ __('المجموع') }}</span><span>{{ number_format($t['subtotal'], 2) }}</span></div>
+                @if($t['discount'] > 0)<div><span>{{ __('الخصم') }}</span><span>- {{ number_format($t['discount'], 2) }}</span></div>@endif
+                @if($t['service'] > 0)<div><span>{{ __('الخدمة') }}</span><span>{{ number_format($t['service'], 2) }}</span></div>@endif
+                @if($t['tax'] > 0)<div><span>{{ __('الضريبة') }}</span><span>{{ number_format($t['tax'], 2) }}</span></div>@endif
+                @if($t['delivery_fee'] > 0)<div><span>{{ __('التوصيل') }}</span><span>{{ number_format($t['delivery_fee'], 2) }}</span></div>@endif
+                <div class="grand"><span>{{ __('الإجمالي') }}</span><span>{{ number_format($t['total'], 2) }} {{ $cur }}</span></div>
                 @if($open)
-                    <div style="font-weight:700"><span>إجمالي الطاولة بعد الإضافة</span><span>{{ number_format($t['total'] + $open->total, 2) }}</span></div>
+                    <div style="font-weight:700"><span>{{ __('إجمالي الطاولة بعد الإضافة') }}</span><span>{{ number_format($t['total'] + $open->total, 2) }}</span></div>
                 @endif
             </div>
 
             {{-- الدفع --}}
-            <span class="pos-label">طريقة الدفع</span>
+            <span class="pos-label">{{ __('طريقة الدفع') }}</span>
             <div class="pos-row">
                 @foreach(\App\Enums\PaymentMethod::cases() as $method)
                     <button type="button" class="pos-chip {{ $paymentMethod === $method->value ? 'active' : '' }}" wire:click="$set('paymentMethod', '{{ $method->value }}')">{{ $method->getLabel() }}</button>
@@ -200,8 +200,8 @@
 
             @if($paymentMethod === 'cash')
                 <div class="pos-2" style="margin-top:8px;align-items:center">
-                    <input type="number" min="0" step="0.5" class="pos-input" placeholder="المبلغ المستلم" wire:model.live.debounce.400ms="paidAmount">
-                    <div style="font-weight:700">الباقي: <span style="color:#16a34a">{{ number_format($t['change'], 2) }}</span></div>
+                    <input type="number" min="0" step="0.5" class="pos-input" placeholder="{{ __('المبلغ المستلم') }}" wire:model.live.debounce.400ms="paidAmount">
+                    <div style="font-weight:700">{{ __('الباقي:') }} <span style="color:#16a34a">{{ number_format($t['change'], 2) }}</span></div>
                 </div>
                 <div class="pos-row" style="margin-top:6px">
                     @foreach([50, 100, 200, 500] as $bill)
@@ -211,18 +211,18 @@
             @endif
 
             <label class="pos-row" style="margin-top:10px;font-size:13px;cursor:pointer">
-                <input type="checkbox" wire:model="printKitchen"> طباعة بون للمطبخ
+                <input type="checkbox" wire:model="printKitchen"> {{ __('طباعة بون للمطبخ') }}
             </label>
 
             <div style="display:grid;gap:8px;margin-top:10px">
                 <button type="button" class="pos-btn pay" wire:click="checkout(true)" wire:loading.attr="disabled" @disabled(empty($cart))>
-                    💵 دفع وطباعة ({{ number_format($open ? $t['total'] + $open->total : $t['total'], 2) }})
+                    💵 {{ __('دفع وطباعة') }} ({{ number_format($open ? $t['total'] + $open->total : $t['total'], 2) }})
                 </button>
                 <div class="pos-2">
                     <button type="button" class="pos-btn hold" wire:click="checkout(false)" wire:loading.attr="disabled" @disabled(empty($cart))>
-                        📝 حفظ بدون دفع
+                        📝 {{ __('حفظ بدون دفع') }}
                     </button>
-                    <button type="button" class="pos-btn clear" wire:click="clearCart" wire:confirm="مسح الطلب الحالي؟">🗑️ مسح</button>
+                    <button type="button" class="pos-btn clear" wire:click="clearCart" wire:confirm="{{ __('مسح الطلب الحالي؟') }}">🗑️ {{ __('مسح') }}</button>
                 </div>
             </div>
         </div>
