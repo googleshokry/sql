@@ -109,6 +109,10 @@ resources/views/
 - طلب "حفظ بدون دفع" يفضل مفتوح لحد ما يتحصل من شاشة الطلبات (زر **تحصيل**)، والطاولة ترجع متاحة تلقائياً بعد الدفع.
 - طلب الدليفري يفضل مفتوح لحد ما الطيار يرجع وتغير حالته لـ "مكتمل".
 
+## خريطة الطيارين
+
+صفحة **خريطة الطيارين** (قسم الدليفري) بتعرض مكان كل طيار في الشيفت، والطلبات اللي معاه ومرحلتها (في انتظار الاستلام، في الطريق، وصل للعميل)، ومكان العميل لو حدده من التطبيق، وبتتحدث كل 15 ثانية. الخريطة من OpenStreetMap ومكتبة Leaflet متضمنة في `public/vendor/leaflet`. مركز الخريطة الافتراضي بيتظبط من `POS_MAP_LAT` و `POS_MAP_LNG`.
+
 ## API تطبيقات الموبايل
 
 تطبيق الموبايل (`../mobile_app`) بيتكلم مع النظام عن طريق `/api` بتوكن Sanctum (`Authorization: Bearer ...` + `Accept: application/json`).
@@ -123,7 +127,9 @@ resources/views/
 | `GET /api/orders?filter=open\|app\|unpaid\|today\|all` ، `GET /api/orders/{id}` | كاشير، مدير | الطلبات |
 | `POST /api/orders/{id}/pay` ، `/status` ، `/driver` | كاشير، مدير | تحصيل، حالة (الإلغاء للمدير فقط)، تعيين طيار |
 | `GET /api/dashboard?from=&to=` | مدير | تقارير المالك |
-| `GET /api/driver/orders` ، `POST /api/driver/orders/{id}/pickup` ، `/delivered` | طيار | طلبات الطيار |
+| `GET /api/driver/orders` ، `POST /api/driver/shift` ، `POST /api/driver/location` | طيار | الطلبات، بدء/إنهاء الشيفت، إرسال الموقع |
+| `POST /api/driver/orders/{id}/pickup` ، `/arrived` ، `/delivered` ، `/failed` | طيار | مراحل التوصيل (failed بسبب = يرجع للمطعم) |
+| `GET /api/drivers/locations` ، `GET /api/drivers/{id}/trail` | كاشير، مدير | خريطة الطيارين وخط سير آخر 12 ساعة |
 | `GET/POST /api/customer/orders` ، `GET /api/customer/orders/{id}` ، `POST .../cancel` ، `PUT /api/customer/profile` | عميل | الطلب والتتبع |
 
 - الأسعار دايماً بتتحسب على السيرفر من قاعدة البيانات (أي سعر جاي من التطبيق بيتجاهل).

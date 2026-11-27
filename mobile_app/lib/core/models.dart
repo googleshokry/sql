@@ -92,6 +92,20 @@ class OrderItem {
       OrderItem(name: j['name'], price: _d(j['price']), qty: j['qty'], total: _d(j['total']), notes: j['notes']);
 }
 
+class GeoPoint {
+  GeoPoint(this.lat, this.lng, {this.updatedAt, this.live = true});
+  final double lat;
+  final double lng;
+  final DateTime? updatedAt;
+  final bool live;
+
+  static GeoPoint? fromJson(dynamic j) {
+    if (j is! Map || j['lat'] == null || j['lng'] == null) return null;
+    return GeoPoint(_d(j['lat']), _d(j['lng']),
+        updatedAt: DateTime.tryParse(j['updated_at'] ?? '')?.toLocal(), live: j['live'] != false);
+  }
+}
+
 class Order {
   Order(this.j);
   final Map<String, dynamic> j;
@@ -125,6 +139,13 @@ class Order {
   String get receiptUrl => j['receipt_url'];
   DateTime get createdAt => DateTime.tryParse(j['created_at'] ?? '')?.toLocal() ?? DateTime.now();
   List<OrderItem> get items => ((j['items'] as List?) ?? []).map((i) => OrderItem.fromJson(i)).toList();
+
+  /// assigned | picked_up | arrived | delivered | cancelled | unassigned
+  String? get deliveryStage => j['delivery_stage'];
+  String? get deliveryStageLabel => j['delivery_stage_label'];
+  GeoPoint? get destination => GeoPoint.fromJson(j['delivery_location']);
+  GeoPoint? get driverLocation => GeoPoint.fromJson(j['driver_location']);
+  String? get driverNote => j['driver_note'];
 
   bool get isOpen => const ['pending', 'preparing', 'ready', 'out_for_delivery'].contains(status);
 }

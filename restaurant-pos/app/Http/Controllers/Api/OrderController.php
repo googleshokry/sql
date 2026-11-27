@@ -78,7 +78,10 @@ class OrderController extends Controller
         $data = $request->validate(['driver_id' => ['required', 'exists:drivers,id']]);
         abort_unless($order->type === OrderType::Delivery, 422, __('الطلب ليس دليفري'));
 
-        $order->update(['driver_id' => $data['driver_id'], 'status' => OrderStatus::OutForDelivery]);
+        $order->update([
+            'driver_id' => $data['driver_id'], 'status' => OrderStatus::OutForDelivery,
+            'picked_up_at' => null, 'arrived_at' => null, 'driver_note' => null,
+        ]);
 
         return new OrderResource($order->fresh(self::RELATIONS));
     }

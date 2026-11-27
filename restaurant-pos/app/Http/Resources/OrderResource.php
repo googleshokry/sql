@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\OrderStatus;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,6 +30,18 @@ class OrderResource extends JsonResource
             ] : null),
             'delivery_area' => $this->whenLoaded('deliveryArea', fn () => $this->deliveryArea?->localized_name),
             'delivery_address' => $this->delivery_address,
+            'delivery_location' => $this->delivery_lat !== null ? ['lat' => $this->delivery_lat, 'lng' => $this->delivery_lng] : null,
+            'delivery_stage' => $this->deliveryStage(),
+            'delivery_stage_label' => Order::deliveryStageLabel($this->deliveryStage()),
+            'picked_up_at' => $this->picked_up_at?->toIso8601String(),
+            'arrived_at' => $this->arrived_at?->toIso8601String(),
+            'delivered_at' => $this->delivered_at?->toIso8601String(),
+            'driver_note' => $this->driver_note,
+            // موقع الطيار يظهر فقط والطلب في الطريق
+            'driver_location' => $this->when(
+                $this->relationLoaded('driver') && $this->driver && $this->status === OrderStatus::OutForDelivery,
+                fn () => $this->driver->locationPayload(),
+            ),
             'subtotal' => (float) $this->subtotal,
             'discount' => (float) $this->discount,
             'service' => (float) $this->service,

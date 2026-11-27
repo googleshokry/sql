@@ -15,6 +15,7 @@ class Order extends Model
         'delivery_area_id', 'driver_id', 'delivery_address', 'subtotal', 'discount',
         'tax', 'service', 'delivery_fee', 'total', 'payment_method', 'is_paid',
         'paid_amount', 'change_amount', 'notes', 'paid_at',
+        'delivery_lat', 'delivery_lng', 'picked_up_at', 'arrived_at', 'delivered_at', 'driver_note',
     ];
 
     protected $casts = [
@@ -23,6 +24,11 @@ class Order extends Model
         'payment_method' => PaymentMethod::class,
         'is_paid' => 'boolean',
         'paid_at' => 'datetime',
+        'picked_up_at' => 'datetime',
+        'arrived_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'delivery_lat' => 'float',
+        'delivery_lng' => 'float',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
         'tax' => 'decimal:2',
@@ -52,6 +58,38 @@ class Order extends Model
         $seq = $last ? ((int) substr($last, -4)) + 1 : 1;
 
         return $prefix.'-'.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * مرحلة التوصيل للطيار: assigned → picked_up → arrived → delivered
+     */
+    public function deliveryStage(): ?string
+    {
+        if ($this->type !== OrderType::Delivery) {
+            return null;
+        }
+
+        return match (true) {
+            $this->status === OrderStatus::Cancelled => 'cancelled',
+            $this->delivered_at !== null || $this->status === OrderStatus::Completed => 'delivered',
+            $this->arrived_at !== null => 'arrived',
+            $this->picked_up_at !== null => 'picked_up',
+            $this->driver_id !== null => 'assigned',
+            default => 'unassigned',
+        };
+    }
+
+    public static function deliveryStageLabel(?string $stage): ?string
+    {
+        return match ($stage) {
+            'unassigned' => __('بدون طيار'),
+            'assigned' => __('في انتظار الاستلام'),
+            'picked_up' => __('في الطريق'),
+            'arrived' => __('وصل للعميل'),
+            'delivered' => __('تم التسليم'),
+            'cancelled' => __('ملغي'),
+            default => null,
+        };
     }
 
     public function items()

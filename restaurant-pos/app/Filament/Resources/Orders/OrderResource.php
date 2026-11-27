@@ -75,7 +75,14 @@ class OrderResource extends Resource
                 TextEntry::make('customer.name')->label(__('العميل'))->placeholder('-'),
                 TextEntry::make('customer.phone')->label(__('الموبايل'))->placeholder('-'),
                 TextEntry::make('driver.name')->label(__('الطيار'))->placeholder('-'),
-                TextEntry::make('delivery_address')->label(__('العنوان'))->placeholder('-')->columnSpanFull(),
+                TextEntry::make('delivery_address')->label(__('العنوان'))->placeholder('-')->columnSpan(2)
+                    ->url(fn (Order $r) => $r->delivery_lat ? "https://www.google.com/maps?q={$r->delivery_lat},{$r->delivery_lng}" : null, true),
+                TextEntry::make('delivery_stage')->label(__('مرحلة التوصيل'))->badge()->placeholder('-')
+                    ->state(fn (Order $r) => Order::deliveryStageLabel($r->deliveryStage())),
+                TextEntry::make('driver_note')->label(__('ملاحظة الطيار'))->placeholder('-')->color('danger'),
+                TextEntry::make('picked_up_at')->label(__('وقت الاستلام'))->dateTime('h:i A')->placeholder('-'),
+                TextEntry::make('arrived_at')->label(__('وقت الوصول'))->dateTime('h:i A')->placeholder('-'),
+                TextEntry::make('delivered_at')->label(__('وقت التسليم'))->dateTime('h:i A')->placeholder('-'),
             ]),
             RepeatableEntry::make('items')->label(__('الأصناف'))->columnSpanFull()->table([
                 \Filament\Infolists\Components\RepeatableEntry\TableColumn::make(__('الصنف')),
@@ -117,7 +124,8 @@ class OrderResource extends Resource
                 TextColumn::make('customer.name')->label(__('العميل'))->placeholder('-')
                     ->description(fn (Order $r) => $r->customer?->phone)
                     ->searchable(),
-                TextColumn::make('driver.name')->label(__('الطيار'))->placeholder('-')->toggleable(),
+                TextColumn::make('driver.name')->label(__('الطيار'))->placeholder('-')->toggleable()
+                    ->description(fn (Order $r) => $r->driver_note ?? ($r->driver_id ? Order::deliveryStageLabel($r->deliveryStage()) : null)),
                 TextColumn::make('total')->label(__('الإجمالي'))->numeric(2)->sortable()
                     ->summarize(Sum::make()->label(__('المجموع'))->numeric(2)),
                 IconColumn::make('is_paid')->label(__('مدفوع'))->boolean(),
@@ -186,6 +194,9 @@ class OrderResource extends Resource
                         ->action(fn (Order $r, array $data) => $r->update([
                             'driver_id' => $data['driver_id'],
                             'status' => OrderStatus::OutForDelivery,
+                            'picked_up_at' => null,
+                            'arrived_at' => null,
+                            'driver_note' => null,
                         ])),
                     Action::make('cancel')->label(__('إلغاء الطلب'))->icon(Heroicon::OutlinedXCircle)->color('danger')
                         ->requiresConfirmation()

@@ -78,7 +78,8 @@ Future<void> showServerDialog(BuildContext context) async {
 }
 
 class StaffLoginScreen extends StatefulWidget {
-  const StaffLoginScreen({super.key});
+  const StaffLoginScreen({super.key, this.driverApp = false});
+  final bool driverApp;
 
   @override
   State<StaffLoginScreen> createState() => _StaffLoginScreenState();
@@ -97,14 +98,26 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
     });
     if (!mounted) return;
     setState(() => loading = false);
-    if (ok == true) Navigator.popUntil(context, (r) => r.isFirst);
+    if (ok == true && Navigator.canPop(context)) Navigator.popUntil(context, (r) => r.isFirst);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr('دخول الموظفين'))),
+      appBar: AppBar(
+        title: Text(widget.driverApp ? tr('طيار المطعم') : tr('دخول الموظفين')),
+        actions: [
+          if (widget.driverApp) ...[
+            const LangButton(),
+            IconButton(tooltip: tr('إعدادات السيرفر'), icon: const Icon(Icons.dns_outlined), onPressed: () => showServerDialog(context)),
+          ],
+        ],
+      ),
       body: ListView(padding: const EdgeInsets.all(24), children: [
+        if (widget.driverApp) ...[
+          const Icon(Icons.delivery_dining, size: 90, color: kBrand),
+          const SizedBox(height: 24),
+        ],
         TextField(
           controller: email,
           textDirection: TextDirection.ltr,

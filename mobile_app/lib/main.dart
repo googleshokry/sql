@@ -8,11 +8,13 @@ import 'core/cart.dart';
 import 'core/session.dart';
 import 'screens/customer/customer_home.dart';
 import 'screens/driver/driver_screen.dart';
+import 'screens/orders/drivers_map_screen.dart';
 import 'screens/orders/orders_screen.dart';
 import 'screens/owner/dashboard_screen.dart';
 import 'screens/pos/pos_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'widgets/common.dart';
+import 'core/app_mode.dart';
 import 'core/i18n.dart';
 
 Future<void> main() async {
@@ -39,7 +41,7 @@ class PosApp extends StatelessWidget {
     return MaterialApp(
       // تغيير اللغة يعيد بناء التطبيق بالكامل (الاتجاه والنصوص)
       key: ValueKey(lang),
-      title: tr('كاشير المطعم'),
+      title: isDriverApp ? tr('طيار المطعم') : tr('كاشير المطعم'),
       debugShowCheckedModeBanner: false,
       locale: Locale(lang),
       supportedLocales: const [Locale('ar'), Locale('en')],
@@ -68,6 +70,10 @@ class Root extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<Session>();
     if (!session.ready) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (isDriverApp) {
+      if (!session.loggedIn) return const StaffLoginScreen(driverApp: true);
+      if (session.role != 'driver') return const _DriversOnly();
+    }
     if (!session.loggedIn) return const WelcomeScreen();
     return switch (session.role) {
       'customer' => const CustomerHome(),
@@ -76,10 +82,12 @@ class Root extends StatelessWidget {
           AppPage(tr('التقارير'), Icons.insights, DashboardScreen()),
           AppPage(tr('الكاشير'), Icons.point_of_sale, PosScreen()),
           AppPage(tr('الطلبات'), Icons.receipt_long, OrdersScreen()),
+          AppPage(tr('الطيارين'), Icons.map_outlined, DriversMapScreen()),
         ]),
       _ => StaffShell(pages: [
           AppPage(tr('الكاشير'), Icons.point_of_sale, PosScreen()),
           AppPage(tr('الطلبات'), Icons.receipt_long, OrdersScreen()),
+          AppPage(tr('الطيارين'), Icons.map_outlined, DriversMapScreen()),
         ]),
     };
   }
@@ -136,4 +144,25 @@ class _StaffShellState extends State<StaffShell> {
             ),
     );
   }
+}
+
+/// تطبيق الطيار مفتوح بحساب مش طيار
+class _DriversOnly extends StatelessWidget {
+  const _DriversOnly();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.no_accounts, size: 64, color: Colors.grey),
+              const SizedBox(height: 12),
+              Text(tr('التطبيق ده للطيارين بس. استخدم تطبيق الكاشير للحسابات التانية.'), textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton(onPressed: () => context.read<Session>().logout(), child: Text(tr('تسجيل الخروج'))),
+            ]),
+          ),
+        ),
+      );
 }

@@ -49,6 +49,8 @@ class CustomerController extends Controller
             'delivery_area_id' => ['nullable', 'required_if:type,delivery', 'exists:delivery_areas,id'],
             'address' => ['nullable', 'required_if:type,delivery', 'string', 'max:1000'],
             'payment_method' => ['nullable', Rule::in(['cash', 'card', 'wallet'])],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180', 'required_with:lat'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -63,6 +65,8 @@ class CustomerController extends Controller
             'notes' => trim(($data['notes'] ?? '').(($data['payment_method'] ?? 'cash') !== 'cash'
                 ? __(' | الدفع: ').$data['payment_method'] : '')) ?: null,
             'pay' => false,
+            'delivery_lat' => $data['type'] === 'delivery' ? ($data['lat'] ?? null) : null,
+            'delivery_lng' => $data['type'] === 'delivery' ? ($data['lng'] ?? null) : null,
         ]);
 
         // تحديث عنوان العميل لآخر عنوان

@@ -103,6 +103,8 @@ class OrderService
                 'delivery_area_id' => $type === OrderType::Delivery ? $areaId : null,
                 'driver_id' => $type === OrderType::Delivery ? ($data['driver_id'] ?? null) : null,
                 'delivery_address' => $type === OrderType::Delivery ? $address : null,
+                'delivery_lat' => $data['delivery_lat'] ?? null,
+                'delivery_lng' => $data['delivery_lng'] ?? null,
                 'notes' => ($data['notes'] ?? null) ?: null,
                 ...$totals,
             ]);

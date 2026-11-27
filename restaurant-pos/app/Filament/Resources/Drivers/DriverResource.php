@@ -61,6 +61,10 @@ class DriverResource extends Resource
             ->columns([
                 TextColumn::make('name')->label(__('الطيار'))->searchable(),
                 TextColumn::make('phone')->label(__('الموبايل')),
+                TextColumn::make('location_updated_at')->label(__('الحالة'))->badge()
+                    ->state(fn (Driver $record) => $record->isLive() ? __('متصل') : ($record->is_online ? __('الموقع غير متحدث') : __('خارج الشيفت')))
+                    ->color(fn (Driver $record) => $record->isLive() ? 'success' : 'gray')
+                    ->description(fn (Driver $record) => $record->location_updated_at?->diffForHumans()),
                 TextColumn::make('today_orders_count')->label(__('طلبات اليوم')),
                 TextColumn::make('today_orders_total')->label(__('تحصيل اليوم'))->numeric(2)->default(0),
                 ToggleColumn::make('is_active')->label(__('متاح')),

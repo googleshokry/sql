@@ -8,6 +8,7 @@ import '../../widgets/common.dart';
 import '../../widgets/menu_grid.dart';
 import '../orders/order_details_screen.dart';
 import '../../core/i18n.dart';
+import '../../core/location_tracker.dart';
 
 /// تطبيق العميل: المنيو + السلة + طلباتي + حسابي
 class CustomerHome extends StatefulWidget {
@@ -74,6 +75,22 @@ class _CustomerCheckoutState extends State<CustomerCheckout> {
   late final TextEditingController address;
   final notes = TextEditingController();
   bool sending = false;
+  double? lat, lng;
+  bool locating = false;
+
+  Future<void> _locate() async {
+    setState(() => locating = true);
+    final p = await LocationTracker.currentPosition(context);
+    if (!mounted) return;
+    setState(() {
+      locating = false;
+      if (p != null) {
+        lat = p.latitude;
+        lng = p.longitude;
+      }
+    });
+    toast(context, p != null ? tr('تم تحديد موقعك') : tr('مقدرناش نحدد موقعك — اسمح بالوصول للموقع وشغل GPS'), error: p == null);
+  }
 
   @override
   void initState() {
@@ -90,7 +107,7 @@ class _CustomerCheckoutState extends State<CustomerCheckout> {
     final res = await guard(context, () => session.api.post('customer/orders', {
           'type': type,
           'items': cart.toJson(),
-          if (type == 'delivery') ...{'delivery_area_id': areaId, 'address': address.text.trim()},
+          if (type == 'delivery') ...{'delivery_area_id': areaId, 'address': address.text.trim(), if (lat != null) 'lat': lat, if (lat != null) 'lng': lng},
           'payment_method': payment,
           'notes': notes.text.trim(),
         }));
@@ -136,6 +153,14 @@ class _CustomerCheckoutState extends State<CustomerCheckout> {
           ),
           const SizedBox(height: 8),
           TextField(controller: address, maxLines: 2, decoration: InputDecoration(labelText: tr('العنوان بالتفصيل (شارع، عمارة، دور، شقة)'))),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: locating ? null : _locate,
+            icon: locating
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : Icon(lat != null ? Icons.check_circle : Icons.my_location, color: lat != null ? Colors.green : null),
+            label: Text(lat != null ? tr('تم تحديد موقعك على الخريطة') : tr('حدد موقعي الحالي (يساعد الطيار يوصلك أسرع)')),
+          ),
         ],
         const SizedBox(height: 8),
         TextField(controller: notes, decoration: InputDecoration(labelText: tr('ملاحظات (اختياري)'))),

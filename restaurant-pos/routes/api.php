@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\DriverTrackingController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\PublicController;
@@ -37,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('orders/{order}/pay', [OrderController::class, 'pay']);
         Route::post('orders/{order}/status', [OrderController::class, 'status']);
         Route::post('orders/{order}/driver', [OrderController::class, 'assignDriver']);
+
+        Route::get('drivers/locations', DriverTrackingController::class);
+        Route::get('drivers/{driver}/trail', [DriverTrackingController::class, 'trail']);
     });
 
     // ---------- المالك / المدير ----------
@@ -45,8 +49,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // ---------- الطيار ----------
     Route::middleware('actor:driver')->prefix('driver')->group(function () {
         Route::get('orders', [DriverController::class, 'orders']);
+        Route::post('shift', [DriverController::class, 'shift']);
+        Route::post('location', [DriverController::class, 'location'])->middleware('throttle:120,1');
         Route::post('orders/{order}/pickup', [DriverController::class, 'pickup']);
+        Route::post('orders/{order}/arrived', [DriverController::class, 'arrived']);
         Route::post('orders/{order}/delivered', [DriverController::class, 'delivered']);
+        Route::post('orders/{order}/failed', [DriverController::class, 'failed']);
     });
 
     // ---------- العميل ----------

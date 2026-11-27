@@ -37,11 +37,18 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build apk --release --dart-define=API_URL=$API_URL
+      - name: Build full app (customer + staff)
+        run: flutter build apk --release --flavor full --dart-define=API_URL=$API_URL
+      - name: Build driver app
+        run: flutter build apk --release --flavor driver -t lib/main_driver.dart --dart-define=API_URL=$API_URL
       - uses: actions/upload-artifact@v4
         with:
           name: restaurant-pos-android-apk
-          path: mobile_app/build/app/outputs/flutter-apk/app-release.apk
+          path: mobile_app/build/app/outputs/flutter-apk/app-full-release.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: restaurant-driver-android-apk
+          path: mobile_app/build/app/outputs/flutter-apk/app-driver-release.apk
 
   ios:
     runs-on: macos-latest
@@ -57,13 +64,22 @@ jobs:
           cache: true
       - run: flutter pub get
       # بناء بدون توقيع — للتثبيت على iPhone لازم توقيع بحساب Apple Developer (راجع README)
-      - run: flutter build ios --release --no-codesign --dart-define=API_URL=$API_URL
-      - name: Package unsigned IPA
+      - name: Build & package full app
         run: |
-          mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          flutter build ios --release --no-codesign --dart-define=API_URL=$API_URL
+          rm -rf Payload && mkdir Payload && cp -r build/ios/iphoneos/Runner.app Payload/
           zip -qr restaurant-pos-unsigned.ipa Payload
+      # نسخة الطيار على iOS بنفس الـ Bundle ID — لنشرها كتطبيق منفصل غيّر الـ Bundle ID في Xcode
+      - name: Build & package driver app
+        run: |
+          flutter build ios --release --no-codesign -t lib/main_driver.dart --dart-define=API_URL=$API_URL
+          rm -rf Payload && mkdir Payload && cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -qr restaurant-driver-unsigned.ipa Payload
       - uses: actions/upload-artifact@v4
         with:
           name: restaurant-pos-ios-unsigned
           path: mobile_app/restaurant-pos-unsigned.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: restaurant-driver-ios-unsigned
+          path: mobile_app/restaurant-driver-unsigned.ipa

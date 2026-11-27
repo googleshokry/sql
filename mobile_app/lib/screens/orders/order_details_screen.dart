@@ -6,6 +6,9 @@ import 'package:provider/provider.dart';
 import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../widgets/common.dart';
+import '../../widgets/live_map.dart';
+import 'package:latlong2/latlong.dart';
+
 import '../../core/i18n.dart';
 
 /// تفاصيل الطلب — للكاشير/المدير (مع الإجراءات) أو للعميل (تتبع الحالة)
@@ -157,6 +160,30 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   Text(timeAgo(o.createdAt), style: const TextStyle(color: Colors.grey)),
                 ]),
                 const SizedBox(height: 12),
+                if (o.driverLocation != null || o.destination != null) ...[
+                  LiveMap(
+                    height: 220,
+                    pins: [
+                      if (o.driverLocation != null)
+                        MapPin(LatLng(o.driverLocation!.lat, o.driverLocation!.lng), child: DriverPin(live: o.driverLocation!.live)),
+                      if (o.destination != null) MapPin(LatLng(o.destination!.lat, o.destination!.lng), size: 30, child: const HomePin()),
+                    ],
+                    lines: [
+                      if (o.driverLocation != null && o.destination != null)
+                        [LatLng(o.driverLocation!.lat, o.driverLocation!.lng), LatLng(o.destination!.lat, o.destination!.lng)],
+                    ],
+                  ),
+                  if (o.driverLocation?.updatedAt != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(tr('موقع الطيار — آخر تحديث {0}', [timeAgo(o.driverLocation!.updatedAt!)]),
+                          style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    ),
+                  const SizedBox(height: 8),
+                ],
+                if (!widget.customer && o.deliveryStageLabel != null)
+                  ListTile(leading: const Icon(Icons.route), title: Text(o.deliveryStageLabel!),
+                      subtitle: o.driverNote == null ? null : Text(o.driverNote!, style: const TextStyle(color: Colors.red))),
                 if (o.tableName != null) ListTile(leading: const Icon(Icons.table_restaurant), title: Text(tr('طاولة {0}', [o.tableName]))),
                 if (o.customerName != null && !widget.customer)
                   ListTile(

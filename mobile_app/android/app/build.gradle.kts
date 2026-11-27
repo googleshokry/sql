@@ -29,6 +29,22 @@ android {
         versionName = flutter.versionName
     }
 
+    // تطبيقين من نفس الكود:
+    //   full   = التطبيق الكامل (عميل + كاشير + مدير + طيار)  → flutter build apk --flavor full
+    //   driver = تطبيق الطيار المنفصل                          → flutter build apk --flavor driver -t lib/main_driver.dart
+    flavorDimensions += "app"
+    productFlavors {
+        create("full") {
+            dimension = "app"
+            resValue("string", "app_name", "كاشير المطعم")
+        }
+        create("driver") {
+            dimension = "app"
+            applicationIdSuffix = ".driver"
+            resValue("string", "app_name", "طيار المطعم")
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
