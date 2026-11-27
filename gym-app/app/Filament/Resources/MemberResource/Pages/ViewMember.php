@@ -18,9 +18,10 @@ class ViewMember extends ViewRecord
         return [
             GymActions::checkIn(),
             GymActions::renew(),
-            Action::make('card')->label('طباعة الكارنيه')->icon(Heroicon::OutlinedIdentification)->color('gray')
+            Action::make('card')->label(__('طباعة الكارنيه'))->icon(Heroicon::OutlinedIdentification)->color('gray')
                 ->url(fn () => route('print.card', $this->record), true),
             GymActions::whatsapp(),
+            GymActions::appAccess(),
             EditAction::make(),
         ];
     }

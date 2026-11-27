@@ -16,23 +16,23 @@ class ExpiringSubscriptions extends TableWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static ?string $heading = 'اشتراكات تنتهي قريباً';
 
     public function table(Table $table): Table
     {
         return $table
+            ->heading(__('اشتراكات تنتهي قريباً'))
             ->query(fn () => Subscription::query()->with(['member', 'plan'])
                 ->expiringWithin((int) Setting::get('expiry_warning_days'))->orderBy('end_date'))
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
-            ->emptyStateHeading('لا توجد اشتراكات تنتهي قريباً')
+            ->emptyStateHeading(__('لا توجد اشتراكات تنتهي قريباً'))
             ->columns([
-                TextColumn::make('member.name')->label('المشترك')->weight('bold')
+                TextColumn::make('member.name')->label(__('المشترك'))->weight('bold')
                     ->url(fn (Subscription $r) => MemberResource::getUrl('view', ['record' => $r->member_id])),
-                TextColumn::make('member.phone')->label('الموبايل'),
-                TextColumn::make('plan.name')->label('الباقة'),
-                TextColumn::make('end_date')->label('ينتهي')->date('Y-m-d'),
-                TextColumn::make('days_left')->label('متبقي')->suffix(' يوم')->badge()->color('warning'),
+                TextColumn::make('member.phone')->label(__('الموبايل')),
+                TextColumn::make('plan.name')->label(__('الباقة')),
+                TextColumn::make('end_date')->label(__('ينتهي'))->date('Y-m-d'),
+                TextColumn::make('days_left')->label(__('متبقي'))->suffix(__(' يوم'))->badge()->color('warning'),
             ])
             ->recordActions([
                 GymActions::whatsapp(fn (Subscription $r) => $r->member),

@@ -23,6 +23,18 @@ class Payment extends Model
         'other' => 'أخرى',
     ];
 
+    /** Translated labels. */
+    public static function methods(): array
+    {
+        return array_map(fn (string $label) => __($label), self::METHODS);
+    }
+
+    /** Translated labels. */
+    public static function types(): array
+    {
+        return array_map(fn (string $label) => __($label), self::TYPES);
+    }
+
     protected $guarded = ['id'];
 
     protected $casts = [

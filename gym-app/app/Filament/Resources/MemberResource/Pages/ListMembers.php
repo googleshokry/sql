@@ -18,24 +18,24 @@ class ListMembers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('export')->label('تصدير Excel (CSV)')->icon(Heroicon::OutlinedArrowDownTray)->color('gray')
+            Action::make('export')->label(__('تصدير Excel (CSV)'))->icon(Heroicon::OutlinedArrowDownTray)->color('gray')
                 ->url(route('export.members'), true),
-            CreateAction::make()->label('إضافة مشترك'),
+            CreateAction::make()->label(__('إضافة مشترك')),
         ];
     }
 
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('الكل'),
-            'active' => Tab::make('ساري')->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->where('status', 'active')))
+            'all' => Tab::make(__('الكل')),
+            'active' => Tab::make(__('ساري'))->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->where('status', 'active')))
                 ->badge(fn () => Member::whereHas('latestSubscription', fn ($s) => $s->where('status', 'active'))->count())->badgeColor('success'),
-            'expiring' => Tab::make('ينتهي قريباً')->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->expiringWithin(7)))
+            'expiring' => Tab::make(__('ينتهي قريباً'))->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->expiringWithin(7)))
                 ->badge(fn () => Member::whereHas('latestSubscription', fn ($s) => $s->expiringWithin(7))->count())->badgeColor('warning'),
-            'expired' => Tab::make('منتهي')->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->whereIn('status', ['expired', 'cancelled'])))
+            'expired' => Tab::make(__('منتهي'))->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->whereIn('status', ['expired', 'cancelled'])))
                 ->badgeColor('danger'),
-            'frozen' => Tab::make('مجمد')->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->where('status', 'frozen'))),
-            'none' => Tab::make('بدون اشتراك')->modifyQueryUsing(fn (Builder $query) => $query->doesntHave('subscriptions')),
+            'frozen' => Tab::make(__('مجمد'))->modifyQueryUsing(fn (Builder $query) => $query->whereHas('latestSubscription', fn ($s) => $s->where('status', 'frozen'))),
+            'none' => Tab::make(__('بدون اشتراك'))->modifyQueryUsing(fn (Builder $query) => $query->doesntHave('subscriptions')),
         ];
     }
 }

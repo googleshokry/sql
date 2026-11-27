@@ -17,9 +17,15 @@ class MeasurementsRelationManager extends RelationManager
 {
     protected static string $relationship = 'measurements';
 
-    protected static ?string $title = 'القياسات والمتابعة';
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('القياسات والمتابعة');
+    }
 
-    protected static ?string $modelLabel = 'قياس';
+    protected static function getModelLabel(): ?string
+    {
+        return __('قياس');
+    }
 
     public function isReadOnly(): bool
     {
@@ -31,17 +37,17 @@ class MeasurementsRelationManager extends RelationManager
         $n = fn (string $name, string $label) => TextInput::make($name)->label($label)->numeric();
 
         return $schema->columns(3)->components([
-            DatePicker::make('measured_at')->label('التاريخ')->default(now())->required(),
-            $n('weight', 'الوزن (كجم)')->default(fn () => $this->getOwnerRecord()->weight),
-            $n('height', 'الطول (سم)')->default(fn () => $this->getOwnerRecord()->height),
-            $n('body_fat', 'نسبة الدهون %'),
-            $n('muscle_mass', 'الكتلة العضلية (كجم)'),
-            $n('chest', 'الصدر (سم)'),
-            $n('waist', 'الوسط (سم)'),
-            $n('hips', 'الأرداف (سم)'),
-            $n('arms', 'الذراع (سم)'),
-            $n('thighs', 'الفخذ (سم)'),
-            Textarea::make('notes')->label('ملاحظات / برنامج')->columnSpanFull(),
+            DatePicker::make('measured_at')->label(__('التاريخ'))->default(now())->required(),
+            $n('weight', __('الوزن (كجم)'))->default(fn () => $this->getOwnerRecord()->weight),
+            $n('height', __('الطول (سم)'))->default(fn () => $this->getOwnerRecord()->height),
+            $n('body_fat', __('نسبة الدهون %')),
+            $n('muscle_mass', __('الكتلة العضلية (كجم)')),
+            $n('chest', __('الصدر (سم)')),
+            $n('waist', __('الوسط (سم)')),
+            $n('hips', __('الأرداف (سم)')),
+            $n('arms', __('الذراع (سم)')),
+            $n('thighs', __('الفخذ (سم)')),
+            Textarea::make('notes')->label(__('ملاحظات / برنامج'))->columnSpanFull(),
         ]);
     }
 
@@ -49,15 +55,15 @@ class MeasurementsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('measured_at')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('weight')->label('الوزن'),
+                TextColumn::make('measured_at')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('weight')->label(__('الوزن')),
                 TextColumn::make('bmi')->label('BMI'),
-                TextColumn::make('body_fat')->label('دهون %'),
-                TextColumn::make('muscle_mass')->label('عضلات'),
-                TextColumn::make('chest')->label('صدر'),
-                TextColumn::make('waist')->label('وسط'),
-                TextColumn::make('arms')->label('ذراع'),
-                TextColumn::make('notes')->label('ملاحظات')->limit(30),
+                TextColumn::make('body_fat')->label(__('دهون %')),
+                TextColumn::make('muscle_mass')->label(__('عضلات')),
+                TextColumn::make('chest')->label(__('صدر')),
+                TextColumn::make('waist')->label(__('وسط')),
+                TextColumn::make('arms')->label(__('ذراع')),
+                TextColumn::make('notes')->label(__('ملاحظات'))->limit(30),
             ])
             ->headerActions([
                 CreateAction::make()->after(fn ($record) => $this->getOwnerRecord()->update(array_filter([

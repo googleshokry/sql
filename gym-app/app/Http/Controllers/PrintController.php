@@ -33,14 +33,14 @@ class PrintController extends Controller
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM so Excel shows Arabic correctly
-            fputcsv($out, ['الكود', 'الاسم', 'الموبايل', 'الرقم القومي', 'النوع', 'الباقة', 'البداية', 'النهاية', 'الحالة', 'المتبقي عليه', 'تاريخ الانضمام']);
+            fputcsv($out, [__('الكود'), __('الاسم'), __('الموبايل'), __('الرقم القومي'), __('النوع'), __('الباقة'), __('البداية'), __('النهاية'), __('الحالة'), __('المتبقي عليه'), __('تاريخ الانضمام')]);
             Member::with(['latestSubscription.plan'])->orderBy('id')->chunk(500, function ($members) use ($out) {
                 foreach ($members as $m) {
                     $s = $m->latestSubscription;
                     fputcsv($out, [
-                        $m->code, $m->name, $m->phone, $m->national_id, $m->gender === 'female' ? 'أنثى' : 'ذكر',
+                        $m->code, $m->name, $m->phone, $m->national_id, $m->gender === 'female' ? __('أنثى') : __('ذكر'),
                         $s?->plan?->name, $s?->start_date?->format('Y-m-d'), $s?->end_date?->format('Y-m-d'),
-                        $s ? (Subscription::STATUSES[$s->status] ?? $s->status) : 'بدون اشتراك',
+                        $s ? (Subscription::statuses()[$s->status] ?? $s->status) : __('بدون اشتراك'),
                         $m->balance, $m->joined_at?->format('Y-m-d'),
                     ]);
                 }

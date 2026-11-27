@@ -12,6 +12,6 @@ class ListSubscriptions extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('بيع اشتراك')];
+        return [CreateAction::make()->label(__('بيع اشتراك'))];
     }
 }

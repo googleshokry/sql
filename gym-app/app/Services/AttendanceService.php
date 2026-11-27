@@ -20,7 +20,7 @@ class AttendanceService
         if ($open) {
             $open->update(['check_out_at' => now()]);
 
-            return ['ok' => true, 'action' => 'out', 'message' => 'تم تسجيل الانصراف - مدة التمرين '.$open->duration, 'attendance' => $open];
+            return ['ok' => true, 'action' => 'out', 'message' => __('تم تسجيل الانصراف - مدة التمرين :duration', ['duration' => $open->duration]), 'attendance' => $open];
         }
 
         return static::checkIn($member, $force);
@@ -32,11 +32,11 @@ class AttendanceService
         $fail = fn (string $msg) => ['ok' => false, 'action' => null, 'message' => $msg, 'attendance' => null];
 
         if ($member->is_blocked && ! $force) {
-            return $fail('هذا المشترك محظور'.($member->blocked_reason ? ': '.$member->blocked_reason : ''));
+            return $fail(__('هذا المشترك محظور').($member->blocked_reason ? ': '.$member->blocked_reason : ''));
         }
 
         if ($member->openAttendance()) {
-            return $fail('المشترك مسجل دخول بالفعل');
+            return $fail(__('المشترك مسجل دخول بالفعل'));
         }
 
         $subscription = $member->currentSubscription();
@@ -46,16 +46,16 @@ class AttendanceService
 
         if (! $force) {
             if (! $subscription) {
-                return $fail('لا يوجد اشتراك ساري لهذا المشترك');
+                return $fail(__('لا يوجد اشتراك ساري لهذا المشترك'));
             }
             if ($subscription->status === Subscription::STATUS_FROZEN) {
-                return $fail('الاشتراك مجمد حتى '.$subscription->frozen_until->format('Y-m-d'));
+                return $fail(__('الاشتراك مجمد حتى :date', ['date' => $subscription->frozen_until->format('Y-m-d')]));
             }
             if ($subscription->status === Subscription::STATUS_EXPIRED) {
-                return $fail('الاشتراك منتهي (انتهت الحصص أو المدة)');
+                return $fail(__('الاشتراك منتهي (انتهت الحصص أو المدة)'));
             }
             if (! Setting::get('allow_checkin_with_debt') && $subscription->remaining_amount > 0) {
-                return $fail('يوجد مبلغ متبقي على المشترك: '.$subscription->remaining_amount);
+                return $fail(__('يوجد مبلغ متبقي على المشترك: :amount', ['amount' => $subscription->remaining_amount]));
             }
         }
 
@@ -70,11 +70,11 @@ class AttendanceService
             $subscription->refresh()->refreshStatus();
         }
 
-        $msg = 'تم تسجيل الدخول بنجاح';
+        $msg = __('تم تسجيل الدخول بنجاح');
         if ($subscription) {
-            $msg .= ' - متبقي '.$subscription->days_left.' يوم';
+            $msg .= __(' - متبقي :days يوم', ['days' => $subscription->days_left]);
             if ($subscription->sessions_total) {
-                $msg .= ' و '.$subscription->sessions_left.' حصة';
+                $msg .= __(' و :sessions حصة', ['sessions' => $subscription->sessions_left]);
             }
         }
 
@@ -88,7 +88,7 @@ class AttendanceService
         $count = 0;
         Attendance::whereNull('check_out_at')->where('check_in_at', '<=', now()->subHours($hours))
             ->each(function (Attendance $a) use ($hours, &$count) {
-                $a->update(['check_out_at' => $a->check_in_at->copy()->addHours($hours), 'notes' => trim($a->notes.' انصراف تلقائي')]);
+                $a->update(['check_out_at' => $a->check_in_at->copy()->addHours($hours), 'notes' => trim($a->notes.' '.__('انصراف تلقائي'))]);
                 $count++;
             });
 

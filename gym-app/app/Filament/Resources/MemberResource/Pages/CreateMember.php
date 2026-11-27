@@ -21,7 +21,7 @@ class CreateMember extends CreateRecord
 
         return $schema->components([
             ...$schema->getComponents(),
-            Section::make('الاشتراك الأول (اختياري)')->columnSpanFull()->statePath('subscription')
+            Section::make(__('الاشتراك الأول (اختياري)'))->columnSpanFull()->statePath('subscription')
                 ->schema(SubscriptionFields::make(false)),
         ]);
     }

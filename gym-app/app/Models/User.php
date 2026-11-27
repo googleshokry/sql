@@ -8,11 +8,12 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
     public const ROLE_MANAGER = 'manager';
@@ -24,7 +25,13 @@ class User extends Authenticatable implements FilamentUser
         self::ROLE_RECEPTIONIST => 'موظف استقبال',
     ];
 
-    protected $fillable = ['name', 'email', 'phone', 'password', 'role', 'is_active'];
+    /** Translated labels. */
+    public static function roles(): array
+    {
+        return array_map(fn (string $label) => __($label), self::ROLES);
+    }
+
+    protected $fillable = ['name', 'email', 'phone', 'password', 'role', 'is_active', 'locale'];
 
     protected $hidden = ['password', 'remember_token'];
 

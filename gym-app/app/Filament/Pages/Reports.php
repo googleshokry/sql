@@ -18,13 +18,19 @@ class Reports extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'المالية';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Finance;
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationLabel = 'التقارير';
+    public static function getNavigationLabel(): string
+    {
+        return __('التقارير');
+    }
 
-    protected static ?string $title = 'التقارير المالية والإحصائية';
+    public function getTitle(): string
+    {
+        return __('التقارير المالية والإحصائية');
+    }
 
     protected string $view = 'filament.pages.reports';
 
@@ -76,7 +82,8 @@ class Reports extends Page
         $expenses = Expense::whereBetween('spent_at', [$this->from, $this->until]);
         $expensesTotal = (float) (clone $expenses)->sum('amount');
         $expByCat = (clone $expenses)->leftJoin('expense_categories', 'expense_categories.id', '=', 'expenses.expense_category_id')
-            ->select(DB::raw("coalesce(expense_categories.name, 'بدون بند') as name"), DB::raw('sum(amount) as total'))
+            ->select(DB::raw('coalesce(expense_categories.name, ?) as name'), DB::raw('sum(amount) as total'))
+            ->addBinding(__('بدون بند'), 'select')
             ->groupBy('name')->orderByDesc('total')->get();
 
         $subs = Subscription::whereBetween('subscriptions.created_at', $range)->where('subscriptions.status', '!=', 'cancelled');

@@ -13,7 +13,11 @@ use Filament\Support\Colors\Color;
 use App\Models\Setting;
 use App\Support\LocalAvatarProvider;
 use Illuminate\Support\Facades\Storage;
+use App\Enums\NavGroup;
 use Filament\Navigation\NavigationGroup;
+use App\Http\Middleware\SetLocale;
+use Filament\Actions\Action;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -43,13 +47,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
-            ->navigationGroups([
-                NavigationGroup::make('الحضور والانصراف'),
-                NavigationGroup::make('العضويات'),
-                NavigationGroup::make('المالية'),
-                NavigationGroup::make('المتجر والبوفيه'),
-                NavigationGroup::make('الإدارة'),
+            ->navigationGroups(collect(NavGroup::cases())->mapWithKeys(fn (NavGroup $group) => [
+                // Labels are resolved lazily so they follow the current request's language.
+                $group->name => NavigationGroup::make()->label(fn () => $group->getLabel()),
+            ])->all())
+            ->userMenuItems([
+                Action::make('language')
+                    ->label(fn () => app()->getLocale() === 'ar' ? 'English' : 'العربية')
+                    ->icon('heroicon-o-language')
+                    ->url(fn () => route('locale', app()->getLocale() === 'ar' ? 'en' : 'ar')),
             ])
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.language-links'))
+            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, fn () => view('filament.language-links'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -68,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->middleware([SetLocale::class], isPersistent: true)
             ->authMiddleware([
                 Authenticate::class,
             ]);

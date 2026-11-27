@@ -30,30 +30,36 @@ class PaymentResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'المالية';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Finance;
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'دفعة';
+    public static function getModelLabel(): string
+    {
+        return __('دفعة');
+    }
 
-    protected static ?string $pluralModelLabel = 'المدفوعات والإيرادات';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المدفوعات والإيرادات');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Grid::make(2)->columnSpanFull()->schema([
-                Select::make('member_id')->label('المشترك')->relationship('member', 'name')
+                Select::make('member_id')->label(__('المشترك'))->relationship('member', 'name')
                     ->getOptionLabelFromRecordUsing(fn ($r) => "{$r->name} ({$r->code})")
                     ->searchable(['name', 'code', 'phone'])->live(),
-                Select::make('subscription_id')->label('الاشتراك')
+                Select::make('subscription_id')->label(__('الاشتراك'))
                     ->relationship('subscription', 'id', fn (Builder $query, Get $get) => $query->where('member_id', $get('member_id')))
-                    ->getOptionLabelFromRecordUsing(fn ($r) => $r->plan?->name.' ('.$r->start_date->format('Y-m-d').') متبقي '.$r->remaining_amount)
+                    ->getOptionLabelFromRecordUsing(fn ($r) => __(':plan (:date) متبقي :amount', ['plan' => $r->plan?->name, 'date' => $r->start_date->format('Y-m-d'), 'amount' => $r->remaining_amount]))
                     ->visible(fn (Get $get) => filled($get('member_id'))),
-                TextInput::make('amount')->label('المبلغ')->numeric()->required()->minValue(0.01)->suffix(Setting::currency()),
-                Select::make('method')->label('طريقة الدفع')->options(Payment::METHODS)->default('cash')->required(),
-                Select::make('type')->label('النوع')->options(Payment::TYPES)->default('subscription')->required(),
-                DateTimePicker::make('paid_at')->label('التاريخ')->default(now())->required(),
-                TextInput::make('notes')->label('ملاحظات')->columnSpanFull(),
+                TextInput::make('amount')->label(__('المبلغ'))->numeric()->required()->minValue(0.01)->suffix(Setting::currency()),
+                Select::make('method')->label(__('طريقة الدفع'))->options(Payment::methods())->default('cash')->required(),
+                Select::make('type')->label(__('النوع'))->options(Payment::types())->default('subscription')->required(),
+                DateTimePicker::make('paid_at')->label(__('التاريخ'))->default(now())->required(),
+                TextInput::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -63,30 +69,30 @@ class PaymentResource extends Resource
         return $table
             ->defaultSort('paid_at', 'desc')
             ->columns([
-                TextColumn::make('receipt_number')->label('الإيصال')->searchable(),
-                TextColumn::make('paid_at')->label('التاريخ')->dateTime('Y-m-d h:i A')->sortable(),
-                TextColumn::make('member.name')->label('المشترك')->searchable()->placeholder('-'),
-                TextColumn::make('amount')->label('المبلغ')->numeric(2, locale: 'en')->sortable()
-                    ->summarize(Sum::make()->label('الإجمالي')->numeric(2, locale: 'en')),
-                TextColumn::make('method')->label('الطريقة')->badge()->formatStateUsing(fn ($state) => Payment::METHODS[$state] ?? $state),
-                TextColumn::make('type')->label('النوع')->formatStateUsing(fn ($state) => Payment::TYPES[$state] ?? $state),
-                TextColumn::make('subscription.plan.name')->label('الباقة')->placeholder('-'),
-                TextColumn::make('receiver.name')->label('استلمها'),
-                TextColumn::make('notes')->label('ملاحظات')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('receipt_number')->label(__('الإيصال'))->searchable(),
+                TextColumn::make('paid_at')->label(__('التاريخ'))->dateTime('Y-m-d h:i A')->sortable(),
+                TextColumn::make('member.name')->label(__('المشترك'))->searchable()->placeholder('-'),
+                TextColumn::make('amount')->label(__('المبلغ'))->numeric(2, locale: 'en')->sortable()
+                    ->summarize(Sum::make()->label(__('الإجمالي'))->numeric(2, locale: 'en')),
+                TextColumn::make('method')->label(__('الطريقة'))->badge()->formatStateUsing(fn ($state) => Payment::methods()[$state] ?? $state),
+                TextColumn::make('type')->label(__('النوع'))->formatStateUsing(fn ($state) => Payment::types()[$state] ?? $state),
+                TextColumn::make('subscription.plan.name')->label(__('الباقة'))->placeholder('-'),
+                TextColumn::make('receiver.name')->label(__('استلمها')),
+                TextColumn::make('notes')->label(__('ملاحظات'))->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('method')->label('طريقة الدفع')->options(Payment::METHODS),
-                SelectFilter::make('type')->label('النوع')->options(Payment::TYPES),
-                SelectFilter::make('received_by')->label('الموظف')->relationship('receiver', 'name'),
+                SelectFilter::make('method')->label(__('طريقة الدفع'))->options(Payment::methods()),
+                SelectFilter::make('type')->label(__('النوع'))->options(Payment::types()),
+                SelectFilter::make('received_by')->label(__('الموظف'))->relationship('receiver', 'name'),
                 Filter::make('date')->schema([
-                    DatePicker::make('from')->label('من')->default(today()->startOfMonth()->toDateString()),
-                    DatePicker::make('until')->label('إلى'),
+                    DatePicker::make('from')->label(__('من'))->default(today()->startOfMonth()->toDateString()),
+                    DatePicker::make('until')->label(__('إلى')),
                 ])->query(fn (Builder $query, array $data) => $query
                     ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('paid_at', '>=', $d))
                     ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('paid_at', '<=', $d))),
             ])
             ->recordActions([
-                Action::make('print')->label('إيصال')->icon(Heroicon::OutlinedPrinter)->color('gray')
+                Action::make('print')->label(__('إيصال'))->icon(Heroicon::OutlinedPrinter)->color('gray')
                     ->url(fn (Payment $r) => route('print.receipt', $r), true),
                 EditAction::make()->visible(fn () => auth()->user()->isManager()),
                 DeleteAction::make()->visible(fn () => auth()->user()->isManager()),

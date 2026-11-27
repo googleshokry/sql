@@ -32,6 +32,12 @@ class Subscription extends Model
         self::STATUS_CANCELLED => 'gray',
     ];
 
+    /** Translated labels. */
+    public static function statuses(): array
+    {
+        return array_map(fn (string $label) => __($label), self::STATUSES);
+    }
+
     protected $guarded = ['id'];
 
     protected $casts = [
@@ -156,7 +162,7 @@ class Subscription extends Model
     public function freeze(int $days, Carbon $from, ?string $reason = null): SubscriptionFreeze
     {
         if ($days < 1 || $days > $this->freeze_days_left) {
-            throw new \InvalidArgumentException('عدد أيام التجميد غير مسموح به');
+            throw new \InvalidArgumentException(__('عدد أيام التجميد غير مسموح به'));
         }
 
         $until = $from->copy()->addDays($days - 1);

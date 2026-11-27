@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <title>@yield('title')</title>
@@ -18,6 +18,6 @@
 </head>
 <body onload="setTimeout(() => window.print(), 300)">
     @yield('content')
-    <div class="center no-print"><button class="btn" onclick="window.print()">طباعة</button></div>
+    <div class="center no-print"><button class="btn" onclick="window.print()">{{ __('طباعة') }}</button></div>
 </body>
 </html>

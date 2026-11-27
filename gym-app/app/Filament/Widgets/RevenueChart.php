@@ -11,7 +11,10 @@ class RevenueChart extends ChartWidget
 {
     protected static ?int $sort = 2;
 
-    protected ?string $heading = 'الإيرادات والمصروفات (آخر 12 شهر)';
+    public function getHeading(): ?string
+    {
+        return __('الإيرادات والمصروفات (آخر 12 شهر)');
+    }
 
     protected ?string $maxHeight = '300px';
 
@@ -31,8 +34,8 @@ class RevenueChart extends ChartWidget
 
         return [
             'datasets' => [
-                ['label' => 'الإيرادات', 'data' => $income->all(), 'backgroundColor' => '#22c55e', 'borderColor' => '#22c55e'],
-                ['label' => 'المصروفات', 'data' => $expenses->all(), 'backgroundColor' => '#ef4444', 'borderColor' => '#ef4444'],
+                ['label' => __('الإيرادات'), 'data' => $income->all(), 'backgroundColor' => '#22c55e', 'borderColor' => '#22c55e'],
+                ['label' => __('المصروفات'), 'data' => $expenses->all(), 'backgroundColor' => '#ef4444', 'borderColor' => '#ef4444'],
             ],
             'labels' => $months->map(fn ($m) => $m->format('Y-m'))->all(),
         ];

@@ -30,15 +30,15 @@ class GymStatsOverview extends StatsOverviewWidget
         $attendanceTrend = collect(range(6, 0))->map(fn ($d) => Attendance::whereDate('check_in_at', today()->subDays($d))->count())->all();
 
         $stats = [
-            Stat::make('المشتركين الساريين', $activeMembers)
-                ->description('من إجمالي '.Member::count().' مشترك')->icon('heroicon-o-users')->color('success'),
-            Stat::make('المتواجدون الآن', $inside)
-                ->description("حضور اليوم: {$today}")->icon('heroicon-o-arrow-left-end-on-rectangle')
+            Stat::make(__('المشتركين الساريين'), $activeMembers)
+                ->description(__('من إجمالي :count مشترك', ['count' => Member::count()]))->icon('heroicon-o-users')->color('success'),
+            Stat::make(__('المتواجدون الآن'), $inside)
+                ->description(__('حضور اليوم: :count', ['count' => $today]))->icon('heroicon-o-arrow-left-end-on-rectangle')
                 ->chart($attendanceTrend)->color('primary'),
-            Stat::make('اشتراكات تنتهي قريباً', $expiring)
-                ->description('خلال '.Setting::get('expiry_warning_days').' أيام')->icon('heroicon-o-clock')->color('warning')
+            Stat::make(__('اشتراكات تنتهي قريباً'), $expiring)
+                ->description(__('خلال :days أيام', ['days' => Setting::get('expiry_warning_days')]))->icon('heroicon-o-clock')->color('warning')
                 ->url(\App\Filament\Resources\MemberResource::getUrl('index', ['tab' => 'expiring'])),
-            Stat::make('أعياد ميلاد اليوم', $birthdays)->icon('heroicon-o-cake')->color('info'),
+            Stat::make(__('أعياد ميلاد اليوم'), $birthdays)->icon('heroicon-o-cake')->color('info'),
         ];
 
         if (auth()->user()?->isManager()) {
@@ -47,12 +47,12 @@ class GymStatsOverview extends StatsOverviewWidget
                 + (float) Sale::where('sold_at', '>=', today()->startOfMonth())->sum('total');
             $monthExpenses = (float) Expense::where('spent_at', '>=', today()->startOfMonth())->sum('amount');
 
-            $stats[] = Stat::make('إيراد اليوم', Money::format($todayIncome))->icon('heroicon-o-banknotes')->color('success');
-            $stats[] = Stat::make('إيراد الشهر', Money::format($monthIncome))
-                ->description('مصروفات: '.Money::format($monthExpenses))->icon('heroicon-o-chart-bar')->color('success');
-            $stats[] = Stat::make('صافي الشهر', Money::format($monthIncome - $monthExpenses))
+            $stats[] = Stat::make(__('إيراد اليوم'), Money::format($todayIncome))->icon('heroicon-o-banknotes')->color('success');
+            $stats[] = Stat::make(__('إيراد الشهر'), Money::format($monthIncome))
+                ->description(__('مصروفات: :amount', ['amount' => Money::format($monthExpenses)]))->icon('heroicon-o-chart-bar')->color('success');
+            $stats[] = Stat::make(__('صافي الشهر'), Money::format($monthIncome - $monthExpenses))
                 ->icon('heroicon-o-scale')->color($monthIncome >= $monthExpenses ? 'success' : 'danger');
-            $stats[] = Stat::make('اشتراكات جديدة هذا الشهر', Subscription::where('created_at', '>=', today()->startOfMonth())->count())
+            $stats[] = Stat::make(__('اشتراكات جديدة هذا الشهر'), Subscription::where('created_at', '>=', today()->startOfMonth())->count())
                 ->icon('heroicon-o-credit-card');
         }
 

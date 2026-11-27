@@ -12,6 +12,6 @@ class ListSales extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('فاتورة جديدة')];
+        return [CreateAction::make()->label(__('فاتورة جديدة'))];
     }
 }

@@ -20,9 +20,15 @@ class PaymentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'payments';
 
-    protected static ?string $title = 'المدفوعات';
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('المدفوعات');
+    }
 
-    protected static ?string $modelLabel = 'دفعة';
+    protected static function getModelLabel(): ?string
+    {
+        return __('دفعة');
+    }
 
     public function isReadOnly(): bool
     {
@@ -32,14 +38,14 @@ class PaymentsRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('subscription_id')->label('الاشتراك')
+            Select::make('subscription_id')->label(__('الاشتراك'))
                 ->options(fn () => $this->getOwnerRecord()->subscriptions()->with('plan')->get()
                     ->mapWithKeys(fn ($s) => [$s->id => $s->plan->name.' ('.$s->start_date->format('Y-m-d').')'])),
-            TextInput::make('amount')->label('المبلغ')->numeric()->required()->minValue(0.01)->suffix(Setting::currency()),
-            Select::make('method')->label('الطريقة')->options(Payment::METHODS)->default('cash')->required(),
-            Select::make('type')->label('النوع')->options(Payment::TYPES)->default('subscription')->required(),
-            DateTimePicker::make('paid_at')->label('التاريخ')->default(now())->required(),
-            TextInput::make('notes')->label('ملاحظات'),
+            TextInput::make('amount')->label(__('المبلغ'))->numeric()->required()->minValue(0.01)->suffix(Setting::currency()),
+            Select::make('method')->label(__('الطريقة'))->options(Payment::methods())->default('cash')->required(),
+            Select::make('type')->label(__('النوع'))->options(Payment::types())->default('subscription')->required(),
+            DateTimePicker::make('paid_at')->label(__('التاريخ'))->default(now())->required(),
+            TextInput::make('notes')->label(__('ملاحظات')),
         ]);
     }
 
@@ -47,17 +53,17 @@ class PaymentsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('receipt_number')->label('رقم الإيصال'),
-                TextColumn::make('paid_at')->label('التاريخ')->dateTime('Y-m-d h:i A'),
-                TextColumn::make('amount')->label('المبلغ')->numeric(2, locale: 'en')->summarize(Sum::make()->label('الإجمالي')->numeric(2, locale: 'en')),
-                TextColumn::make('method')->label('الطريقة')->formatStateUsing(fn ($state) => Payment::METHODS[$state] ?? $state),
-                TextColumn::make('type')->label('النوع')->badge()->formatStateUsing(fn ($state) => Payment::TYPES[$state] ?? $state),
-                TextColumn::make('subscription.plan.name')->label('الاشتراك')->placeholder('-'),
-                TextColumn::make('receiver.name')->label('استلمها'),
+                TextColumn::make('receipt_number')->label(__('رقم الإيصال')),
+                TextColumn::make('paid_at')->label(__('التاريخ'))->dateTime('Y-m-d h:i A'),
+                TextColumn::make('amount')->label(__('المبلغ'))->numeric(2, locale: 'en')->summarize(Sum::make()->label(__('الإجمالي'))->numeric(2, locale: 'en')),
+                TextColumn::make('method')->label(__('الطريقة'))->formatStateUsing(fn ($state) => Payment::methods()[$state] ?? $state),
+                TextColumn::make('type')->label(__('النوع'))->badge()->formatStateUsing(fn ($state) => Payment::types()[$state] ?? $state),
+                TextColumn::make('subscription.plan.name')->label(__('الاشتراك'))->placeholder('-'),
+                TextColumn::make('receiver.name')->label(__('استلمها')),
             ])
-            ->headerActions([CreateAction::make()->label('تسجيل دفعة')])
+            ->headerActions([CreateAction::make()->label(__('تسجيل دفعة'))])
             ->recordActions([
-                Action::make('print')->label('إيصال')->icon(Heroicon::OutlinedPrinter)
+                Action::make('print')->label(__('إيصال'))->icon(Heroicon::OutlinedPrinter)
                     ->url(fn (Payment $r) => route('print.receipt', $r), true),
             ]);
     }

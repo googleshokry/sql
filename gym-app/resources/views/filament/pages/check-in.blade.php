@@ -27,7 +27,7 @@
             <x-filament::section>
                 <form wire:submit="submit">
                     <input type="text" wire:model="search" class="ci-input" autofocus autocomplete="off"
-                           placeholder="امسح الكارت أو اكتب الكود / الموبايل / الاسم" x-data
+                           placeholder="{{ __('امسح الكارت أو اكتب الكود / الموبايل / الاسم') }}" x-data
                            x-init="$el.focus()" x-on:checkin-result.window="$el.focus()">
                 </form>
 
@@ -37,14 +37,14 @@
                     </div>
                     @if (! $result['ok'] && $member && auth()->user()->isManager())
                         <div style="text-align:center;margin-top:.75rem">
-                            <x-filament::button color="danger" wire:click="force" size="sm">السماح بالدخول استثنائياً</x-filament::button>
+                            <x-filament::button color="danger" wire:click="force" size="sm">{{ __('السماح بالدخول استثنائياً') }}</x-filament::button>
                         </div>
                     @endif
                 @endif
 
                 @if ($matches)
                     <div class="ci-list" style="margin-top:1rem">
-                        <div style="font-weight:700">اختر المشترك:</div>
+                        <div style="font-weight:700">{{ __('اختر المشترك:') }}</div>
                         @foreach ($matches as $m)
                             <div class="ci-row ci-match" wire:click="select({{ $m['id'] }})">
                                 <span><b>{{ $m['name'] }}</b> — {{ $m['phone'] }}</span>
@@ -61,58 +61,58 @@
                         <img src="{{ $member->photo_url }}" alt="">
                         <div style="flex:1">
                             <div style="font-size:1.5rem;font-weight:800">{{ $member->name }}</div>
-                            <div style="opacity:.75">كود: {{ $member->code }} • {{ $member->phone }}</div>
+                            <div style="opacity:.75">{{ __('كود:') }} {{ $member->code }} • {{ $member->phone }}</div>
                             <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
                                 @if ($sub)
                                     <x-filament::badge :color="Subscription::STATUS_COLORS[$sub->status] ?? 'gray'">
-                                        {{ Subscription::STATUSES[$sub->status] ?? $sub->status }}
+                                        {{ Subscription::statuses()[$sub->status] ?? $sub->status }}
                                     </x-filament::badge>
                                 @else
-                                    <x-filament::badge color="gray">بدون اشتراك</x-filament::badge>
+                                    <x-filament::badge color="gray">{{ __('بدون اشتراك') }}</x-filament::badge>
                                 @endif
                                 @if ($member->is_blocked)
-                                    <x-filament::badge color="danger">محظور</x-filament::badge>
+                                    <x-filament::badge color="danger">{{ __('محظور') }}</x-filament::badge>
                                 @endif
                                 @if ($member->birth_date && $member->birth_date->isBirthday())
-                                    <x-filament::badge color="success">🎂 عيد ميلاد سعيد</x-filament::badge>
+                                    <x-filament::badge color="success">{{ __('🎂 عيد ميلاد سعيد') }}</x-filament::badge>
                                 @endif
                             </div>
                         </div>
                         <x-filament::button tag="a" :href="\App\Filament\Resources\MemberResource::getUrl('view', ['record' => $member])" color="gray" size="sm">
-                            ملف المشترك
+                            {{ __('ملف المشترك') }}
                         </x-filament::button>
                     </div>
 
                     @if ($sub)
                         <div class="ci-stats">
-                            <div class="ci-stat">الباقة<b>{{ $sub->plan?->name }}</b></div>
-                            <div class="ci-stat">ينتهي<b>{{ $sub->end_date->format('Y-m-d') }}</b></div>
-                            <div class="ci-stat">الأيام المتبقية<b style="color:{{ $sub->days_left <= 7 ? '#dc2626' : 'inherit' }}">{{ $sub->days_left }}</b></div>
-                            <div class="ci-stat">الحصص<b>{{ $sub->sessions_total ? $sub->sessions_used.' / '.$sub->sessions_total : 'غير محدود' }}</b></div>
-                            <div class="ci-stat">المتبقي عليه<b style="color:{{ $sub->remaining_amount > 0 ? '#dc2626' : '#16a34a' }}">{{ Money::format($sub->remaining_amount) }}</b></div>
-                            <div class="ci-stat">الدعوات<b>{{ $sub->guest_invitations - $sub->guest_invitations_used }} / {{ $sub->guest_invitations }}</b></div>
+                            <div class="ci-stat">{{ __('الباقة') }}<b>{{ $sub->plan?->name }}</b></div>
+                            <div class="ci-stat">{{ __('ينتهي') }}<b>{{ $sub->end_date->format('Y-m-d') }}</b></div>
+                            <div class="ci-stat">{{ __('الأيام المتبقية') }}<b style="color:{{ $sub->days_left <= 7 ? '#dc2626' : 'inherit' }}">{{ $sub->days_left }}</b></div>
+                            <div class="ci-stat">{{ __('الحصص') }}<b>{{ $sub->sessions_total ? $sub->sessions_used.' / '.$sub->sessions_total : __('غير محدود') }}</b></div>
+                            <div class="ci-stat">{{ __('المتبقي عليه') }}<b style="color:{{ $sub->remaining_amount > 0 ? '#dc2626' : '#16a34a' }}">{{ Money::format($sub->remaining_amount) }}</b></div>
+                            <div class="ci-stat">{{ __('الدعوات') }}<b>{{ $sub->guest_invitations - $sub->guest_invitations_used }} / {{ $sub->guest_invitations }}</b></div>
                         </div>
                     @endif
                     @if ($member->medical_notes)
-                        <div class="ci-alert ci-err" style="font-size:1rem">⚠️ ملاحظة طبية: {{ $member->medical_notes }}</div>
+                        <div class="ci-alert ci-err" style="font-size:1rem">{{ __('⚠️ ملاحظة طبية:') }} {{ $member->medical_notes }}</div>
                     @endif
                 </x-filament::section>
             @endif
         </div>
 
         <x-filament::section>
-            <x-slot name="heading">المتواجدون الآن ({{ $this->inside->count() }}) — حضور اليوم: {{ $this->todayCount }}</x-slot>
+            <x-slot name="heading">{{ __('المتواجدون الآن (:inside) — حضور اليوم: :today', ['inside' => $this->inside->count(), 'today' => $this->todayCount]) }}</x-slot>
             <div class="ci-list" wire:poll.30s>
                 @forelse ($this->inside as $a)
                     <div class="ci-row">
                         <span>
                             <b>{{ $a->member?->name }}</b>
-                            <small style="opacity:.7">{{ $a->is_guest ? '(ضيف: '.$a->guest_name.')' : '' }} — دخل {{ $a->check_in_at->format('h:i A') }}</small>
+                            <small style="opacity:.7">{{ $a->is_guest ? '('.__('ضيف: :name', ['name' => $a->guest_name]).')' : '' }} — {{ __('دخل :time', ['time' => $a->check_in_at->format('h:i A')]) }}</small>
                         </span>
-                        <x-filament::button size="xs" color="gray" wire:click="checkout({{ $a->id }})">خروج</x-filament::button>
+                        <x-filament::button size="xs" color="gray" wire:click="checkout({{ $a->id }})">{{ __('خروج') }}</x-filament::button>
                     </div>
                 @empty
-                    <div style="opacity:.6;text-align:center">لا يوجد أحد بالداخل</div>
+                    <div style="opacity:.6;text-align:center">{{ __('لا يوجد أحد بالداخل') }}</div>
                 @endforelse
             </div>
         </x-filament::section>

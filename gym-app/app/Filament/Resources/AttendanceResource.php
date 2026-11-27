@@ -29,13 +29,19 @@ class AttendanceResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'الحضور والانصراف';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Attendance;
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $modelLabel = 'سجل حضور';
+    public static function getModelLabel(): string
+    {
+        return __('سجل حضور');
+    }
 
-    protected static ?string $pluralModelLabel = 'سجل الحضور';
+    public static function getPluralModelLabel(): string
+    {
+        return __('سجل الحضور');
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -46,21 +52,21 @@ class AttendanceResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'متواجدون الآن';
+        return __('متواجدون الآن');
     }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Grid::make(2)->columnSpanFull()->schema([
-                Select::make('member_id')->label('المشترك')->relationship('member', 'name')
+                Select::make('member_id')->label(__('المشترك'))->relationship('member', 'name')
                     ->getOptionLabelFromRecordUsing(fn ($r) => "{$r->name} ({$r->code})")
                     ->searchable(['name', 'code', 'phone'])->required(),
-                Toggle::make('is_guest')->label('دخول ضيف (دعوة)')->live()->inline(false),
-                TextInput::make('guest_name')->label('اسم الضيف')->visible(fn (Get $get) => $get('is_guest')),
-                DateTimePicker::make('check_in_at')->label('وقت الدخول')->default(now())->required(),
-                DateTimePicker::make('check_out_at')->label('وقت الخروج'),
-                TextInput::make('notes')->label('ملاحظات')->columnSpanFull(),
+                Toggle::make('is_guest')->label(__('دخول ضيف (دعوة)'))->live()->inline(false),
+                TextInput::make('guest_name')->label(__('اسم الضيف'))->visible(fn (Get $get) => $get('is_guest')),
+                DateTimePicker::make('check_in_at')->label(__('وقت الدخول'))->default(now())->required(),
+                DateTimePicker::make('check_out_at')->label(__('وقت الخروج')),
+                TextInput::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -71,30 +77,30 @@ class AttendanceResource extends Resource
             ->defaultSort('check_in_at', 'desc')
             ->poll('30s')
             ->columns([
-                TextColumn::make('member.code')->label('الكود')->badge()->color('gray')->searchable(),
-                TextColumn::make('member.name')->label('المشترك')->searchable()->weight('bold')
-                    ->description(fn (Attendance $r) => $r->is_guest ? 'ضيف: '.$r->guest_name : null),
-                TextColumn::make('check_in_at')->label('الدخول')->dateTime('Y-m-d h:i A')->sortable(),
-                TextColumn::make('check_out_at')->label('الخروج')->dateTime('h:i A')->placeholder('داخل الجيم')->badge()
+                TextColumn::make('member.code')->label(__('الكود'))->badge()->color('gray')->searchable(),
+                TextColumn::make('member.name')->label(__('المشترك'))->searchable()->weight('bold')
+                    ->description(fn (Attendance $r) => $r->is_guest ? __('ضيف: :name', ['name' => $r->guest_name]) : null),
+                TextColumn::make('check_in_at')->label(__('الدخول'))->dateTime('Y-m-d h:i A')->sortable(),
+                TextColumn::make('check_out_at')->label(__('الخروج'))->dateTime('h:i A')->placeholder(__('داخل الجيم'))->badge()
                     ->color(fn ($state) => $state ? 'gray' : 'success'),
-                TextColumn::make('duration')->label('المدة')->placeholder('-'),
-                TextColumn::make('subscription.plan.name')->label('الباقة')->placeholder('-')->toggleable(),
-                TextColumn::make('recorder.name')->label('سجله')->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('notes')->label('ملاحظات')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('duration')->label(__('المدة'))->placeholder('-'),
+                TextColumn::make('subscription.plan.name')->label(__('الباقة'))->placeholder('-')->toggleable(),
+                TextColumn::make('recorder.name')->label(__('سجله'))->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('notes')->label(__('ملاحظات'))->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Filter::make('inside')->label('المتواجدون الآن')->query(fn (Builder $query) => $query->whereNull('check_out_at')),
-                Filter::make('today')->label('اليوم')->query(fn (Builder $query) => $query->whereDate('check_in_at', today()))->default(),
-                TernaryFilter::make('is_guest')->label('ضيوف'),
+                Filter::make('inside')->label(__('المتواجدون الآن'))->query(fn (Builder $query) => $query->whereNull('check_out_at')),
+                Filter::make('today')->label(__('اليوم'))->query(fn (Builder $query) => $query->whereDate('check_in_at', today()))->default(),
+                TernaryFilter::make('is_guest')->label(__('ضيوف')),
                 Filter::make('date')->schema([
-                    DatePicker::make('from')->label('من'),
-                    DatePicker::make('until')->label('إلى'),
+                    DatePicker::make('from')->label(__('من')),
+                    DatePicker::make('until')->label(__('إلى')),
                 ])->query(fn (Builder $query, array $data) => $query
                     ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('check_in_at', '>=', $d))
                     ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('check_in_at', '<=', $d))),
             ])
             ->recordActions([
-                Action::make('checkout')->label('تسجيل خروج')->icon(Heroicon::OutlinedArrowRightStartOnRectangle)
+                Action::make('checkout')->label(__('تسجيل خروج'))->icon(Heroicon::OutlinedArrowRightStartOnRectangle)
                     ->visible(fn (Attendance $r) => ! $r->check_out_at)
                     ->action(fn (Attendance $r) => $r->update(['check_out_at' => now()])),
                 EditAction::make()->visible(fn () => auth()->user()->isManager()),

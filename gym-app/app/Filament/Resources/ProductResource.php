@@ -29,13 +29,19 @@ class ProductResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'المتجر والبوفيه';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Store;
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $modelLabel = 'منتج';
+    public static function getModelLabel(): string
+    {
+        return __('منتج');
+    }
 
-    protected static ?string $pluralModelLabel = 'المنتجات والمخزون';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المنتجات والمخزون');
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -55,16 +61,16 @@ class ProductResource extends Resource
     {
         return $schema->components([
             Grid::make(3)->columnSpanFull()->schema([
-                TextInput::make('name')->label('اسم المنتج')->required()->columnSpan(2),
-                TextInput::make('sku')->label('الكود / الباركود')->unique(ignoreRecord: true),
-                TextInput::make('category')->label('التصنيف')->placeholder('مكملات، مشروبات، ملابس ...')
+                TextInput::make('name')->label(__('اسم المنتج'))->required()->columnSpan(2),
+                TextInput::make('sku')->label(__('الكود / الباركود'))->unique(ignoreRecord: true),
+                TextInput::make('category')->label(__('التصنيف'))->placeholder(__('مكملات، مشروبات، ملابس ...'))
                     ->datalist(fn () => Product::query()->distinct()->pluck('category')->filter()->all()),
-                TextInput::make('cost_price')->label('سعر التكلفة')->numeric()->default(0)->suffix(Setting::currency()),
-                TextInput::make('sale_price')->label('سعر البيع')->numeric()->required()->suffix(Setting::currency()),
-                TextInput::make('stock')->label('الكمية بالمخزن')->numeric()->default(0)->required(),
-                TextInput::make('low_stock_alert')->label('تنبيه عند وصول الكمية إلى')->numeric()->default(5),
-                Toggle::make('is_active')->label('متاح للبيع')->default(true)->inline(false),
-                FileUpload::make('image')->label('الصورة')->image()->directory('products')->columnSpanFull(),
+                TextInput::make('cost_price')->label(__('سعر التكلفة'))->numeric()->default(0)->suffix(Setting::currency()),
+                TextInput::make('sale_price')->label(__('سعر البيع'))->numeric()->required()->suffix(Setting::currency()),
+                TextInput::make('stock')->label(__('الكمية بالمخزن'))->numeric()->default(0)->required(),
+                TextInput::make('low_stock_alert')->label(__('تنبيه عند وصول الكمية إلى'))->numeric()->default(5),
+                Toggle::make('is_active')->label(__('متاح للبيع'))->default(true)->inline(false),
+                FileUpload::make('image')->label(__('الصورة'))->image()->directory('products')->columnSpanFull(),
             ]),
         ]);
     }
@@ -74,25 +80,25 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('image')->label('')->square(),
-                TextColumn::make('name')->label('المنتج')->searchable()->sortable(),
-                TextColumn::make('sku')->label('الكود')->searchable()->toggleable(),
-                TextColumn::make('category')->label('التصنيف')->badge()->searchable(),
-                TextColumn::make('cost_price')->label('التكلفة')->numeric(2, locale: 'en')->toggleable(),
-                TextColumn::make('sale_price')->label('سعر البيع')->numeric(2, locale: 'en')->sortable(),
-                TextColumn::make('stock')->label('المخزون')->sortable()->badge()
+                TextColumn::make('name')->label(__('المنتج'))->searchable()->sortable(),
+                TextColumn::make('sku')->label(__('الكود'))->searchable()->toggleable(),
+                TextColumn::make('category')->label(__('التصنيف'))->badge()->searchable(),
+                TextColumn::make('cost_price')->label(__('التكلفة'))->numeric(2, locale: 'en')->toggleable(),
+                TextColumn::make('sale_price')->label(__('سعر البيع'))->numeric(2, locale: 'en')->sortable(),
+                TextColumn::make('stock')->label(__('المخزون'))->sortable()->badge()
                     ->color(fn (Product $r) => $r->stock <= $r->low_stock_alert ? 'danger' : 'success'),
-                ToggleColumn::make('is_active')->label('متاح'),
+                ToggleColumn::make('is_active')->label(__('متاح')),
             ])
             ->filters([
-                Filter::make('low')->label('مخزون منخفض')
+                Filter::make('low')->label(__('مخزون منخفض'))
                     ->query(fn (Builder $query) => $query->whereColumn('stock', '<=', 'low_stock_alert')),
             ])
             ->recordActions([
-                Action::make('restock')->label('إضافة مخزون')->icon(Heroicon::OutlinedPlusCircle)->color('success')
-                    ->schema([TextInput::make('qty')->label('الكمية المضافة')->numeric()->minValue(1)->required()])
+                Action::make('restock')->label(__('إضافة مخزون'))->icon(Heroicon::OutlinedPlusCircle)->color('success')
+                    ->schema([TextInput::make('qty')->label(__('الكمية المضافة'))->numeric()->minValue(1)->required()])
                     ->action(function (Product $record, array $data) {
                         $record->increment('stock', (int) $data['qty']);
-                        Notification::make()->title('تم تحديث المخزون')->success()->send();
+                        Notification::make()->title(__('تم تحديث المخزون'))->success()->send();
                     }),
                 EditAction::make(),
                 DeleteAction::make(),

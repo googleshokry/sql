@@ -35,13 +35,19 @@ class TrainerResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'الإدارة';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Admin;
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'مدرب';
+    public static function getModelLabel(): string
+    {
+        return __('مدرب');
+    }
 
-    protected static ?string $pluralModelLabel = 'المدربين';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المدربين');
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -49,17 +55,17 @@ class TrainerResource extends Resource
     {
         return $schema->components([
             Grid::make(3)->columnSpanFull()->schema([
-                TextInput::make('name')->label('الاسم')->required(),
-                TextInput::make('phone')->label('الموبايل')->tel(),
-                TextInput::make('email')->label('البريد')->email(),
-                TextInput::make('specialty')->label('التخصص')->placeholder('كمال أجسام، فيتنس، كارديو ...'),
-                Select::make('gender')->label('النوع')->options(['male' => 'ذكر', 'female' => 'أنثى'])->default('male')->required(),
-                DatePicker::make('hired_at')->label('تاريخ التعيين'),
-                TextInput::make('salary')->label('المرتب الشهري')->numeric()->default(0)->suffix(Setting::currency()),
-                TextInput::make('commission_percent')->label('نسبة العمولة من الاشتراكات')->numeric()->default(0)->suffix('%'),
-                Toggle::make('is_active')->label('نشط')->default(true)->inline(false),
-                FileUpload::make('photo')->label('الصورة')->image()->avatar()->directory('trainers'),
-                Textarea::make('notes')->label('ملاحظات')->columnSpan(2),
+                TextInput::make('name')->label(__('الاسم'))->required(),
+                TextInput::make('phone')->label(__('الموبايل'))->tel(),
+                TextInput::make('email')->label(__('البريد'))->email(),
+                TextInput::make('specialty')->label(__('التخصص'))->placeholder(__('كمال أجسام، فيتنس، كارديو ...')),
+                Select::make('gender')->label(__('النوع'))->options(['male' => __('ذكر'), 'female' => __('أنثى')])->default('male')->required(),
+                DatePicker::make('hired_at')->label(__('تاريخ التعيين')),
+                TextInput::make('salary')->label(__('المرتب الشهري'))->numeric()->default(0)->suffix(Setting::currency()),
+                TextInput::make('commission_percent')->label(__('نسبة العمولة من الاشتراكات'))->numeric()->default(0)->suffix('%'),
+                Toggle::make('is_active')->label(__('نشط'))->default(true)->inline(false),
+                FileUpload::make('photo')->label(__('الصورة'))->image()->avatar()->directory('trainers'),
+                Textarea::make('notes')->label(__('ملاحظات'))->columnSpan(2),
             ]),
         ]);
     }
@@ -70,13 +76,13 @@ class TrainerResource extends Resource
             ->columns([
                 ImageColumn::make('photo')->label('')->circular()
                     ->defaultImageUrl(fn (Trainer $r) => \App\Support\Avatar::for($r->name, '#374151')),
-                TextColumn::make('name')->label('الاسم')->searchable()->sortable(),
-                TextColumn::make('phone')->label('الموبايل')->searchable(),
-                TextColumn::make('specialty')->label('التخصص'),
-                TextColumn::make('members_count')->label('المشتركين')->counts('members')->badge(),
-                TextColumn::make('salary')->label('المرتب')->numeric(2, locale: 'en'),
-                TextColumn::make('commission_percent')->label('العمولة')->suffix('%'),
-                ToggleColumn::make('is_active')->label('نشط'),
+                TextColumn::make('name')->label(__('الاسم'))->searchable()->sortable(),
+                TextColumn::make('phone')->label(__('الموبايل'))->searchable(),
+                TextColumn::make('specialty')->label(__('التخصص')),
+                TextColumn::make('members_count')->label(__('المشتركين'))->counts('members')->badge(),
+                TextColumn::make('salary')->label(__('المرتب'))->numeric(2, locale: 'en'),
+                TextColumn::make('commission_percent')->label(__('العمولة'))->suffix('%'),
+                ToggleColumn::make('is_active')->label(__('نشط')),
             ])
             ->filters([TrashedFilter::make()])
             ->recordActions([EditAction::make(), DeleteAction::make(), RestoreAction::make()]);

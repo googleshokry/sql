@@ -9,7 +9,10 @@ class AttendanceChart extends ChartWidget
 {
     protected static ?int $sort = 3;
 
-    protected ?string $heading = 'الحضور اليومي (آخر 14 يوم)';
+    public function getHeading(): ?string
+    {
+        return __('الحضور اليومي (آخر 14 يوم)');
+    }
 
     protected ?string $maxHeight = '300px';
 
@@ -19,7 +22,7 @@ class AttendanceChart extends ChartWidget
 
         return [
             'datasets' => [[
-                'label' => 'عدد الحضور',
+                'label' => __('عدد الحضور'),
                 'data' => $days->map(fn ($d) => Attendance::whereDate('check_in_at', $d)->count())->all(),
                 'borderColor' => '#f59e0b',
                 'backgroundColor' => 'rgba(245,158,11,.2)',

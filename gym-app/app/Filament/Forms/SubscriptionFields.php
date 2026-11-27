@@ -29,9 +29,9 @@ class SubscriptionFields
 
         return [
             Grid::make(3)->columnSpanFull()->schema([
-                Select::make('plan_id')->label('الباقة')
+                Select::make('plan_id')->label(__('الباقة'))
                     ->options(fn () => Plan::where('is_active', true)->get()
-                        ->mapWithKeys(fn (Plan $p) => [$p->id => "{$p->name} - {$p->duration_days} يوم - ".number_format((float) $p->price)." {$currency}"]))
+                        ->mapWithKeys(fn (Plan $p) => [$p->id => __(':name - :days يوم - :price', ['name' => $p->name, 'days' => $p->duration_days, 'price' => number_format((float) $p->price).' '.$currency])]))
                     ->required($required)->searchable()->live()
                     ->afterStateUpdated(function (Set $set, ?string $state) {
                         $plan = $state ? Plan::find($state) : null;
@@ -39,15 +39,15 @@ class SubscriptionFields
                         $set('paid_amount', $plan?->price);
                         $set('discount', 0);
                     })->columnSpan(2),
-                DatePicker::make('start_date')->label('تاريخ البداية')
+                DatePicker::make('start_date')->label(__('تاريخ البداية'))
                     ->default(($defaultStart ?? today())->toDateString())->required($required)->live(),
-                TextInput::make('price')->label('السعر')->numeric()->minValue(0)->suffix($currency)->live(onBlur: true)
+                TextInput::make('price')->label(__('السعر'))->numeric()->minValue(0)->suffix($currency)->live(onBlur: true)
                     ->required($required)->visible(fn (Get $get) => filled($get('plan_id'))),
-                TextInput::make('discount')->label('الخصم')->numeric()->minValue(0)->default(0)->suffix($currency)
+                TextInput::make('discount')->label(__('الخصم'))->numeric()->minValue(0)->default(0)->suffix($currency)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn (Get $get, Set $set) => $set('paid_amount', max(0, (float) $get('price') - (float) $get('discount'))))
                     ->visible(fn (Get $get) => filled($get('plan_id'))),
-                TextEntry::make('summary')->label('الإجمالي / تاريخ الانتهاء')
+                TextEntry::make('summary')->label(__('الإجمالي / تاريخ الانتهاء'))
                     ->state(function (Get $get) use ($currency) {
                         $plan = Plan::find($get('plan_id'));
                         if (! $plan) {
@@ -56,16 +56,16 @@ class SubscriptionFields
                         $total = max(0, (float) $get('price') - (float) $get('discount'));
                         $end = Carbon::parse($get('start_date') ?: today())->addDays($plan->duration_days - 1)->format('Y-m-d');
 
-                        return number_format($total, 2)." {$currency} — ينتهي {$end}";
+                        return __(':total — ينتهي :date', ['total' => number_format($total, 2).' '.$currency, 'date' => $end]);
                     })->visible(fn (Get $get) => filled($get('plan_id'))),
-                TextInput::make('paid_amount')->label('المدفوع الآن')->numeric()->minValue(0)->suffix($currency)
+                TextInput::make('paid_amount')->label(__('المدفوع الآن'))->numeric()->minValue(0)->suffix($currency)
                     ->visible(fn (Get $get) => filled($get('plan_id'))),
-                Select::make('method')->label('طريقة الدفع')->options(Payment::METHODS)->default('cash')
+                Select::make('method')->label(__('طريقة الدفع'))->options(Payment::methods())->default('cash')
                     ->visible(fn (Get $get) => filled($get('plan_id'))),
-                Select::make('trainer_id')->label('المدرب')
+                Select::make('trainer_id')->label(__('المدرب'))
                     ->options(fn () => Trainer::where('is_active', true)->pluck('name', 'id'))->searchable()
                     ->visible(fn (Get $get) => filled($get('plan_id'))),
-                Textarea::make('notes')->label('ملاحظات الاشتراك')->columnSpanFull()
+                Textarea::make('notes')->label(__('ملاحظات الاشتراك'))->columnSpanFull()
                     ->visible(fn (Get $get) => filled($get('plan_id'))),
             ]),
         ];

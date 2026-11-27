@@ -26,27 +26,33 @@ class UserResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'الإدارة';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Admin;
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $modelLabel = 'مستخدم';
+    public static function getModelLabel(): string
+    {
+        return __('مستخدم');
+    }
 
-    protected static ?string $pluralModelLabel = 'المستخدمين والصلاحيات';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المستخدمين والصلاحيات');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Grid::make(2)->columnSpanFull()->schema([
-                TextInput::make('name')->label('الاسم')->required(),
-                TextInput::make('email')->label('البريد (اسم الدخول)')->email()->required()->unique(ignoreRecord: true),
-                TextInput::make('phone')->label('الموبايل')->tel(),
-                Select::make('role')->label('الصلاحية')->options(User::ROLES)->required()->default(User::ROLE_RECEPTIONIST),
-                TextInput::make('password')->label('كلمة المرور')->password()->revealable()
+                TextInput::make('name')->label(__('الاسم'))->required(),
+                TextInput::make('email')->label(__('البريد (اسم الدخول)'))->email()->required()->unique(ignoreRecord: true),
+                TextInput::make('phone')->label(__('الموبايل'))->tel(),
+                Select::make('role')->label(__('الصلاحية'))->options(User::roles())->required()->default(User::ROLE_RECEPTIONIST),
+                TextInput::make('password')->label(__('كلمة المرور'))->password()->revealable()
                     ->required(fn (string $operation) => $operation === 'create')
                     ->dehydrated(fn (?string $state) => filled($state))
-                    ->helperText(fn (string $operation) => $operation === 'edit' ? 'اتركها فارغة للإبقاء على كلمة المرور الحالية' : null),
-                Toggle::make('is_active')->label('مفعل')->default(true)->inline(false),
+                    ->helperText(fn (string $operation) => $operation === 'edit' ? __('اتركها فارغة للإبقاء على كلمة المرور الحالية') : null),
+                Toggle::make('is_active')->label(__('مفعل'))->default(true)->inline(false),
             ]),
         ]);
     }
@@ -55,15 +61,15 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('email')->label('البريد')->searchable(),
-                TextColumn::make('phone')->label('الموبايل'),
-                TextColumn::make('role')->label('الصلاحية')->badge()
-                    ->formatStateUsing(fn ($state) => User::ROLES[$state] ?? $state)
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('email')->label(__('البريد'))->searchable(),
+                TextColumn::make('phone')->label(__('الموبايل')),
+                TextColumn::make('role')->label(__('الصلاحية'))->badge()
+                    ->formatStateUsing(fn ($state) => User::roles()[$state] ?? $state)
                     ->color(fn ($state) => match ($state) { 'admin' => 'danger', 'manager' => 'warning', default => 'info' }),
-                ToggleColumn::make('is_active')->label('مفعل')
+                ToggleColumn::make('is_active')->label(__('مفعل'))
                     ->disabled(fn (User $r) => $r->id === auth()->id()),
-                TextColumn::make('created_at')->label('تاريخ الإضافة')->date('Y-m-d'),
+                TextColumn::make('created_at')->label(__('تاريخ الإضافة'))->date('Y-m-d'),
             ])
             ->recordActions([
                 EditAction::make(),

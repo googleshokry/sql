@@ -34,27 +34,33 @@ class ExpenseResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingDown;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'المالية';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Finance;
 
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $modelLabel = 'مصروف';
+    public static function getModelLabel(): string
+    {
+        return __('مصروف');
+    }
 
-    protected static ?string $pluralModelLabel = 'المصروفات';
+    public static function getPluralModelLabel(): string
+    {
+        return __('المصروفات');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Grid::make(2)->columnSpanFull()->schema([
-                TextInput::make('title')->label('البيان')->required(),
-                Select::make('expense_category_id')->label('البند')->relationship('category', 'name')
+                TextInput::make('title')->label(__('البيان'))->required(),
+                Select::make('expense_category_id')->label(__('البند'))->relationship('category', 'name')
                     ->searchable()->preload()
-                    ->createOptionForm([TextInput::make('name')->label('اسم البند')->required()]),
-                TextInput::make('amount')->label('المبلغ')->numeric()->minValue(0)->required()->suffix(Setting::currency()),
-                DatePicker::make('spent_at')->label('التاريخ')->default(now())->required(),
-                Select::make('method')->label('طريقة الدفع')->options(Payment::METHODS)->default('cash')->required(),
-                FileUpload::make('attachment')->label('مرفق (فاتورة)')->directory('expenses'),
-                Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
+                    ->createOptionForm([TextInput::make('name')->label(__('اسم البند'))->required()]),
+                TextInput::make('amount')->label(__('المبلغ'))->numeric()->minValue(0)->required()->suffix(Setting::currency()),
+                DatePicker::make('spent_at')->label(__('التاريخ'))->default(now())->required(),
+                Select::make('method')->label(__('طريقة الدفع'))->options(Payment::methods())->default('cash')->required(),
+                FileUpload::make('attachment')->label(__('مرفق (فاتورة)'))->directory('expenses'),
+                Textarea::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -64,19 +70,19 @@ class ExpenseResource extends Resource
         return $table
             ->defaultSort('spent_at', 'desc')
             ->columns([
-                TextColumn::make('spent_at')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('title')->label('البيان')->searchable(),
-                TextColumn::make('category.name')->label('البند')->badge(),
-                TextColumn::make('amount')->label('المبلغ')->numeric(2, locale: 'en')->sortable()
-                    ->summarize(Sum::make()->label('الإجمالي')->numeric(2, locale: 'en')),
-                TextColumn::make('method')->label('الطريقة')->formatStateUsing(fn ($state) => Payment::METHODS[$state] ?? $state),
-                TextColumn::make('user.name')->label('بواسطة')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('spent_at')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('title')->label(__('البيان'))->searchable(),
+                TextColumn::make('category.name')->label(__('البند'))->badge(),
+                TextColumn::make('amount')->label(__('المبلغ'))->numeric(2, locale: 'en')->sortable()
+                    ->summarize(Sum::make()->label(__('الإجمالي'))->numeric(2, locale: 'en')),
+                TextColumn::make('method')->label(__('الطريقة'))->formatStateUsing(fn ($state) => Payment::methods()[$state] ?? $state),
+                TextColumn::make('user.name')->label(__('بواسطة'))->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('expense_category_id')->label('البند')->relationship('category', 'name'),
+                SelectFilter::make('expense_category_id')->label(__('البند'))->relationship('category', 'name'),
                 Filter::make('date')->schema([
-                    DatePicker::make('from')->label('من'),
-                    DatePicker::make('until')->label('إلى'),
+                    DatePicker::make('from')->label(__('من')),
+                    DatePicker::make('until')->label(__('إلى')),
                 ])->query(fn (Builder $query, array $data) => $query
                     ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('spent_at', '>=', $d))
                     ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('spent_at', '<=', $d))),

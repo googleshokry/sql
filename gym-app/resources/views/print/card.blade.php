@@ -1,6 +1,6 @@
 @extends('print.layout')
 @php($s = \App\Models\Setting::allSettings())
-@section('title', 'كارنيه '.$member->name)
+@section('title', __('كارنيه :name', ['name' => $member->name]))
 @push('styles')
 <style>
     .card { width: 86mm; height: 54mm; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #111827, #374151); color: #fff; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; margin: 0 auto; }
@@ -19,9 +19,9 @@
             <div>
                 <div class="gym">{{ $s['gym_name'] }}</div>
                 <div class="name">{{ $member->name }}</div>
-                <div style="font-size:11px">كود: {{ $member->code }}</div>
+                <div style="font-size:11px">{{ __('كود:') }} {{ $member->code }}</div>
                 @if ($member->latestSubscription)
-                    <div style="font-size:11px">{{ $member->latestSubscription->plan?->name }} — حتى {{ $member->latestSubscription->end_date->format('Y-m-d') }}</div>
+                    <div style="font-size:11px">{{ $member->latestSubscription->plan?->name }} {{ __('— حتى') }} {{ $member->latestSubscription->end_date->format('Y-m-d') }}</div>
                 @endif
             </div>
         </div>

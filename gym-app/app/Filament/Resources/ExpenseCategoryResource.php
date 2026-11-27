@@ -22,18 +22,24 @@ class ExpenseCategoryResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'المالية';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Finance;
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $modelLabel = 'بند مصروف';
+    public static function getModelLabel(): string
+    {
+        return __('بند مصروف');
+    }
 
-    protected static ?string $pluralModelLabel = 'بنود المصروفات';
+    public static function getPluralModelLabel(): string
+    {
+        return __('بنود المصروفات');
+    }
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('اسم البند')->required()->columnSpanFull(),
+            TextInput::make('name')->label(__('اسم البند'))->required()->columnSpanFull(),
         ]);
     }
 
@@ -41,9 +47,9 @@ class ExpenseCategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('البند')->searchable(),
-                TextColumn::make('expenses_count')->label('عدد المصروفات')->counts('expenses'),
-                TextColumn::make('expenses_sum_amount')->label('الإجمالي')->sum('expenses', 'amount')->numeric(2, locale: 'en'),
+                TextColumn::make('name')->label(__('البند'))->searchable(),
+                TextColumn::make('expenses_count')->label(__('عدد المصروفات'))->counts('expenses'),
+                TextColumn::make('expenses_sum_amount')->label(__('الإجمالي'))->sum('expenses', 'amount')->numeric(2, locale: 'en'),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

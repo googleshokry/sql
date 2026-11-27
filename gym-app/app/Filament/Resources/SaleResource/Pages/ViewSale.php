@@ -12,6 +12,6 @@ class ViewSale extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('print')->label('طباعة')->url(fn () => route('print.sale', $this->record), true)];
+        return [Action::make('print')->label(__('طباعة'))->url(fn () => route('print.sale', $this->record), true)];
     }
 }

@@ -3,20 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class Member extends Model
+class Member extends Authenticatable
 {
-    use SoftDeletes;
+    use HasApiTokens, SoftDeletes;
 
     protected $guarded = ['id'];
 
+    protected $hidden = ['password', 'remember_token'];
+
     protected $casts = [
+        'password' => 'hashed',
+        'last_app_login_at' => 'datetime',
         'birth_date' => 'date',
         'joined_at' => 'date',
         'is_blocked' => 'boolean',

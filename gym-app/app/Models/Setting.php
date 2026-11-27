@@ -15,6 +15,11 @@ class Setting extends Model
         'gym_phone' => '',
         'gym_address' => '',
         'gym_logo' => null,
+        'gym_about' => '',
+        'working_hours' => '',
+        'gym_location_url' => '',
+        'gym_instagram' => '',
+        'gym_facebook' => '',
         'currency' => 'ج.م',
         'expiry_warning_days' => 7,
         'auto_checkout_hours' => 4,
@@ -51,6 +56,6 @@ class Setting extends Model
 
     public static function currency(): string
     {
-        return (string) static::get('currency');
+        return __((string) static::get('currency'));
     }
 }

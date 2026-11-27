@@ -20,9 +20,15 @@ class SubscriptionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'subscriptions';
 
-    protected static ?string $title = 'الاشتراكات';
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('الاشتراكات');
+    }
 
-    protected static ?string $modelLabel = 'اشتراك';
+    protected static function getModelLabel(): ?string
+    {
+        return __('اشتراك');
+    }
 
     public function isReadOnly(): bool
     {
@@ -32,14 +38,14 @@ class SubscriptionsRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            DatePicker::make('start_date')->label('البداية')->required(),
-            DatePicker::make('end_date')->label('النهاية')->required(),
-            TextInput::make('price')->label('السعر')->numeric()->required(),
-            TextInput::make('discount')->label('الخصم')->numeric(),
-            TextInput::make('sessions_total')->label('عدد الحصص')->numeric(),
-            TextInput::make('sessions_used')->label('الحصص المستخدمة')->numeric(),
-            TextInput::make('freeze_days_allowed')->label('أيام التجميد المسموحة')->numeric(),
-            Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
+            DatePicker::make('start_date')->label(__('البداية'))->required(),
+            DatePicker::make('end_date')->label(__('النهاية'))->required(),
+            TextInput::make('price')->label(__('السعر'))->numeric()->required(),
+            TextInput::make('discount')->label(__('الخصم'))->numeric(),
+            TextInput::make('sessions_total')->label(__('عدد الحصص'))->numeric(),
+            TextInput::make('sessions_used')->label(__('الحصص المستخدمة'))->numeric(),
+            TextInput::make('freeze_days_allowed')->label(__('أيام التجميد المسموحة'))->numeric(),
+            Textarea::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
         ]);
     }
 
@@ -50,20 +56,20 @@ class SubscriptionsRelationManager extends RelationManager
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with('plan')->withSum('payments', 'amount'))
             ->columns([
-                TextColumn::make('plan.name')->label('الباقة')->weight('bold'),
-                TextColumn::make('start_date')->label('من')->date('Y-m-d'),
-                TextColumn::make('end_date')->label('إلى')->date('Y-m-d'),
-                TextColumn::make('days_left')->label('متبقي')->suffix(' يوم'),
-                TextColumn::make('sessions')->label('الحصص')
-                    ->state(fn (Subscription $r) => $r->sessions_total ? "{$r->sessions_used} / {$r->sessions_total}" : 'غير محدود'),
-                TextColumn::make('total')->label('الإجمالي')->numeric(2, locale: 'en')->suffix($cur),
-                TextColumn::make('paid_amount')->label('المدفوع')->numeric(2, locale: 'en')->suffix($cur)->color('success'),
-                TextColumn::make('remaining_amount')->label('المتبقي')->numeric(2, locale: 'en')->suffix($cur)
+                TextColumn::make('plan.name')->label(__('الباقة'))->weight('bold'),
+                TextColumn::make('start_date')->label(__('من'))->date('Y-m-d'),
+                TextColumn::make('end_date')->label(__('إلى'))->date('Y-m-d'),
+                TextColumn::make('days_left')->label(__('متبقي'))->suffix(__(' يوم')),
+                TextColumn::make('sessions')->label(__('الحصص'))
+                    ->state(fn (Subscription $r) => $r->sessions_total ? "{$r->sessions_used} / {$r->sessions_total}" : __('غير محدود')),
+                TextColumn::make('total')->label(__('الإجمالي'))->numeric(2, locale: 'en')->suffix($cur),
+                TextColumn::make('paid_amount')->label(__('المدفوع'))->numeric(2, locale: 'en')->suffix($cur)->color('success'),
+                TextColumn::make('remaining_amount')->label(__('المتبقي'))->numeric(2, locale: 'en')->suffix($cur)
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
-                TextColumn::make('status')->label('الحالة')->badge()
-                    ->formatStateUsing(fn ($state) => Subscription::STATUSES[$state] ?? $state)
+                TextColumn::make('status')->label(__('الحالة'))->badge()
+                    ->formatStateUsing(fn ($state) => Subscription::statuses()[$state] ?? $state)
                     ->color(fn ($state) => Subscription::STATUS_COLORS[$state] ?? 'gray'),
-                TextColumn::make('freeze')->label('التجميد')
+                TextColumn::make('freeze')->label(__('التجميد'))
                     ->state(fn (Subscription $r) => $r->freeze_days_used.' / '.$r->freeze_days_allowed),
             ])
             ->headerActions([GymActions::renew(fn () => $this->getOwnerRecord(), 'newSubscription')])

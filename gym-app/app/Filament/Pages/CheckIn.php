@@ -14,13 +14,19 @@ class CheckIn extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedQrCode;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'الحضور والانصراف';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Attendance;
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'تسجيل الدخول والخروج';
+    public static function getNavigationLabel(): string
+    {
+        return __('تسجيل الدخول والخروج');
+    }
 
-    protected static ?string $title = 'تسجيل الدخول والخروج';
+    public function getTitle(): string
+    {
+        return __('تسجيل الدخول والخروج');
+    }
 
     protected static ?string $slug = 'check-in';
 
@@ -46,7 +52,7 @@ class CheckIn extends Page
         $found = Member::search($term)->limit(10)->get();
 
         if ($found->isEmpty()) {
-            $this->result = ['ok' => false, 'action' => null, 'message' => 'لا يوجد مشترك بهذا الكود / الرقم'];
+            $this->result = ['ok' => false, 'action' => null, 'message' => __('لا يوجد مشترك بهذا الكود / الرقم')];
         } elseif ($found->count() > 1 && ! $found->firstWhere('code', $term)) {
             $this->matches = $found->map(fn (Member $m) => ['id' => $m->id, 'name' => $m->name, 'code' => $m->code, 'phone' => $m->phone])->all();
         } else {

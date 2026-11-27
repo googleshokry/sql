@@ -21,13 +21,19 @@ class Settings extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'الإدارة';
+    protected static string|\UnitEnum|null $navigationGroup = \App\Enums\NavGroup::Admin;
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $navigationLabel = 'الإعدادات';
+    public static function getNavigationLabel(): string
+    {
+        return __('الإعدادات');
+    }
 
-    protected static ?string $title = 'إعدادات الجيم';
+    public function getTitle(): string
+    {
+        return __('إعدادات الجيم');
+    }
 
     public ?array $data = [];
 
@@ -46,22 +52,30 @@ class Settings extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
-            Section::make('بيانات الجيم')->columns(2)->schema([
-                TextInput::make('gym_name')->label('اسم الجيم')->required(),
-                TextInput::make('gym_phone')->label('رقم التليفون'),
-                TextInput::make('gym_address')->label('العنوان')->columnSpanFull(),
-                TextInput::make('currency')->label('العملة')->required(),
-                FileUpload::make('gym_logo')->label('الشعار')->image()->directory('settings'),
+            Section::make(__('بيانات الجيم'))->columns(2)->schema([
+                TextInput::make('gym_name')->label(__('اسم الجيم'))->required(),
+                TextInput::make('gym_phone')->label(__('رقم التليفون')),
+                TextInput::make('gym_address')->label(__('العنوان'))->columnSpanFull(),
+                TextInput::make('currency')->label(__('العملة'))->required(),
+                FileUpload::make('gym_logo')->label(__('الشعار'))->image()->directory('settings'),
             ]),
-            Section::make('الحضور والتنبيهات')->columns(2)->schema([
-                TextInput::make('expiry_warning_days')->label('التنبيه قبل انتهاء الاشتراك بـ (يوم)')->numeric()->minValue(1)->required(),
-                TextInput::make('auto_checkout_hours')->label('تسجيل خروج تلقائي بعد (ساعة)')->numeric()->minValue(1)->required(),
-                Toggle::make('allow_checkin_with_debt')->label('السماح بالدخول مع وجود مبلغ متبقي'),
+            Section::make(__('بيانات تظهر في تطبيق الموبايل'))->columns(2)->schema([
+                Textarea::make('gym_about')->label(__('نبذة عن الجيم'))->rows(3)->columnSpanFull(),
+                Textarea::make('working_hours')->label(__('مواعيد العمل'))->rows(3)->columnSpanFull()
+                    ->placeholder(__('مثال: يومياً 7 صباحاً - 12 منتصف الليل، الجمعة 2 ظهراً - 12')),
+                TextInput::make('gym_location_url')->label(__('رابط الموقع على الخريطة'))->url(),
+                TextInput::make('gym_instagram')->label(__('إنستجرام'))->url(),
+                TextInput::make('gym_facebook')->label(__('فيسبوك'))->url(),
             ]),
-            Section::make('الرسائل والإيصالات')->schema([
-                Textarea::make('whatsapp_expiry_message')->label('رسالة واتساب للتذكير')
-                    ->helperText('المتغيرات المتاحة: {name} {gym} {end_date} {plan}')->rows(3),
-                TextInput::make('receipt_footer')->label('تذييل الإيصال'),
+            Section::make(__('الحضور والتنبيهات'))->columns(2)->schema([
+                TextInput::make('expiry_warning_days')->label(__('التنبيه قبل انتهاء الاشتراك بـ (يوم)'))->numeric()->minValue(1)->required(),
+                TextInput::make('auto_checkout_hours')->label(__('تسجيل خروج تلقائي بعد (ساعة)'))->numeric()->minValue(1)->required(),
+                Toggle::make('allow_checkin_with_debt')->label(__('السماح بالدخول مع وجود مبلغ متبقي')),
+            ]),
+            Section::make(__('الرسائل والإيصالات'))->schema([
+                Textarea::make('whatsapp_expiry_message')->label(__('رسالة واتساب للتذكير'))
+                    ->helperText(__('المتغيرات المتاحة: {name} {gym} {end_date} {plan}'))->rows(3),
+                TextInput::make('receipt_footer')->label(__('تذييل الإيصال')),
             ]),
         ]);
     }
@@ -73,7 +87,7 @@ class Settings extends Page
                 ->id('form')
                 ->livewireSubmitHandler('save')
                 ->footer([
-                    Actions::make([Action::make('save')->label('حفظ الإعدادات')->submit('save')]),
+                    Actions::make([Action::make('save')->label(__('حفظ الإعدادات'))->submit('save')]),
                 ]),
         ]);
     }
@@ -81,6 +95,6 @@ class Settings extends Page
     public function save(): void
     {
         Setting::put($this->form->getState());
-        Notification::make()->title('تم حفظ الإعدادات')->success()->send();
+        Notification::make()->title(__('تم حفظ الإعدادات'))->success()->send();
     }
 }
