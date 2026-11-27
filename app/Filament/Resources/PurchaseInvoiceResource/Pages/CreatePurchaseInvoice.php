@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Filament\Resources\PurchaseInvoiceResource\Pages;
+
+use App\Filament\Resources\PurchaseInvoiceResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreatePurchaseInvoice extends CreateRecord
+{
+    protected static string $resource = PurchaseInvoiceResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
+    }
+}

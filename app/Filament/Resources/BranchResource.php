@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\BranchResource\Pages;
+use App\Models\Branch;
+use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use UnitEnum;
+
+class BranchResource extends Resource
+{
+    protected static ?string $model = Branch::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
+
+    protected static string|UnitEnum|null $navigationGroup = 'الإعدادات';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static ?string $modelLabel = 'فرع';
+
+    protected static ?string $pluralModelLabel = 'الفروع';
+
+    public static function canAccess(array $parameters = []): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->columns(2)->components([
+            TextInput::make('name')->label('اسم الفرع')->required(),
+            TextInput::make('phone')->label('الهاتف'),
+            TextInput::make('address')->label('العنوان')->columnSpanFull(),
+            Toggle::make('is_active')->label('نشط')->default(true),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')->label('الاسم')->searchable(),
+                TextColumn::make('phone')->label('الهاتف'),
+                TextColumn::make('address')->label('العنوان'),
+                IconColumn::make('is_active')->label('نشط')->boolean(),
+            ])
+            ->defaultSort('id', 'desc')
+            ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ManageBranches::route('/'),
+        ];
+    }
+}

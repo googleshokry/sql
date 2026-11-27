@@ -1,0 +1,28 @@
+/* أنماط التقارير ونقطة البيع */
+.erp-table{width:100%;border-collapse:collapse;font-size:.875rem}
+.erp-table th,.erp-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(128,128,128,.2);text-align:start}
+.erp-table thead th{background:rgba(99,102,241,.08);font-weight:700;white-space:nowrap}
+.erp-table tfoot td{font-weight:700;background:rgba(128,128,128,.08)}
+.erp-table td.num,.erp-table th.num{text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap}
+.erp-table tr.group td{font-weight:700;background:rgba(128,128,128,.05)}
+.erp-filters{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end;margin-bottom:1rem}
+.erp-filters label{display:block;font-size:.8rem;margin-bottom:.25rem;opacity:.8}
+.erp-filters input,.erp-filters select{border:1px solid rgba(128,128,128,.35);border-radius:.5rem;padding:.45rem .6rem;background:transparent;min-width:160px;color:inherit}
+.erp-filters select option{color:#111}
+.erp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1rem}
+.erp-kpi{border:1px solid rgba(128,128,128,.2);border-radius:.75rem;padding:.9rem}
+.erp-kpi .v{font-size:1.35rem;font-weight:800;margin-top:.25rem}
+.erp-pos{display:grid;grid-template-columns:1fr 420px;gap:1rem}
+@media (max-width:1024px){.erp-pos{grid-template-columns:1fr}}
+.erp-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem}
+.erp-product{border:1px solid rgba(128,128,128,.25);border-radius:.75rem;padding:.6rem;cursor:pointer;text-align:center;transition:.15s;background:transparent;color:inherit}
+.erp-product:hover{border-color:rgb(99,102,241);box-shadow:0 2px 8px rgba(99,102,241,.25)}
+.erp-product .p{font-weight:800;color:rgb(79,70,229);margin-top:.25rem}
+.erp-product .q{font-size:.75rem;opacity:.7}
+.erp-cart td input{width:70px;border:1px solid rgba(128,128,128,.35);border-radius:.4rem;padding:.2rem .35rem;background:transparent;color:inherit}
+.erp-btn{border-radius:.5rem;padding:.5rem .9rem;font-weight:700;cursor:pointer;border:0}
+.erp-btn-primary{background:rgb(79,70,229);color:#fff}
+.erp-btn-danger{background:rgb(220,38,38);color:#fff}
+.erp-btn-gray{background:rgba(128,128,128,.15);color:inherit}
+.erp-total{font-size:1.8rem;font-weight:900;color:rgb(79,70,229)}
+.text-danger{color:rgb(220,38,38)}.text-success{color:rgb(22,163,74)}
