@@ -20,7 +20,7 @@ class Accounting
         }
 
         return static::$cache[$key] = Account::query()->where('system_key', $key)->firstOr(
-            fn () => throw new BusinessException("الحساب النظامي [$key] غير موجود. شغّل: php artisan db:seed --class=ChartOfAccountsSeeder")
+            fn () => throw new BusinessException(__('الحساب النظامي [:key] غير موجود. شغّل: php artisan db:seed --class=ChartOfAccountsSeeder', ['key' => $key]))
         );
     }
 
@@ -66,7 +66,7 @@ class Accounting
             $debit = round($lines->sum('debit'), 2);
             $credit = round($lines->sum('credit'), 2);
             if (abs($debit - $credit) >= 0.01) {
-                throw new BusinessException("القيد غير متوازن (مدين $debit / دائن $credit)");
+                throw new BusinessException(__('القيد غير متوازن (مدين :debit / دائن :credit)', ['debit' => $debit, 'credit' => $credit]));
             }
 
             $entry = JournalEntry::create([

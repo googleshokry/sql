@@ -1,0 +1,68 @@
+<?php
+
+return [
+    'accepted' => 'يجب قبول :attribute.',
+    'after' => 'يجب أن يكون :attribute تاريخاً بعد :date.',
+    'after_or_equal' => 'يجب أن يكون :attribute تاريخاً بعد أو يساوي :date.',
+    'array' => 'يجب أن يكون :attribute قائمة.',
+    'before' => 'يجب أن يكون :attribute تاريخاً قبل :date.',
+    'before_or_equal' => 'يجب أن يكون :attribute تاريخاً قبل أو يساوي :date.',
+    'between' => [
+        'array' => 'يجب أن يحتوي :attribute على عدد عناصر بين :min و :max.',
+        'file' => 'يجب أن يكون حجم :attribute بين :min و :max كيلوبايت.',
+        'numeric' => 'يجب أن تكون قيمة :attribute بين :min و :max.',
+        'string' => 'يجب أن يكون طول :attribute بين :min و :max حرفاً.',
+    ],
+    'boolean' => 'يجب أن تكون قيمة :attribute صحيحة أو خاطئة.',
+    'confirmed' => 'تأكيد :attribute غير متطابق.',
+    'date' => ':attribute ليس تاريخاً صحيحاً.',
+    'different' => 'يجب أن يكون :attribute و :other مختلفين.',
+    'email' => 'يجب أن يكون :attribute بريداً إلكترونياً صحيحاً.',
+    'exists' => 'قيمة :attribute المختارة غير موجودة.',
+    'file' => 'يجب أن يكون :attribute ملفاً.',
+    'gt' => [
+        'numeric' => 'يجب أن تكون قيمة :attribute أكبر من :value.',
+    ],
+    'gte' => [
+        'numeric' => 'يجب أن تكون قيمة :attribute أكبر من أو تساوي :value.',
+    ],
+    'image' => 'يجب أن يكون :attribute صورة.',
+    'in' => 'قيمة :attribute المختارة غير صحيحة.',
+    'integer' => 'يجب أن يكون :attribute عدداً صحيحاً.',
+    'lt' => [
+        'numeric' => 'يجب أن تكون قيمة :attribute أقل من :value.',
+    ],
+    'max' => [
+        'array' => 'يجب ألا يحتوي :attribute على أكثر من :max عناصر.',
+        'file' => 'يجب ألا يتجاوز حجم :attribute :max كيلوبايت.',
+        'numeric' => 'يجب ألا تتجاوز قيمة :attribute :max.',
+        'string' => 'يجب ألا يتجاوز طول :attribute :max حرفاً.',
+    ],
+    'min' => [
+        'array' => 'يجب أن يحتوي :attribute على :min عناصر على الأقل.',
+        'file' => 'يجب أن يكون حجم :attribute :min كيلوبايت على الأقل.',
+        'numeric' => 'يجب أن تكون قيمة :attribute :min على الأقل.',
+        'string' => 'يجب أن يكون طول :attribute :min حروف على الأقل.',
+    ],
+    'numeric' => 'يجب أن يكون :attribute رقماً.',
+    'regex' => 'صيغة :attribute غير صحيحة.',
+    'required' => 'حقل :attribute مطلوب.',
+    'required_if' => 'حقل :attribute مطلوب عندما يكون :other :value.',
+    'same' => 'يجب أن يتطابق :attribute مع :other.',
+    'string' => 'يجب أن يكون :attribute نصاً.',
+    'unique' => 'قيمة :attribute مستخدمة من قبل.',
+    'url' => 'صيغة الرابط :attribute غير صحيحة.',
+
+    'attributes' => [
+        'email' => 'البريد الإلكتروني',
+        'password' => 'كلمة المرور',
+        'name' => 'الاسم',
+        'phone' => 'الهاتف',
+        'amount' => 'المبلغ',
+        'items' => 'البنود',
+        'quantity' => 'الكمية',
+        'treasury_id' => 'الخزينة',
+        'warehouse_id' => 'المخزن',
+        'customer_id' => 'العميل',
+    ],
+];

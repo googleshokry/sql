@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\InstallmentPlanResource\Pages;
 use App\Filament\Resources\InstallmentPlanResource\RelationManagers\InstallmentsRelationManager;
 use App\Models\InstallmentPlan;
+use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
@@ -27,6 +29,7 @@ use UnitEnum;
 class InstallmentPlanResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = InstallmentPlan::class;
 
@@ -50,17 +53,17 @@ class InstallmentPlanResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(3)->columnSpanFull()->schema([
-                Select::make('customer_id')->label('العميل')->relationship('customer', 'name')->searchable()->preload()->required(),
-                Select::make('sales_invoice_id')->label('الفاتورة (اختياري)')->relationship('salesInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
-                TextInput::make('total_amount')->label('المبلغ الإجمالي')->numeric()->required(),
-                TextInput::make('down_payment')->label('المقدم')->numeric()->default(0),
-                TextInput::make('interest_percent')->label('نسبة الفائدة %')->numeric()->default(0),
-                TextInput::make('installments_count')->label('عدد الأقساط')->numeric()->integer()->minValue(1)->required()->default(6),
-                Select::make('period')->label('الدورية')->options(['monthly' => 'شهري', 'weekly' => 'أسبوعي'])->default('monthly')->required(),
-                DatePicker::make('start_date')->label('تاريخ أول قسط')->required()->default(now()->addMonth()->startOfMonth()),
-                TextInput::make('guarantor_name')->label('اسم الضامن'),
-                TextInput::make('guarantor_phone')->label('هاتف الضامن'),
-                Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
+                Select::make('customer_id')->label(__('العميل'))->relationship('customer', 'name')->searchable()->preload()->required(),
+                Select::make('sales_invoice_id')->label(__('الفاتورة (اختياري)'))->relationship('salesInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
+                TextInput::make('total_amount')->label(__('المبلغ الإجمالي'))->numeric()->required(),
+                TextInput::make('down_payment')->label(__('المقدم'))->numeric()->default(0),
+                TextInput::make('interest_percent')->label(__('نسبة الفائدة %'))->numeric()->default(0),
+                TextInput::make('installments_count')->label(__('عدد الأقساط'))->numeric()->integer()->minValue(1)->required()->default(6),
+                Select::make('period')->label(__('الدورية'))->options(['monthly' => __('شهري'), 'weekly' => __('أسبوعي')])->default('monthly')->required(),
+                DatePicker::make('start_date')->label(__('تاريخ أول قسط'))->required()->default(now()->addMonth()->startOfMonth()),
+                TextInput::make('guarantor_name')->label(__('اسم الضامن')),
+                TextInput::make('guarantor_phone')->label(__('هاتف الضامن')),
+                Textarea::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -69,18 +72,18 @@ class InstallmentPlanResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('number')->label('رقم الخطة')->weight('bold'),
-                TextEntry::make('customer.name')->label('العميل'),
-                TextEntry::make('salesInvoice.number')->label('الفاتورة')->placeholder('-'),
-                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state),
-                TextEntry::make('total_amount')->label('المبلغ')->numeric(2),
-                TextEntry::make('down_payment')->label('المقدم')->numeric(2),
-                TextEntry::make('financed')->label('إجمالي الأقساط')->state(fn (InstallmentPlan $record) => $record->financedAmount())->numeric(2),
-                TextEntry::make('paid')->label('المحصّل')->state(fn (InstallmentPlan $record) => $record->paidAmount())->numeric(2)->color('success'),
-                TextEntry::make('remaining')->label('المتبقي')->state(fn (InstallmentPlan $record) => $record->financedAmount() - $record->paidAmount())->numeric(2)->color('danger')->weight('bold'),
-                TextEntry::make('installments_count')->label('عدد الأقساط'),
-                TextEntry::make('guarantor_name')->label('الضامن')->placeholder('-'),
-                TextEntry::make('guarantor_phone')->label('هاتف الضامن')->placeholder('-'),
+                TextEntry::make('number')->label(__('رقم الخطة'))->weight('bold'),
+                TextEntry::make('customer.name')->label(__('العميل')),
+                TextEntry::make('salesInvoice.number')->label(__('الفاتورة'))->placeholder('-'),
+                TextEntry::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(self::STATUSES[$state] ?? $state)),
+                TextEntry::make('total_amount')->label(__('المبلغ'))->numeric(2),
+                TextEntry::make('down_payment')->label(__('المقدم'))->numeric(2),
+                TextEntry::make('financed')->label(__('إجمالي الأقساط'))->state(fn (InstallmentPlan $record) => $record->financedAmount())->numeric(2),
+                TextEntry::make('paid')->label(__('المحصّل'))->state(fn (InstallmentPlan $record) => $record->paidAmount())->numeric(2)->color('success'),
+                TextEntry::make('remaining')->label(__('المتبقي'))->state(fn (InstallmentPlan $record) => $record->financedAmount() - $record->paidAmount())->numeric(2)->color('danger')->weight('bold'),
+                TextEntry::make('installments_count')->label(__('عدد الأقساط')),
+                TextEntry::make('guarantor_name')->label(__('الضامن'))->placeholder('-'),
+                TextEntry::make('guarantor_phone')->label(__('هاتف الضامن'))->placeholder('-'),
             ]),
         ]);
     }
@@ -89,18 +92,18 @@ class InstallmentPlanResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('الرقم')->searchable()->weight('bold'),
-                TextColumn::make('customer.name')->label('العميل')->searchable(),
-                TextColumn::make('salesInvoice.number')->label('الفاتورة')->placeholder('-'),
-                TextColumn::make('total_amount')->label('المبلغ')->numeric(2),
-                TextColumn::make('installments_count')->label('الأقساط'),
-                TextColumn::make('paid')->label('المحصّل')->state(fn (InstallmentPlan $record) => $record->paidAmount())->numeric(2),
-                TextColumn::make('next_due')->label('القسط القادم')->state(fn (InstallmentPlan $record) => $record->installments()->whereColumn('paid_amount', '<', 'amount')->min('due_date'))->date('Y-m-d')
+                TextColumn::make('number')->label(__('الرقم'))->searchable()->weight('bold'),
+                TextColumn::make('customer.name')->label(__('العميل'))->searchable(),
+                TextColumn::make('salesInvoice.number')->label(__('الفاتورة'))->placeholder('-'),
+                TextColumn::make('total_amount')->label(__('المبلغ'))->numeric(2),
+                TextColumn::make('installments_count')->label(__('الأقساط')),
+                TextColumn::make('paid')->label(__('المحصّل'))->state(fn (InstallmentPlan $record) => $record->paidAmount())->numeric(2),
+                TextColumn::make('next_due')->label(__('القسط القادم'))->state(fn (InstallmentPlan $record) => $record->installments()->whereColumn('paid_amount', '<', 'amount')->min('due_date'))->date('Y-m-d')
                     ->color(fn ($state) => $state && now()->gt($state) ? 'danger' : null),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => self::STATUSES[$state] ?? $state)
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(self::STATUSES[$state] ?? $state))
                     ->color(fn ($state) => ['active' => 'warning', 'completed' => 'success', 'cancelled' => 'danger'][$state] ?? 'gray'),
             ])
-            ->filters([SelectFilter::make('status')->label('الحالة')->options(self::STATUSES)])
+            ->filters([SelectFilter::make('status')->label(__('الحالة'))->options(Translate::options(self::STATUSES))])
             ->defaultSort('id', 'desc')
             ->recordActions([ViewAction::make(), DeleteAction::make()->visible(fn (InstallmentPlan $record) => $record->paidAmount() == 0)]);
     }

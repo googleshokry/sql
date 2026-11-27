@@ -17,9 +17,9 @@ class ViewCustomer extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('statement')->label('كشف حساب')->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
+            Action::make('statement')->label(__('كشف حساب'))->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
                 ->url(fn () => PartyStatement::getUrl(['party' => 'customer', 'id' => $this->record->id])),
-            Action::make('payment')->label('سند قبض')->icon(Heroicon::OutlinedBanknotes)->color('warning')
+            Action::make('payment')->label(__('سند قبض'))->icon(Heroicon::OutlinedBanknotes)->color('warning')
                 ->url(fn () => PaymentResource::getUrl('create', ['direction' => 'in', 'party_type' => 'customer', 'party_id' => $this->record->id])),
             EditAction::make(),
         ];

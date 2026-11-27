@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
 use BackedEnum;
@@ -29,6 +30,7 @@ use UnitEnum;
 class CustomerResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Customer::class;
 
@@ -54,26 +56,26 @@ class CustomerResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('البيانات الأساسية')->columns(3)->columnSpanFull()->schema([
-                TextInput::make('code')->label('الكود')->placeholder('تلقائي')->unique(ignoreRecord: true),
-                TextInput::make('name')->label('الاسم')->required(),
-                TextInput::make('company_name')->label('اسم الشركة / المنشأة'),
-                TextInput::make('phone')->label('الهاتف')->tel(),
-                TextInput::make('mobile')->label('الجوال / واتساب')->tel(),
-                TextInput::make('email')->label('البريد الإلكتروني')->email(),
+            Section::make(__('البيانات الأساسية'))->columns(3)->columnSpanFull()->schema([
+                TextInput::make('code')->label(__('الكود'))->placeholder(__('تلقائي'))->unique(ignoreRecord: true),
+                TextInput::make('name')->label(__('الاسم'))->required(),
+                TextInput::make('company_name')->label(__('اسم الشركة / المنشأة')),
+                TextInput::make('phone')->label(__('الهاتف'))->tel(),
+                TextInput::make('mobile')->label(__('الجوال / واتساب'))->tel(),
+                TextInput::make('email')->label(__('البريد الإلكتروني'))->email(),
             ]),
-            Section::make('البيانات الضريبية والعنوان')->columns(3)->columnSpanFull()->schema([
-                TextInput::make('tax_number')->label('الرقم الضريبي (VAT)'),
-                TextInput::make('commercial_register')->label('السجل التجاري'),
-                TextInput::make('city')->label('المدينة'),
-                TextInput::make('address')->label('العنوان')->columnSpanFull(),
+            Section::make(__('البيانات الضريبية والعنوان'))->columns(3)->columnSpanFull()->schema([
+                TextInput::make('tax_number')->label(__('الرقم الضريبي (VAT)')),
+                TextInput::make('commercial_register')->label(__('السجل التجاري')),
+                TextInput::make('city')->label(__('المدينة')),
+                TextInput::make('address')->label(__('العنوان'))->columnSpanFull(),
             ]),
-            Section::make('البيانات المالية')->columns(3)->columnSpanFull()->schema([
-                TextInput::make('opening_balance')->label('الرصيد الافتتاحي (مستحق لنا)')->numeric()->default(0),
-                TextInput::make('credit_limit')->label('حد الائتمان')->numeric()->default(0),
-                Select::make('price_list')->label('قائمة الأسعار')->options(['retail' => 'قطاعي', 'wholesale' => 'جملة'])->default('retail'),
-                Toggle::make('is_active')->label('نشط')->default(true),
-                Textarea::make('notes')->label('ملاحظات')->columnSpanFull(),
+            Section::make(__('البيانات المالية'))->columns(3)->columnSpanFull()->schema([
+                TextInput::make('opening_balance')->label(__('الرصيد الافتتاحي (مستحق لنا)'))->numeric()->default(0),
+                TextInput::make('credit_limit')->label(__('حد الائتمان'))->numeric()->default(0),
+                Select::make('price_list')->label(__('قائمة الأسعار'))->options(['retail' => __('قطاعي'), 'wholesale' => __('جملة')])->default('retail'),
+                Toggle::make('is_active')->label(__('نشط'))->default(true),
+                Textarea::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -82,21 +84,21 @@ class CustomerResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('code')->label('الكود'),
-                TextEntry::make('name')->label('الاسم')->weight('bold'),
-                TextEntry::make('phone')->label('الهاتف')->placeholder('-'),
-                TextEntry::make('mobile')->label('الجوال')->placeholder('-'),
-                TextEntry::make('email')->label('البريد')->placeholder('-'),
-                TextEntry::make('tax_number')->label('الرقم الضريبي')->placeholder('-'),
-                TextEntry::make('city')->label('المدينة')->placeholder('-'),
-                TextEntry::make('address')->label('العنوان')->placeholder('-'),
+                TextEntry::make('code')->label(__('الكود')),
+                TextEntry::make('name')->label(__('الاسم'))->weight('bold'),
+                TextEntry::make('phone')->label(__('الهاتف'))->placeholder('-'),
+                TextEntry::make('mobile')->label(__('الجوال'))->placeholder('-'),
+                TextEntry::make('email')->label(__('البريد'))->placeholder('-'),
+                TextEntry::make('tax_number')->label(__('الرقم الضريبي'))->placeholder('-'),
+                TextEntry::make('city')->label(__('المدينة'))->placeholder('-'),
+                TextEntry::make('address')->label(__('العنوان'))->placeholder('-'),
             ]),
-            Section::make('الملخص المالي')->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('balance')->label('الرصيد الحالي (مستحق لنا)')->state(fn ($record) => $record->balance())->numeric(2)->weight('bold')->size('lg')
+            Section::make(__('الملخص المالي'))->columns(4)->columnSpanFull()->schema([
+                TextEntry::make('balance')->label(__('الرصيد الحالي (مستحق لنا)'))->state(fn ($record) => $record->balance())->numeric(2)->weight('bold')->size('lg')
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'success'),
-                TextEntry::make('invoices_total')->label('إجمالي الفواتير')->state(fn ($record) => $record->invoices()->whereNotNull('posted_at')->sum('total'))->numeric(2),
-                TextEntry::make('invoices_count')->label('عدد الفواتير')->state(fn ($record) => $record->invoices()->count()),
-                TextEntry::make('payments_total')->label('إجمالي المدفوعات')->state(fn ($record) => $record->payments()->sum('amount'))->numeric(2),
+                TextEntry::make('invoices_total')->label(__('إجمالي الفواتير'))->state(fn ($record) => $record->invoices()->whereNotNull('posted_at')->sum('total'))->numeric(2),
+                TextEntry::make('invoices_count')->label(__('عدد الفواتير'))->state(fn ($record) => $record->invoices()->count()),
+                TextEntry::make('payments_total')->label(__('إجمالي المدفوعات'))->state(fn ($record) => $record->payments()->sum('amount'))->numeric(2),
             ]),
         ]);
     }
@@ -105,16 +107,16 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('code')->label('الكود')->searchable()->sortable(),
-                TextColumn::make('name')->label('الاسم')->searchable()->sortable()->weight('bold'),
-                TextColumn::make('phone')->label('الهاتف')->searchable(),
-                TextColumn::make('city')->label('المدينة')->toggleable(),
-                TextColumn::make('tax_number')->label('الرقم الضريبي')->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('balance')->label('الرصيد')->state(fn ($record) => $record->balance())->numeric(2)
+                TextColumn::make('code')->label(__('الكود'))->searchable()->sortable(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable()->sortable()->weight('bold'),
+                TextColumn::make('phone')->label(__('الهاتف'))->searchable(),
+                TextColumn::make('city')->label(__('المدينة'))->toggleable(),
+                TextColumn::make('tax_number')->label(__('الرقم الضريبي'))->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('balance')->label(__('الرصيد'))->state(fn ($record) => $record->balance())->numeric(2)
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'success'),
-                IconColumn::make('is_active')->label('نشط')->boolean(),
+                IconColumn::make('is_active')->label(__('نشط'))->boolean(),
             ])
-            ->filters([TernaryFilter::make('is_active')->label('نشط')])
+            ->filters([TernaryFilter::make('is_active')->label(__('نشط'))])
             ->defaultSort('id', 'desc')
             ->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

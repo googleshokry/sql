@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -22,6 +24,8 @@ use UnitEnum;
 
 class UserResource extends Resource
 {
+    use TranslatesResourceLabels;
+
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
@@ -42,12 +46,12 @@ class UserResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('الاسم')->required(),
-            TextInput::make('email')->label('البريد الإلكتروني')->email()->required()->unique(ignoreRecord: true),
-            TextInput::make('password')->label('كلمة المرور')->password()->revealable()->required(fn (string $operation) => $operation === 'create')->dehydrated(fn ($state) => filled($state)),
-            Select::make('role')->label('الدور / الصلاحية')->options(User::ROLES)->required()->default('sales'),
-            Select::make('branch_id')->label('الفرع')->relationship('branch', 'name'),
-            Toggle::make('is_active')->label('نشط')->default(true),
+            TextInput::make('name')->label(__('الاسم'))->required(),
+            TextInput::make('email')->label(__('البريد الإلكتروني'))->email()->required()->unique(ignoreRecord: true),
+            TextInput::make('password')->label(__('كلمة المرور'))->password()->revealable()->required(fn (string $operation) => $operation === 'create')->dehydrated(fn ($state) => filled($state)),
+            Select::make('role')->label(__('الدور / الصلاحية'))->options(Translate::options(User::ROLES))->required()->default('sales'),
+            Select::make('branch_id')->label(__('الفرع'))->relationship('branch', 'name'),
+            Toggle::make('is_active')->label(__('نشط'))->default(true),
         ]);
     }
 
@@ -55,11 +59,11 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('email')->label('البريد')->searchable(),
-                TextColumn::make('role')->label('الدور')->badge()->formatStateUsing(fn ($state) => User::ROLES[$state] ?? $state),
-                TextColumn::make('branch.name')->label('الفرع'),
-                IconColumn::make('is_active')->label('نشط')->boolean(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('email')->label(__('البريد'))->searchable(),
+                TextColumn::make('role')->label(__('الدور'))->badge()->formatStateUsing(fn ($state) => __(User::ROLES[$state] ?? $state)),
+                TextColumn::make('branch.name')->label(__('الفرع')),
+                IconColumn::make('is_active')->label(__('نشط'))->boolean(),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

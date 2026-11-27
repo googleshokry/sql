@@ -39,7 +39,7 @@ class PurchaseOrderResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            DatePicker::make('valid_until')->label('تاريخ التوريد المتوقع'),
+            DatePicker::make('valid_until')->label(__('تاريخ التوريد المتوقع')),
         ];
     }
 

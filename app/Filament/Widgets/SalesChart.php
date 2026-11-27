@@ -26,9 +26,9 @@ class SalesChart extends ChartWidget
 
         return [
             'datasets' => [
-                ['label' => 'المبيعات', 'data' => $months->map(fn ($m) => $sum(SalesInvoice::class, $m))->all(), 'borderColor' => '#4f46e5', 'backgroundColor' => 'rgba(79,70,229,.15)', 'fill' => true, 'tension' => .3],
-                ['label' => 'المشتريات', 'data' => $months->map(fn ($m) => $sum(PurchaseInvoice::class, $m))->all(), 'borderColor' => '#f59e0b', 'backgroundColor' => 'transparent', 'tension' => .3],
-                ['label' => 'المصروفات', 'data' => $months->map(fn ($m) => $sum(Expense::class, $m))->all(), 'borderColor' => '#ef4444', 'backgroundColor' => 'transparent', 'tension' => .3],
+                ['label' => __('المبيعات'), 'data' => $months->map(fn ($m) => $sum(SalesInvoice::class, $m))->all(), 'borderColor' => '#4f46e5', 'backgroundColor' => 'rgba(79,70,229,.15)', 'fill' => true, 'tension' => .3],
+                ['label' => __('المشتريات'), 'data' => $months->map(fn ($m) => $sum(PurchaseInvoice::class, $m))->all(), 'borderColor' => '#f59e0b', 'backgroundColor' => 'transparent', 'tension' => .3],
+                ['label' => __('المصروفات'), 'data' => $months->map(fn ($m) => $sum(Expense::class, $m))->all(), 'borderColor' => '#ef4444', 'backgroundColor' => 'transparent', 'tension' => .3],
             ],
             'labels' => $months->map(fn ($m) => $m->format('Y-m'))->all(),
         ];

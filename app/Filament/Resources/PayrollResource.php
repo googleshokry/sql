@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\PayrollResource\Pages;
 use App\Filament\Support\Labels;
 use App\Models\Payroll;
@@ -31,6 +32,7 @@ use UnitEnum;
 class PayrollResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Payroll::class;
 
@@ -60,15 +62,15 @@ class PayrollResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(2)->columnSpanFull()->schema([
-                TextInput::make('month')->label('الشهر (YYYY-MM)')->required()->default(now()->format('Y-m'))->regex('/^\d{4}-\d{2}$/')->disabledOn('edit'),
-                Select::make('treasury_id')->label('صرف من')->options(fn () => Treasury::query()->pluck('name', 'id'))
+                TextInput::make('month')->label(__('الشهر (YYYY-MM)'))->required()->default(now()->format('Y-m'))->regex('/^\d{4}-\d{2}$/')->disabledOn('edit'),
+                Select::make('treasury_id')->label(__('صرف من'))->options(fn () => Treasury::query()->pluck('name', 'id'))
                     ->default(fn () => Treasury::query()->where('type', 'bank')->value('id')),
             ]),
-            Section::make('بنود المسير')->columnSpanFull()->visibleOn('edit')->schema([
+            Section::make(__('بنود المسير'))->columnSpanFull()->visibleOn('edit')->schema([
                 Repeater::make('items')->hiddenLabel()->relationship()->addable(false)->deletable(true)
                     ->table([
-                        TableColumn::make('الموظف'), TableColumn::make('الأساسي'), TableColumn::make('البدلات'), TableColumn::make('العمولات'),
-                        TableColumn::make('مكافآت'), TableColumn::make('خصومات'), TableColumn::make('خصم سلف'),
+                        TableColumn::make(__('الموظف')), TableColumn::make(__('الأساسي')), TableColumn::make(__('البدلات')), TableColumn::make(__('العمولات')),
+                        TableColumn::make(__('مكافآت')), TableColumn::make(__('خصومات')), TableColumn::make(__('خصم سلف')),
                     ])
                     ->schema([
                         Select::make('employee_id')->hiddenLabel()->relationship('employee', 'name')->disabled(),
@@ -87,16 +89,16 @@ class PayrollResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('number')->label('الرقم'),
-                TextEntry::make('month')->label('الشهر'),
-                TextEntry::make('treasury.name')->label('الخزينة')->placeholder('-'),
-                TextEntry::make('total')->label('صافي الرواتب')->numeric(2)->weight('bold'),
-                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextEntry::make('number')->label(__('الرقم')),
+                TextEntry::make('month')->label(__('الشهر')),
+                TextEntry::make('treasury.name')->label(__('الخزينة'))->placeholder('-'),
+                TextEntry::make('total')->label(__('صافي الرواتب'))->numeric(2)->weight('bold'),
+                TextEntry::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
             ]),
-            RepeatableEntry::make('items')->label('الموظفين')->columnSpanFull()
+            RepeatableEntry::make('items')->label(__('الموظفين'))->columnSpanFull()
                 ->table([
-                    EntryColumn::make('الموظف'), EntryColumn::make('الأساسي'), EntryColumn::make('البدلات'), EntryColumn::make('العمولات'),
-                    EntryColumn::make('مكافآت'), EntryColumn::make('خصومات'), EntryColumn::make('سلف'), EntryColumn::make('الصافي'),
+                    EntryColumn::make(__('الموظف')), EntryColumn::make(__('الأساسي')), EntryColumn::make(__('البدلات')), EntryColumn::make(__('العمولات')),
+                    EntryColumn::make(__('مكافآت')), EntryColumn::make(__('خصومات')), EntryColumn::make(__('سلف')), EntryColumn::make(__('الصافي')),
                 ])
                 ->schema([
                     TextEntry::make('employee.name'),
@@ -115,11 +117,11 @@ class PayrollResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('الرقم'),
-                TextColumn::make('month')->label('الشهر')->sortable(),
-                TextColumn::make('items_count')->label('عدد الموظفين')->counts('items'),
-                TextColumn::make('total')->label('صافي الرواتب')->numeric(2),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextColumn::make('number')->label(__('الرقم')),
+                TextColumn::make('month')->label(__('الشهر'))->sortable(),
+                TextColumn::make('items_count')->label(__('عدد الموظفين'))->counts('items'),
+                TextColumn::make('total')->label(__('صافي الرواتب'))->numeric(2),
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
             ])
             ->defaultSort('month', 'desc')
             ->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()]);

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\DepartmentResource\Pages;
 use App\Models\Department;
 use BackedEnum;
@@ -21,6 +22,7 @@ use UnitEnum;
 class DepartmentResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Department::class;
 
@@ -39,7 +41,7 @@ class DepartmentResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم القسم')->required(),
+            TextInput::make('name')->label(__('اسم القسم'))->required(),
         ]);
     }
 
@@ -47,8 +49,8 @@ class DepartmentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('employees_count')->label('عدد الموظفين')->counts('employees'),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('employees_count')->label(__('عدد الموظفين'))->counts('employees'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

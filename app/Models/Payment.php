@@ -98,7 +98,7 @@ class Payment extends Model
             ? [$treasury + ['debit' => $amount], $counter + ['credit' => $amount]]
             : [$counter + ['debit' => $amount], $treasury + ['credit' => $amount]];
 
-        $label = $this->direction === 'in' ? 'سند قبض' : 'سند صرف';
+        $label = $this->direction === 'in' ? __('سند قبض') : __('سند صرف');
         Accounting::sync($this, $this->date, trim("$label {$this->number} ".($this->party?->name ?? '').' '.($this->notes ?? '')), $lines);
     }
 }

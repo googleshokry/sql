@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
 <meta charset="utf-8"><title>{{ $doc->number }}</title>
 <style>
@@ -17,15 +17,15 @@
     <h3>{{ $settings['company_name'] }}</h3>
     <div>{{ $settings['address'] }}</div>
     <div>{{ $settings['phone'] }}</div>
-    @if($settings['tax_number'])<div>الرقم الضريبي: {{ $settings['tax_number'] }}</div>@endif
+    @if($settings['tax_number'])<div>{{ __('الرقم الضريبي:') }} {{ $settings['tax_number'] }}</div>@endif
     <div class="line"></div>
     <b>{{ $title }}</b>
-    <div>رقم: {{ $doc->number }} — {{ $doc->created_at->format('Y-m-d H:i') }}</div>
-    <div>العميل: {{ $party?->name ?? 'عميل نقدي' }}</div>
+    <div>{{ __('رقم:') }} {{ $doc->number }} — {{ $doc->created_at->format('Y-m-d H:i') }}</div>
+    <div>{{ __('العميل:') }} {{ $party?->name ?? __('عميل نقدي') }}</div>
 </div>
 <div class="line"></div>
 <table>
-    <tr><th style="text-align:right">الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th></tr>
+    <tr><th style="text-align:start">{{ __('الصنف') }}</th><th>{{ __('كمية') }}</th><th>{{ __('سعر') }}</th><th>{{ __('إجمالي') }}</th></tr>
     @foreach($doc->items as $item)
         <tr>
             <td>{{ $item->description }}</td>
@@ -37,15 +37,15 @@
 </table>
 <div class="line"></div>
 <table>
-    <tr><td>الإجمالي قبل الضريبة</td><td style="text-align:left">{{ number_format($doc->subtotal - $doc->discount_amount, 2) }}</td></tr>
-    @if((float) $doc->discount_amount)<tr><td>الخصم</td><td style="text-align:left">{{ number_format($doc->discount_amount, 2) }}</td></tr>@endif
-    <tr><td>الضريبة</td><td style="text-align:left">{{ number_format($doc->tax_amount, 2) }}</td></tr>
-    <tr class="tot"><td>الإجمالي</td><td style="text-align:left">{{ number_format($doc->total, 2) }} {{ $settings['currency'] }}</td></tr>
-    @isset($doc->paid_amount)<tr><td>المدفوع</td><td style="text-align:left">{{ number_format($doc->paid_amount, 2) }}</td></tr>@endisset
+    <tr><td>{{ __('الإجمالي قبل الضريبة') }}</td><td style="text-align:end">{{ number_format($doc->subtotal - $doc->discount_amount, 2) }}</td></tr>
+    @if((float) $doc->discount_amount)<tr><td>{{ __('الخصم') }}</td><td style="text-align:end">{{ number_format($doc->discount_amount, 2) }}</td></tr>@endif
+    <tr><td>{{ __('الضريبة') }}</td><td style="text-align:end">{{ number_format($doc->tax_amount, 2) }}</td></tr>
+    <tr class="tot"><td>{{ __('الإجمالي') }}</td><td style="text-align:end">{{ number_format($doc->total, 2) }} {{ __($settings['currency']) }}</td></tr>
+    @isset($doc->paid_amount)<tr><td>{{ __('المدفوع') }}</td><td style="text-align:end">{{ number_format($doc->paid_amount, 2) }}</td></tr>@endisset
 </table>
 @if($qr)<div class="c" style="margin-top:6px"><img src="{{ $qr }}" style="width:120px"></div>@endif
 <div class="line"></div>
 <div class="c">{{ $settings['invoice_footer'] }}</div>
-<div class="c np" style="margin-top:10px"><button onclick="window.print()">طباعة</button></div>
+<div class="c np" style="margin-top:10px"><button onclick="window.print()">{{ __('طباعة') }}</button></div>
 </body>
 </html>

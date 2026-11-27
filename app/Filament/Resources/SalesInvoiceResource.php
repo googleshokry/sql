@@ -40,8 +40,8 @@ class SalesInvoiceResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            DatePicker::make('due_date')->label('تاريخ الاستحقاق'),
-            TextInput::make('reference')->label('مرجع / رقم أمر الشراء'),
+            DatePicker::make('due_date')->label(__('تاريخ الاستحقاق')),
+            TextInput::make('reference')->label(__('مرجع / رقم أمر الشراء')),
         ];
     }
 

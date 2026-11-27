@@ -20,7 +20,7 @@ class TreasuryTransfer extends Model
     protected static function booted(): void
     {
         static::saved(function (self $t) {
-            Accounting::sync($t, $t->date, "تحويل من {$t->from->name} إلى {$t->to->name}", [
+            Accounting::sync($t, $t->date, __('تحويل من :from إلى :to', ['from' => $t->from->name, 'to' => $t->to->name]), [
                 ['account_id' => $t->to->account_id, 'debit' => $t->amount],
                 ['account_id' => $t->from->account_id, 'credit' => $t->amount],
             ]);

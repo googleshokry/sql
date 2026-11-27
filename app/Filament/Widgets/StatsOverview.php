@@ -42,15 +42,15 @@ class StatsOverview extends StatsOverviewWidget
         $f = fn ($v) => number_format($v, 2);
 
         return [
-            Stat::make('مبيعات اليوم', $f($today))->icon(Heroicon::OutlinedShoppingCart)->chart($trend)->color('primary')
-                ->description($posted()->whereDate('date', today())->count().' فاتورة'),
-            Stat::make('مبيعات الشهر', $f($month))->icon(Heroicon::OutlinedPresentationChartLine)->color('success'),
-            Stat::make('صافي ربح الشهر', $f($profit))->icon(Heroicon::OutlinedBanknotes)->color($profit >= 0 ? 'success' : 'danger'),
-            Stat::make('رصيد الخزائن والبنوك', $f($cash))->icon(Heroicon::OutlinedBuildingLibrary)->color('info'),
-            Stat::make('مستحقات على العملاء', $f($receivable))->icon(Heroicon::OutlinedUserGroup)->color('warning'),
-            Stat::make('مستحقات للموردين', $f($payable))->icon(Heroicon::OutlinedTruck)->color('danger'),
-            Stat::make('مصروفات الشهر', $f($expenses))->icon(Heroicon::OutlinedReceiptPercent)->color('gray'),
-            Stat::make('أصناف تحت حد الطلب', $low)->icon(Heroicon::OutlinedExclamationTriangle)->color($low ? 'danger' : 'success')
+            Stat::make(__('مبيعات اليوم'), $f($today))->icon(Heroicon::OutlinedShoppingCart)->chart($trend)->color('primary')
+                ->description($posted()->whereDate('date', today())->count().__(' فاتورة')),
+            Stat::make(__('مبيعات الشهر'), $f($month))->icon(Heroicon::OutlinedPresentationChartLine)->color('success'),
+            Stat::make(__('صافي ربح الشهر'), $f($profit))->icon(Heroicon::OutlinedBanknotes)->color($profit >= 0 ? 'success' : 'danger'),
+            Stat::make(__('رصيد الخزائن والبنوك'), $f($cash))->icon(Heroicon::OutlinedBuildingLibrary)->color('info'),
+            Stat::make(__('مستحقات على العملاء'), $f($receivable))->icon(Heroicon::OutlinedUserGroup)->color('warning'),
+            Stat::make(__('مستحقات للموردين'), $f($payable))->icon(Heroicon::OutlinedTruck)->color('danger'),
+            Stat::make(__('مصروفات الشهر'), $f($expenses))->icon(Heroicon::OutlinedReceiptPercent)->color('gray'),
+            Stat::make(__('أصناف تحت حد الطلب'), $low)->icon(Heroicon::OutlinedExclamationTriangle)->color($low ? 'danger' : 'success')
                 ->url(ProductResource::getUrl('index', ['filters' => ['low_stock' => ['isActive' => true]]])),
         ];
     }

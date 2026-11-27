@@ -19,6 +19,7 @@ use App\Models\SalesInvoice;
 use App\Models\Supplier;
 use App\Models\Treasury;
 use App\Services\Posting;
+use App\Support\Translate;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -63,7 +64,7 @@ class DocumentActions
 
             return $result;
         } catch (BusinessException $e) {
-            Notification::make()->title('تعذّر تنفيذ العملية')->body($e->getMessage())->danger()->persistent()->send();
+            Notification::make()->title(__('تعذّر تنفيذ العملية'))->body($e->getMessage())->danger()->persistent()->send();
 
             return null;
         }
@@ -76,13 +77,13 @@ class DocumentActions
         }
 
         return Action::make('post')
-            ->label('ترحيل')
+            ->label(__('ترحيل'))
             ->icon(Heroicon::OutlinedCheckBadge)
             ->color('success')
             ->requiresConfirmation()
-            ->modalDescription('سيتم تحديث المخزون وإنشاء القيود المحاسبية تلقائياً ولن يمكن تعديل المستند بعد الترحيل.')
+            ->modalDescription(__('سيتم تحديث المخزون وإنشاء القيود المحاسبية تلقائياً ولن يمكن تعديل المستند بعد الترحيل.'))
             ->visible(fn (Model $record) => ! $record->isPosted())
-            ->action(fn (Model $record) => static::run(fn () => Posting::post($record), 'تم الترحيل بنجاح'));
+            ->action(fn (Model $record) => static::run(fn () => Posting::post($record), __('تم الترحيل بنجاح')));
     }
 
     public static function unpost(string $resource): ?Action
@@ -92,13 +93,13 @@ class DocumentActions
         }
 
         return Action::make('unpost')
-            ->label('إلغاء الترحيل')
+            ->label(__('إلغاء الترحيل'))
             ->icon(Heroicon::OutlinedArrowUturnLeft)
             ->color('danger')
             ->requiresConfirmation()
-            ->modalDescription('سيتم عكس حركات المخزون وحذف القيود المحاسبية المرتبطة بهذا المستند.')
+            ->modalDescription(__('سيتم عكس حركات المخزون وحذف القيود المحاسبية المرتبطة بهذا المستند.'))
             ->visible(fn (Model $record) => $record->isPosted() && auth()->user()?->hasRole('manager', 'accountant'))
-            ->action(fn (Model $record) => static::run(fn () => Posting::unpost($record), 'تم إلغاء الترحيل'));
+            ->action(fn (Model $record) => static::run(fn () => Posting::unpost($record), __('تم إلغاء الترحيل')));
     }
 
     public static function print(string $resource): ?Action
@@ -108,7 +109,7 @@ class DocumentActions
         }
 
         return Action::make('print')
-            ->label('طباعة')
+            ->label(__('طباعة'))
             ->icon(Heroicon::OutlinedPrinter)
             ->color('gray')
             ->url(fn (Model $record) => route('print.document', [$resource::getPrintKey(), $record]))
@@ -122,7 +123,7 @@ class DocumentActions
         }
 
         return Action::make('registerPayment')
-            ->label(fn (Model $record) => $record instanceof SalesInvoice ? 'تحصيل دفعة' : 'سداد دفعة')
+            ->label(fn (Model $record) => $record instanceof SalesInvoice ? __('تحصيل دفعة') : __('سداد دفعة'))
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('warning')
             ->visible(fn (Model $record) => $record->isPosted() && $record->remainingAmount() > 0)
@@ -133,11 +134,11 @@ class DocumentActions
                 'method' => 'cash',
             ])
             ->schema([
-                TextInput::make('amount')->label('المبلغ')->numeric()->required()->minValue(0.01),
-                Select::make('treasury_id')->label('الخزينة / البنك')->options(Treasury::query()->where('is_active', true)->pluck('name', 'id'))->required(),
-                Select::make('method')->label('طريقة الدفع')->options(Payment::METHODS)->required(),
-                DatePicker::make('date')->label('التاريخ')->required(),
-                TextInput::make('reference')->label('مرجع / رقم العملية'),
+                TextInput::make('amount')->label(__('المبلغ'))->numeric()->required()->minValue(0.01),
+                Select::make('treasury_id')->label(__('الخزينة / البنك'))->options(Treasury::query()->where('is_active', true)->pluck('name', 'id'))->required(),
+                Select::make('method')->label(__('طريقة الدفع'))->options(Translate::options(Payment::METHODS))->required(),
+                DatePicker::make('date')->label(__('التاريخ'))->required(),
+                TextInput::make('reference')->label(__('مرجع / رقم العملية')),
             ])
             ->action(function (Model $record, array $data) {
                 $isSale = $record instanceof SalesInvoice;
@@ -147,9 +148,9 @@ class DocumentActions
                     'party_id' => $isSale ? $record->customer_id : $record->supplier_id,
                     'payable_type' => $record->getMorphClass(),
                     'payable_id' => $record->id,
-                    'notes' => ($isSale ? 'تحصيل من فاتورة ' : 'سداد فاتورة ').$record->number,
+                    'notes' => ($isSale ? __('تحصيل من فاتورة ') : __('سداد فاتورة ')).$record->number,
                 ]);
-                Notification::make()->title('تم تسجيل الدفعة')->success()->send();
+                Notification::make()->title(__('تم تسجيل الدفعة'))->success()->send();
             });
     }
 
@@ -158,10 +159,10 @@ class DocumentActions
         $model = $resource::getModel();
 
         [$label, $callback, $target] = match ($model) {
-            Quotation::class => ['تحويل لفاتورة مبيعات', fn ($r) => Posting::quotationToInvoice($r), SalesInvoiceResource::class],
-            PurchaseOrder::class => ['تحويل لفاتورة مشتريات', fn ($r) => Posting::purchaseOrderToInvoice($r), PurchaseInvoiceResource::class],
-            SalesInvoice::class => ['إنشاء مرتجع', fn ($r) => Posting::salesInvoiceToReturn($r), SalesReturnResource::class],
-            PurchaseInvoice::class => ['إنشاء مرتجع', fn ($r) => Posting::purchaseInvoiceToReturn($r), PurchaseReturnResource::class],
+            Quotation::class => [__('تحويل لفاتورة مبيعات'), fn ($r) => Posting::quotationToInvoice($r), SalesInvoiceResource::class],
+            PurchaseOrder::class => [__('تحويل لفاتورة مشتريات'), fn ($r) => Posting::purchaseOrderToInvoice($r), PurchaseInvoiceResource::class],
+            SalesInvoice::class => [__('إنشاء مرتجع'), fn ($r) => Posting::salesInvoiceToReturn($r), SalesReturnResource::class],
+            PurchaseInvoice::class => [__('إنشاء مرتجع'), fn ($r) => Posting::purchaseInvoiceToReturn($r), PurchaseReturnResource::class],
             default => [null, null, null],
         };
 
@@ -180,7 +181,7 @@ class DocumentActions
             ->action(function (Model $record, $livewire) use ($callback, $target) {
                 $new = static::run(fn () => $callback($record));
                 if ($new) {
-                    Notification::make()->title('تم إنشاء المستند '.$new->number.' كمسودة - راجعه ثم قم بترحيله')->success()->send();
+                    Notification::make()->title(__('تم إنشاء المستند ').$new->number.__(' كمسودة - راجعه ثم قم بترحيله'))->success()->send();
                     $livewire->redirect($target::getUrl('edit', ['record' => $new]));
                 }
             });
@@ -193,7 +194,7 @@ class DocumentActions
         }
 
         return Action::make('installmentPlan')
-            ->label('تقسيط الفاتورة')
+            ->label(__('تقسيط الفاتورة'))
             ->icon(Heroicon::OutlinedCalendarDays)
             ->color('primary')
             ->visible(fn (SalesInvoice $record) => $record->isPosted() && $record->customer_id && ! $record->installmentPlan && $record->remainingAmount() > 0)
@@ -206,18 +207,18 @@ class DocumentActions
                 'start_date' => now()->addMonth()->startOfMonth()->toDateString(),
             ])
             ->schema([
-                TextInput::make('total_amount')->label('المبلغ المقسط')->numeric()->disabled()->dehydrated(),
-                TextInput::make('down_payment')->label('مقدم (يُسجَّل كسند قبض منفصل)')->numeric()->disabled()->default(0)->dehydrated(),
-                TextInput::make('installments_count')->label('عدد الأقساط')->numeric()->integer()->minValue(1)->required(),
-                TextInput::make('interest_percent')->label('نسبة الفائدة %')->numeric(),
-                Select::make('period')->label('الدورية')->options(['monthly' => 'شهري', 'weekly' => 'أسبوعي'])->required(),
-                DatePicker::make('start_date')->label('تاريخ أول قسط')->required(),
-                TextInput::make('guarantor_name')->label('اسم الضامن'),
-                TextInput::make('guarantor_phone')->label('هاتف الضامن'),
+                TextInput::make('total_amount')->label(__('المبلغ المقسط'))->numeric()->disabled()->dehydrated(),
+                TextInput::make('down_payment')->label(__('مقدم (يُسجَّل كسند قبض منفصل)'))->numeric()->disabled()->default(0)->dehydrated(),
+                TextInput::make('installments_count')->label(__('عدد الأقساط'))->numeric()->integer()->minValue(1)->required(),
+                TextInput::make('interest_percent')->label(__('نسبة الفائدة %'))->numeric(),
+                Select::make('period')->label(__('الدورية'))->options(['monthly' => __('شهري'), 'weekly' => __('أسبوعي')])->required(),
+                DatePicker::make('start_date')->label(__('تاريخ أول قسط'))->required(),
+                TextInput::make('guarantor_name')->label(__('اسم الضامن')),
+                TextInput::make('guarantor_phone')->label(__('هاتف الضامن')),
             ])
             ->action(function (SalesInvoice $record, array $data, $livewire) {
                 $plan = InstallmentPlan::create($data + ['customer_id' => $record->customer_id, 'sales_invoice_id' => $record->id]);
-                Notification::make()->title('تم إنشاء خطة التقسيط '.$plan->number)->success()->send();
+                Notification::make()->title(__('تم إنشاء خطة التقسيط ').$plan->number)->success()->send();
                 $livewire->redirect(InstallmentPlanResource::getUrl('view', ['record' => $plan]));
             });
     }
@@ -229,13 +230,13 @@ class DocumentActions
         }
 
         return Action::make('changeStatus')
-            ->label('تغيير الحالة')
+            ->label(__('تغيير الحالة'))
             ->icon(Heroicon::OutlinedTag)
             ->color('gray')
             ->visible(fn (Model $record) => ! in_array($record->status, ['invoiced', 'received']))
             ->schema([
-                Select::make('status')->label('الحالة')->required()->options([
-                    'draft' => 'مسودة', 'sent' => 'مُرسل', 'accepted' => 'مقبول', 'rejected' => 'مرفوض',
+                Select::make('status')->label(__('الحالة'))->required()->options([
+                    'draft' => __('مسودة'), 'sent' => __('مُرسل'), 'accepted' => __('مقبول'), 'rejected' => __('مرفوض'),
                 ]),
             ])
             ->fillForm(fn (Model $record) => ['status' => $record->status])

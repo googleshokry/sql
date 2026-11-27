@@ -1,7 +1,7 @@
 @php($s = \App\Models\Setting::values())
 <div class="erp-print-head" style="display:none">
     <h2 style="margin:0">{{ $s['company_name'] }}</h2>
-    <div>{{ $title }} — من {{ $this->from }} إلى {{ $this->to }}</div>
+    <div>{{ $title }} — {{ __('من') }} {{ $this->from }} {{ __('إلى') }} {{ $this->to }}</div>
 </div>
 <style>
     @media print {

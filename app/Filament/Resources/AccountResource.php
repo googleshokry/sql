@@ -3,10 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Pages\Reports\AccountLedger;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Services\Accounting;
+use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -30,6 +32,7 @@ use UnitEnum;
 class AccountResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Account::class;
 
@@ -48,7 +51,7 @@ class AccountResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('parent_id')->label('الحساب الرئيسي')
+            Select::make('parent_id')->label(__('الحساب الرئيسي'))
                 ->options(fn () => Account::query()->where('is_group', true)->orderBy('code')->get()->mapWithKeys(fn ($a) => [$a->id => "{$a->code} - {$a->name}"]))
                 ->searchable()->live()
                 ->afterStateUpdated(function ($state, Set $set) {
@@ -57,11 +60,11 @@ class AccountResource extends Resource
                         $set('code', Accounting::nextChildCode($parent));
                     }
                 }),
-            TextInput::make('code')->label('رقم الحساب')->required()->unique(ignoreRecord: true),
-            TextInput::make('name')->label('اسم الحساب')->required(),
-            Select::make('type')->label('النوع')->options(Account::TYPES)->required()->disabled(fn (Get $get) => filled($get('parent_id')))->dehydrated(),
-            Toggle::make('is_group')->label('حساب رئيسي (تجميعي)')->helperText('الحسابات الرئيسية لا تقبل قيوداً مباشرة'),
-            Textarea::make('description')->label('الوصف')->columnSpanFull(),
+            TextInput::make('code')->label(__('رقم الحساب'))->required()->unique(ignoreRecord: true),
+            TextInput::make('name')->label(__('اسم الحساب'))->required(),
+            Select::make('type')->label(__('النوع'))->options(Translate::options(Account::TYPES))->required()->disabled(fn (Get $get) => filled($get('parent_id')))->dehydrated(),
+            Toggle::make('is_group')->label(__('حساب رئيسي (تجميعي)'))->helperText(__('الحسابات الرئيسية لا تقبل قيوداً مباشرة')),
+            Textarea::make('description')->label(__('الوصف'))->columnSpanFull(),
         ]);
     }
 
@@ -69,20 +72,20 @@ class AccountResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('code')->label('رقم الحساب')->searchable()->sortable()
+                TextColumn::make('code')->label(__('رقم الحساب'))->searchable()->sortable()
                     ->formatStateUsing(fn ($state) => str_repeat('— ', min(max(strlen($state) - 1, 0), 3)).$state),
-                TextColumn::make('name')->label('اسم الحساب')->searchable()->weight(fn ($record) => $record->is_group ? 'bold' : null),
-                TextColumn::make('type')->label('النوع')->badge()->formatStateUsing(fn ($state) => Account::TYPES[$state] ?? $state),
-                TextColumn::make('parent.name')->label('الحساب الرئيسي')->toggleable(),
-                TextColumn::make('balance')->label('الرصيد')->state(fn (Account $record) => $record->balance())->numeric(2),
-                IconColumn::make('is_system')->label('نظامي')->boolean()->toggleable(),
+                TextColumn::make('name')->label(__('اسم الحساب'))->searchable()->weight(fn ($record) => $record->is_group ? 'bold' : null),
+                TextColumn::make('type')->label(__('النوع'))->badge()->formatStateUsing(fn ($state) => __(Account::TYPES[$state] ?? $state)),
+                TextColumn::make('parent.name')->label(__('الحساب الرئيسي'))->toggleable(),
+                TextColumn::make('balance')->label(__('الرصيد'))->state(fn (Account $record) => $record->balance())->numeric(2),
+                IconColumn::make('is_system')->label(__('نظامي'))->boolean()->toggleable(),
             ])
-            ->filters([SelectFilter::make('type')->label('النوع')->options(Account::TYPES)])
+            ->filters([SelectFilter::make('type')->label(__('النوع'))->options(Translate::options(Account::TYPES))])
             ->defaultSort('code')
             ->paginated([25, 50, 100, 'all'])
             ->defaultPaginationPageOption(100)
             ->recordActions([
-                Action::make('ledger')->label('كشف حساب')->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
+                Action::make('ledger')->label(__('كشف حساب'))->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
                     ->url(fn (Account $record) => AccountLedger::getUrl(['account' => $record->id])),
                 EditAction::make(),
                 DeleteAction::make()->visible(fn (Account $record) => ! $record->is_system),

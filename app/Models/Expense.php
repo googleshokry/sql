@@ -26,7 +26,7 @@ class Expense extends Model
         });
         static::saved(function (self $e) {
             $expenseAccount = $e->category?->account_id ?? Accounting::account('general_expenses')->id;
-            Accounting::sync($e, $e->date, 'مصروف: '.($e->category?->name ?? '').' '.($e->description ?? ''), [
+            Accounting::sync($e, $e->date, __('مصروف: ').($e->category?->name ?? '').' '.($e->description ?? ''), [
                 ['account_id' => $expenseAccount, 'debit' => $e->amount],
                 ['account_id' => Accounting::account('vat_input')->id, 'debit' => $e->tax_amount],
                 ['account_id' => $e->treasury->account_id, 'credit' => $e->total],

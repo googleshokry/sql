@@ -25,7 +25,7 @@ class Supplier extends Model
     {
         static::saved(function (self $party) {
             $amount = (float) $party->opening_balance;
-            Accounting::sync($party, now()->startOfYear()->toDateString(), 'رصيد افتتاحي - '.$party->name, [
+            Accounting::sync($party, now()->startOfYear()->toDateString(), __('رصيد افتتاحي - ').$party->name, [
                 ['account_id' => Accounting::account(self::ACCOUNT_KEY)->id, 'credit' => $amount, 'party' => $party],
                 ['account_id' => Accounting::account('opening_equity')->id, 'debit' => $amount],
             ]);

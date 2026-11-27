@@ -40,8 +40,8 @@ class PurchaseInvoiceResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            DatePicker::make('due_date')->label('تاريخ الاستحقاق'),
-            TextInput::make('reference')->label('رقم فاتورة المورد'),
+            DatePicker::make('due_date')->label(__('تاريخ الاستحقاق')),
+            TextInput::make('reference')->label(__('رقم فاتورة المورد')),
         ];
     }
 

@@ -39,8 +39,8 @@ class SalesReturnResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            Select::make('sales_invoice_id')->label('الفاتورة الأصلية')->relationship('salesInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
-            Select::make('treasury_id')->label('رد المبلغ نقداً من')->relationship('treasury', 'name')->placeholder('خصم من رصيد العميل')->helperText('اتركه فارغاً لخصم القيمة من حساب العميل'),
+            Select::make('sales_invoice_id')->label(__('الفاتورة الأصلية'))->relationship('salesInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
+            Select::make('treasury_id')->label(__('رد المبلغ نقداً من'))->relationship('treasury', 'name')->placeholder(__('خصم من رصيد العميل'))->helperText(__('اتركه فارغاً لخصم القيمة من حساب العميل')),
         ];
     }
 

@@ -1,24 +1,24 @@
 <x-filament-panels::page>
-    @include('filament.reports._head', ['title' => 'تقييم المخزون'])
+    @include('filament.reports._head', ['title' => __('تقييم المخزون')])
     @php($t = $data['totals'])
     <x-filament::section>
         <div class="erp-filters">
             <div>
-                <label>المخزن</label>
+                <label>{{ __('المخزن') }}</label>
                 <select wire:model.live="warehouse">
-                    <option value="">كل المخازن</option>
+                    <option value="">{{ __('كل المخازن') }}</option>
                     @foreach($data['warehouses'] as $k => $v)<option value="{{ $k }}">{{ $v }}</option>@endforeach
                 </select>
             </div>
-            <div><label>&nbsp;</label><label style="display:flex;gap:.4rem;align-items:center"><input type="checkbox" wire:model.live="lowOnly" style="min-width:auto"> الأصناف التي وصلت لحد الطلب فقط</label></div>
+            <div><label>&nbsp;</label><label style="display:flex;gap:.4rem;align-items:center"><input type="checkbox" wire:model.live="lowOnly" style="min-width:auto"> {{ __('الأصناف التي وصلت لحد الطلب فقط') }}</label></div>
         </div>
         <div class="erp-kpis">
-            <div class="erp-kpi"><div>عدد الأصناف</div><div class="v">{{ count($data['rows']) }}</div></div>
-            <div class="erp-kpi"><div>قيمة المخزون بالتكلفة</div><div class="v">{{ number_format($t['value'], 2) }}</div></div>
-            <div class="erp-kpi"><div>قيمة المخزون بسعر البيع</div><div class="v">{{ number_format($t['sale_value'], 2) }}</div></div>
+            <div class="erp-kpi"><div>{{ __('عدد الأصناف') }}</div><div class="v">{{ count($data['rows']) }}</div></div>
+            <div class="erp-kpi"><div>{{ __('قيمة المخزون بالتكلفة') }}</div><div class="v">{{ number_format($t['value'], 2) }}</div></div>
+            <div class="erp-kpi"><div>{{ __('قيمة المخزون بسعر البيع') }}</div><div class="v">{{ number_format($t['sale_value'], 2) }}</div></div>
         </div>
         <table class="erp-table">
-            <thead><tr><th>الكود</th><th>الصنف</th><th>التصنيف</th><th>الوحدة</th><th class="num">الكمية</th><th class="num">حد الطلب</th><th class="num">متوسط التكلفة</th><th class="num">القيمة</th></tr></thead>
+            <thead><tr><th>{{ __('الكود') }}</th><th>{{ __('الصنف') }}</th><th>{{ __('التصنيف') }}</th><th>{{ __('الوحدة') }}</th><th class="num">{{ __('الكمية') }}</th><th class="num">{{ __('حد الطلب') }}</th><th class="num">{{ __('متوسط التكلفة') }}</th><th class="num">{{ __('القيمة') }}</th></tr></thead>
             <tbody>
                 @foreach($data['rows'] as $r)
                     <tr>
@@ -30,7 +30,7 @@
                     </tr>
                 @endforeach
             </tbody>
-            <tfoot><tr><td colspan="4">الإجمالي</td><td class="num">{{ $t['qty'] }}</td><td></td><td></td><td class="num">{{ number_format($t['value'], 2) }}</td></tr></tfoot>
+            <tfoot><tr><td colspan="4">{{ __('الإجمالي') }}</td><td class="num">{{ $t['qty'] }}</td><td></td><td></td><td class="num">{{ number_format($t['value'], 2) }}</td></tr></tfoot>
         </table>
     </x-filament::section>
 </x-filament-panels::page>

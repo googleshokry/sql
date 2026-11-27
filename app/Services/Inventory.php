@@ -38,7 +38,7 @@ class Inventory
         );
 
         if ($qty < 0 && ! Setting::get('allow_negative_stock') && (float) $stock->quantity + $qty < -0.0001) {
-            throw new BusinessException("الكمية المتاحة من [{$product->name}] غير كافية في المخزن (المتاح: ".(float) $stock->quantity.')');
+            throw new BusinessException(__('الكمية المتاحة من [:product] غير كافية في المخزن (المتاح: :available)', ['product' => $product->name, 'available' => (float) $stock->quantity]));
         }
 
         if ($qty > 0 && in_array($type, ['purchase', 'opening'])) {

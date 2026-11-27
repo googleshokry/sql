@@ -17,9 +17,9 @@ class ViewSupplier extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('statement')->label('كشف حساب')->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
+            Action::make('statement')->label(__('كشف حساب'))->icon(Heroicon::OutlinedDocumentChartBar)->color('info')
                 ->url(fn () => PartyStatement::getUrl(['party' => 'supplier', 'id' => $this->record->id])),
-            Action::make('payment')->label('سند صرف')->icon(Heroicon::OutlinedBanknotes)->color('warning')
+            Action::make('payment')->label(__('سند صرف'))->icon(Heroicon::OutlinedBanknotes)->color('warning')
                 ->url(fn () => PaymentResource::getUrl('create', ['direction' => 'out', 'party_type' => 'supplier', 'party_id' => $this->record->id])),
             EditAction::make(),
         ];

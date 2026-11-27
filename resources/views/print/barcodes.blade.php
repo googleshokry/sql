@@ -1,5 +1,5 @@
 @extends('print.layout')
-@section('title', 'طباعة باركود')
+@section('title', __('طباعة باركود'))
 @section('styles')
     .labels { display: flex; flex-wrap: wrap; gap: 4mm; padding: 6mm; background:#fff; width: 210mm; margin: auto; }
     .label { width: 48mm; height: 28mm; border: 1px dashed #ccc; text-align: center; padding: 1mm; overflow: hidden; }
@@ -9,7 +9,7 @@
     @media print { .label { border: 0; } .labels { width: auto; } }
 @endsection
 @section('toolbar')
-    <form style="display:inline"><input type="hidden" name="ids" value="{{ request('ids') }}"> النسخ لكل صنف: <input name="copies" type="number" value="{{ $copies }}" style="width:60px"> <button>تحديث</button></form>
+    <form style="display:inline"><input type="hidden" name="ids" value="{{ request('ids') }}"> {{ __('النسخ لكل صنف:') }} <input name="copies" type="number" value="{{ $copies }}" style="width:60px"> <button>{{ __('تحديث') }}</button></form>
 @endsection
 @section('content')
 <div class="labels">
@@ -18,7 +18,7 @@
             <div class="label">
                 <div class="n">{{ $product->name }}</div>
                 <svg class="bc" data-code="{{ $product->barcode ?: $product->sku }}"></svg>
-                <div class="p">{{ number_format($product->sale_price, 2) }} {{ \App\Models\Setting::get('currency') }}</div>
+                <div class="p">{{ number_format($product->sale_price, 2) }} {{ __(\App\Models\Setting::get('currency')) }}</div>
             </div>
         @endfor
     @endforeach

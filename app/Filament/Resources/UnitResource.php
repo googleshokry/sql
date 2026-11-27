@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\UnitResource\Pages;
 use App\Models\Unit;
 use BackedEnum;
@@ -21,6 +22,7 @@ use UnitEnum;
 class UnitResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Unit::class;
 
@@ -39,8 +41,8 @@ class UnitResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم الوحدة')->required(),
-            TextInput::make('short_name')->label('الاختصار'),
+            TextInput::make('name')->label(__('اسم الوحدة'))->required(),
+            TextInput::make('short_name')->label(__('الاختصار')),
         ]);
     }
 
@@ -48,8 +50,8 @@ class UnitResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('short_name')->label('الاختصار'),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('short_name')->label(__('الاختصار')),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

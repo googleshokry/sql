@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Reports;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesPageLabels;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -12,6 +13,7 @@ use UnitEnum;
 abstract class ReportPage extends Page
 {
     use HasRoleAccess;
+    use TranslatesPageLabels;
 
     protected static string|UnitEnum|null $navigationGroup = 'التقارير';
 
@@ -32,7 +34,7 @@ abstract class ReportPage extends Page
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('print')->label('طباعة')->icon(Heroicon::OutlinedPrinter)->color('gray')
+            Action::make('print')->label(__('طباعة'))->icon(Heroicon::OutlinedPrinter)->color('gray')
                 ->alpineClickHandler('window.print()'),
         ];
     }

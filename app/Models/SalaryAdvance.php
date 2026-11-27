@@ -16,7 +16,7 @@ class SalaryAdvance extends Model
     protected static function booted(): void
     {
         static::saved(function (self $a) {
-            Accounting::sync($a, $a->date, 'سلفة للموظف '.$a->employee->name, [
+            Accounting::sync($a, $a->date, __('سلفة للموظف ').$a->employee->name, [
                 ['account_id' => Accounting::account('employee_advances')->id, 'debit' => $a->amount, 'party' => $a->employee],
                 ['account_id' => $a->treasury->account_id, 'credit' => $a->amount],
             ]);

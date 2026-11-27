@@ -8,7 +8,7 @@ class Money
 {
     public static function currency(): string
     {
-        return (string) Setting::get('currency', 'ر.س');
+        return (string) Setting::get('currency', __('ر.س'));
     }
 
     public static function format(float|string|null $amount): string

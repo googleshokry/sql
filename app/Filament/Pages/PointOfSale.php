@@ -4,27 +4,26 @@ namespace App\Filament\Pages;
 
 use App\Exceptions\BusinessException;
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Models\Category;
 use App\Models\Customer;
-use App\Models\Payment;
 use App\Models\Product;
-use App\Models\SalesInvoice;
 use App\Models\Setting;
 use App\Models\Treasury;
 use App\Models\Warehouse;
-use App\Services\Posting;
+use App\Services\SalesCheckout;
 use App\Support\DocumentTotals;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\DB;
 use UnitEnum;
 
 /** نقطة البيع POS */
 class PointOfSale extends Page
 {
     use HasRoleAccess;
+    use TranslatesPageLabels;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedComputerDesktop;
 
@@ -136,74 +135,30 @@ class PointOfSale extends Page
 
     public function checkout(): void
     {
-        if (empty($this->cart)) {
-            Notification::make()->title('السلة فارغة')->warning()->send();
-
-            return;
-        }
-
         $totals = $this->totals();
-        $paid = min((float) $this->paid, $totals['total']);
-        if ($paid < $totals['total'] && ! $this->customerId) {
-            Notification::make()->title('البيع الآجل يتطلب اختيار عميل')->danger()->send();
-
-            return;
-        }
 
         try {
-            $invoice = DB::transaction(function () use ($paid) {
-                $invoice = SalesInvoice::create([
-                    'date' => now()->toDateString(),
-                    'customer_id' => $this->customerId,
-                    'warehouse_id' => $this->warehouseId,
-                    'is_pos' => true,
-                    'payment_method' => $this->method,
-                    'discount_type' => 'fixed',
-                    'discount_value' => (float) $this->discount,
-                    'terms' => null,
-                ]);
-                foreach ($this->cart as $line) {
-                    $invoice->items()->create([
-                        'product_id' => $line['product_id'],
-                        'description' => $line['name'],
-                        'quantity' => (float) $line['quantity'],
-                        'unit_price' => (float) $line['unit_price'],
-                        'discount_percent' => (float) $line['discount_percent'],
-                        'tax_rate' => (float) $line['tax_rate'],
-                    ]);
-                }
-                $invoice->refresh();
-                Posting::post($invoice);
-
-                if ($paid > 0) {
-                    Payment::create([
-                        'direction' => 'in',
-                        'date' => $invoice->date,
-                        'treasury_id' => $this->treasuryId,
-                        'party_type' => $invoice->customer_id ? Customer::class : null,
-                        'party_id' => $invoice->customer_id,
-                        'payable_type' => SalesInvoice::class,
-                        'payable_id' => $invoice->id,
-                        'amount' => $paid,
-                        'method' => $this->method,
-                        'notes' => 'نقطة البيع - فاتورة '.$invoice->number,
-                    ]);
-                }
-
-                return $invoice;
-            });
+            $invoice = SalesCheckout::checkout(
+                lines: $this->cart,
+                customerId: $this->customerId,
+                warehouseId: (int) $this->warehouseId,
+                treasuryId: $this->treasuryId,
+                method: $this->method,
+                discount: (float) $this->discount,
+                paid: (float) $this->paid,
+            );
         } catch (BusinessException $e) {
-            Notification::make()->title('تعذّر إتمام البيع')->body($e->getMessage())->danger()->send();
+            Notification::make()->title(__('تعذّر إتمام البيع'))->body($e->getMessage())->danger()->send();
 
             return;
         }
 
-        $change = (float) $this->paid - $invoice->total;
+        $change = (float) $this->paid - (float) $totals['total'];
         $this->lastInvoiceId = $invoice->id;
         $this->clearCart();
         Notification::make()
-            ->title('تم البيع - فاتورة '.$invoice->number)
-            ->body($change > 0 ? 'الباقي للعميل: '.number_format($change, 2) : null)
+            ->title(__('تم البيع - فاتورة').' '.$invoice->number)
+            ->body($change > 0 ? __('الباقي للعميل:').' '.number_format($change, 2) : null)
             ->success()->send();
         $this->js('window.open('.json_encode(route('print.document', ['sales-invoice', $invoice->id, 'format' => 'thermal'])).', "_blank", "width=420,height=700")');
     }
@@ -229,7 +184,7 @@ class PointOfSale extends Page
             'warehouses' => Warehouse::query()->where('is_active', true)->pluck('name', 'id'),
             'treasuries' => Treasury::query()->where('is_active', true)->pluck('name', 'id'),
             'totals' => $this->totals(),
-            'currency' => Setting::get('currency'),
+            'currency' => __(Setting::get('currency')),
         ];
     }
 }

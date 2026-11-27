@@ -14,12 +14,18 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class InstallmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'installments';
 
     protected static ?string $title = 'جدول الأقساط';
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('جدول الأقساط');
+    }
 
     public function isReadOnly(): bool
     {
@@ -31,17 +37,17 @@ class InstallmentsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('sequence')->label('#'),
-                TextColumn::make('due_date')->label('تاريخ الاستحقاق')->date('Y-m-d')
+                TextColumn::make('due_date')->label(__('تاريخ الاستحقاق'))->date('Y-m-d')
                     ->color(fn (Installment $record) => $record->isOverdue() ? 'danger' : null),
-                TextColumn::make('amount')->label('قيمة القسط')->numeric(2)->summarize(Sum::make()->label('')),
-                TextColumn::make('paid_amount')->label('المدفوع')->numeric(2)->summarize(Sum::make()->label('')),
-                TextColumn::make('paid_at')->label('تاريخ السداد')->date('Y-m-d')->placeholder('-'),
-                TextColumn::make('state')->label('الحالة')->badge()
-                    ->state(fn (Installment $record) => $record->isPaid() ? 'مسدد' : ($record->isOverdue() ? 'متأخر' : 'مستحق'))
-                    ->color(fn ($state) => ['مسدد' => 'success', 'متأخر' => 'danger', 'مستحق' => 'warning'][$state]),
+                TextColumn::make('amount')->label(__('قيمة القسط'))->numeric(2)->summarize(Sum::make()->label('')),
+                TextColumn::make('paid_amount')->label(__('المدفوع'))->numeric(2)->summarize(Sum::make()->label('')),
+                TextColumn::make('paid_at')->label(__('تاريخ السداد'))->date('Y-m-d')->placeholder('-'),
+                TextColumn::make('state')->label(__('الحالة'))->badge()
+                    ->state(fn (Installment $record) => $record->isPaid() ? __('مسدد') : ($record->isOverdue() ? __('متأخر') : __('مستحق')))
+                    ->color(fn ($state) => [__('مسدد') => 'success', __('متأخر') => 'danger', __('مستحق') => 'warning'][$state]),
             ])
             ->recordActions([
-                Action::make('collect')->label('تحصيل')->icon(Heroicon::OutlinedBanknotes)->color('success')
+                Action::make('collect')->label(__('تحصيل'))->icon(Heroicon::OutlinedBanknotes)->color('success')
                     ->visible(fn (Installment $record) => ! $record->isPaid() && $this->getOwnerRecord()->status !== 'cancelled')
                     ->fillForm(fn (Installment $record) => [
                         'amount' => (float) $record->amount - (float) $record->paid_amount,
@@ -49,15 +55,15 @@ class InstallmentsRelationManager extends RelationManager
                         'date' => now()->toDateString(),
                     ])
                     ->schema([
-                        TextInput::make('amount')->label('المبلغ')->numeric()->required(),
-                        Select::make('treasury_id')->label('الخزينة')->options(Treasury::query()->pluck('name', 'id'))->required(),
-                        DatePicker::make('date')->label('التاريخ')->required(),
+                        TextInput::make('amount')->label(__('المبلغ'))->numeric()->required(),
+                        Select::make('treasury_id')->label(__('الخزينة'))->options(Treasury::query()->pluck('name', 'id'))->required(),
+                        DatePicker::make('date')->label(__('التاريخ'))->required(),
                     ])
                     ->action(fn (Installment $record, array $data) => DocumentActions::run(
                         fn () => $record->collect((int) $data['treasury_id'], (float) $data['amount'], $data['date']),
-                        'تم تحصيل القسط وإنشاء سند القبض',
+                        __('تم تحصيل القسط وإنشاء سند القبض'),
                     )),
-                Action::make('receipt')->label('إيصال')->icon(Heroicon::OutlinedPrinter)->color('gray')
+                Action::make('receipt')->label(__('إيصال'))->icon(Heroicon::OutlinedPrinter)->color('gray')
                     ->visible(fn (Installment $record) => $record->payment_id)
                     ->url(fn (Installment $record) => route('print.document', ['payment', $record->payment_id]))->openUrlInNewTab(),
             ])

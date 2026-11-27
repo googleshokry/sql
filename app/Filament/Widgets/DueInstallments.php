@@ -25,10 +25,10 @@ class DueInstallments extends TableWidget
             ->paginated([5])
             ->recordUrl(fn (Installment $record) => InstallmentPlanResource::getUrl('view', ['record' => $record->installment_plan_id]))
             ->columns([
-                TextColumn::make('plan.customer.name')->label('العميل'),
-                TextColumn::make('due_date')->label('الاستحقاق')->date('Y-m-d')->color(fn ($record) => $record->isOverdue() ? 'danger' : 'warning'),
-                TextColumn::make('amount')->label('القيمة')->numeric(2),
+                TextColumn::make('plan.customer.name')->label(__('العميل')),
+                TextColumn::make('due_date')->label(__('الاستحقاق'))->date('Y-m-d')->color(fn ($record) => $record->isOverdue() ? 'danger' : 'warning'),
+                TextColumn::make('amount')->label(__('القيمة'))->numeric(2),
             ])
-            ->emptyStateHeading('لا توجد أقساط مستحقة');
+            ->emptyStateHeading(__('لا توجد أقساط مستحقة'));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\AttendanceResource\Pages;
 use App\Models\Attendance;
 use BackedEnum;
@@ -24,6 +25,7 @@ use UnitEnum;
 class AttendanceResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Attendance::class;
 
@@ -42,12 +44,12 @@ class AttendanceResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('employee_id')->label('الموظف')->relationship('employee', 'name')->searchable()->preload()->required(),
-            DatePicker::make('date')->label('التاريخ')->default(now())->required(),
-            TimePicker::make('check_in')->label('وقت الحضور')->seconds(false),
-            TimePicker::make('check_out')->label('وقت الانصراف')->seconds(false),
-            Select::make('status')->label('الحالة')->options(['present' => 'حاضر', 'late' => 'متأخر', 'absent' => 'غائب', 'leave' => 'إجازة'])->default('present')->required(),
-            TextInput::make('notes')->label('ملاحظات'),
+            Select::make('employee_id')->label(__('الموظف'))->relationship('employee', 'name')->searchable()->preload()->required(),
+            DatePicker::make('date')->label(__('التاريخ'))->default(now())->required(),
+            TimePicker::make('check_in')->label(__('وقت الحضور'))->seconds(false),
+            TimePicker::make('check_out')->label(__('وقت الانصراف'))->seconds(false),
+            Select::make('status')->label(__('الحالة'))->options(['present' => __('حاضر'), 'late' => __('متأخر'), 'absent' => __('غائب'), 'leave' => __('إجازة')])->default('present')->required(),
+            TextInput::make('notes')->label(__('ملاحظات')),
         ]);
     }
 
@@ -55,11 +57,11 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee.name')->label('الموظف')->searchable(),
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('check_in')->label('الحضور'),
-                TextColumn::make('check_out')->label('الانصراف'),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => ['present' => 'حاضر', 'late' => 'متأخر', 'absent' => 'غائب', 'leave' => 'إجازة'][$state] ?? $state)->color(fn ($state) => ['present' => 'success', 'late' => 'warning', 'absent' => 'danger', 'leave' => 'info'][$state] ?? 'gray'),
+                TextColumn::make('employee.name')->label(__('الموظف'))->searchable(),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('check_in')->label(__('الحضور')),
+                TextColumn::make('check_out')->label(__('الانصراف')),
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => ['present' => __('حاضر'), 'late' => __('متأخر'), 'absent' => __('غائب'), 'leave' => __('إجازة')][$state] ?? $state)->color(fn ($state) => ['present' => 'success', 'late' => 'warning', 'absent' => 'danger', 'leave' => 'info'][$state] ?? 'gray'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

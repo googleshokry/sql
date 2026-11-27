@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\LeaveRequestResource\Pages;
 use App\Models\LeaveRequest;
 use BackedEnum;
@@ -23,6 +24,7 @@ use UnitEnum;
 class LeaveRequestResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = LeaveRequest::class;
 
@@ -41,12 +43,12 @@ class LeaveRequestResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('employee_id')->label('الموظف')->relationship('employee', 'name')->searchable()->preload()->required(),
-            Select::make('type')->label('نوع الإجازة')->options(['annual' => 'سنوية', 'sick' => 'مرضية', 'unpaid' => 'بدون راتب', 'other' => 'أخرى'])->default('annual')->required(),
-            DatePicker::make('from_date')->label('من')->required(),
-            DatePicker::make('to_date')->label('إلى')->required()->afterOrEqual('from_date'),
-            Select::make('status')->label('الحالة')->options(['pending' => 'قيد المراجعة', 'approved' => 'موافق عليها', 'rejected' => 'مرفوضة'])->default('pending'),
-            TextInput::make('reason')->label('السبب'),
+            Select::make('employee_id')->label(__('الموظف'))->relationship('employee', 'name')->searchable()->preload()->required(),
+            Select::make('type')->label(__('نوع الإجازة'))->options(['annual' => __('سنوية'), 'sick' => __('مرضية'), 'unpaid' => __('بدون راتب'), 'other' => __('أخرى')])->default('annual')->required(),
+            DatePicker::make('from_date')->label(__('من'))->required(),
+            DatePicker::make('to_date')->label(__('إلى'))->required()->afterOrEqual('from_date'),
+            Select::make('status')->label(__('الحالة'))->options(['pending' => __('قيد المراجعة'), 'approved' => __('موافق عليها'), 'rejected' => __('مرفوضة')])->default('pending'),
+            TextInput::make('reason')->label(__('السبب')),
         ]);
     }
 
@@ -54,12 +56,12 @@ class LeaveRequestResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee.name')->label('الموظف')->searchable(),
-                TextColumn::make('type')->label('النوع')->formatStateUsing(fn ($state) => ['annual' => 'سنوية', 'sick' => 'مرضية', 'unpaid' => 'بدون راتب', 'other' => 'أخرى'][$state] ?? $state),
-                TextColumn::make('from_date')->label('من')->date('Y-m-d'),
-                TextColumn::make('to_date')->label('إلى')->date('Y-m-d'),
-                TextColumn::make('days')->label('الأيام')->state(fn ($record) => $record->from_date->diffInDays($record->to_date) + 1),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => ['pending' => 'قيد المراجعة', 'approved' => 'موافق عليها', 'rejected' => 'مرفوضة'][$state] ?? $state)->color(fn ($state) => ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$state] ?? 'gray'),
+                TextColumn::make('employee.name')->label(__('الموظف'))->searchable(),
+                TextColumn::make('type')->label(__('النوع'))->formatStateUsing(fn ($state) => ['annual' => __('سنوية'), 'sick' => __('مرضية'), 'unpaid' => __('بدون راتب'), 'other' => __('أخرى')][$state] ?? $state),
+                TextColumn::make('from_date')->label(__('من'))->date('Y-m-d'),
+                TextColumn::make('to_date')->label(__('إلى'))->date('Y-m-d'),
+                TextColumn::make('days')->label(__('الأيام'))->state(fn ($record) => $record->from_date->diffInDays($record->to_date) + 1),
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => ['pending' => __('قيد المراجعة'), 'approved' => __('موافق عليها'), 'rejected' => __('مرفوضة')][$state] ?? $state)->color(fn ($state) => ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$state] ?? 'gray'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

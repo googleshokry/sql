@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use BackedEnum;
@@ -22,6 +23,7 @@ use UnitEnum;
 class CategoryResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Category::class;
 
@@ -40,8 +42,8 @@ class CategoryResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم التصنيف')->required(),
-            Select::make('parent_id')->label('التصنيف الأب')->relationship('parent', 'name'),
+            TextInput::make('name')->label(__('اسم التصنيف'))->required(),
+            Select::make('parent_id')->label(__('التصنيف الأب'))->relationship('parent', 'name'),
         ]);
     }
 
@@ -49,9 +51,9 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('parent.name')->label('التصنيف الأب'),
-                TextColumn::make('products_count')->label('عدد الأصناف')->counts('products'),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('parent.name')->label(__('التصنيف الأب')),
+                TextColumn::make('products_count')->label(__('عدد الأصناف'))->counts('products'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

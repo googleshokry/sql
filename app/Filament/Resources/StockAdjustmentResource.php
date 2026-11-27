@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\StockAdjustmentResource\Pages;
 use App\Filament\Support\Labels;
 use App\Models\Product;
@@ -34,6 +35,7 @@ use UnitEnum;
 class StockAdjustmentResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = StockAdjustment::class;
 
@@ -63,13 +65,13 @@ class StockAdjustmentResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(3)->columnSpanFull()->schema([
-                DatePicker::make('date')->label('تاريخ الجرد')->default(now())->required(),
-                Select::make('warehouse_id')->label('المخزن')->relationship('warehouse', 'name')->required()->live(),
-                TextInput::make('notes')->label('ملاحظات'),
+                DatePicker::make('date')->label(__('تاريخ الجرد'))->default(now())->required(),
+                Select::make('warehouse_id')->label(__('المخزن'))->relationship('warehouse', 'name')->required()->live(),
+                TextInput::make('notes')->label(__('ملاحظات')),
             ]),
-            Section::make('الأصناف')->description('أدخل الكمية الفعلية الموجودة بالمخزن وسيتم حساب الفرق وتسويته تلقائياً عند الترحيل')->columnSpanFull()->schema([
+            Section::make(__('الأصناف'))->description(__('أدخل الكمية الفعلية الموجودة بالمخزن وسيتم حساب الفرق وتسويته تلقائياً عند الترحيل'))->columnSpanFull()->schema([
                 Repeater::make('items')->hiddenLabel()->relationship()
-                    ->table([TableColumn::make('الصنف')->markAsRequired()->width('50%'), TableColumn::make('الكمية بالنظام'), TableColumn::make('الكمية الفعلية')->markAsRequired()])
+                    ->table([TableColumn::make(__('الصنف'))->markAsRequired()->width('50%'), TableColumn::make(__('الكمية بالنظام')), TableColumn::make(__('الكمية الفعلية'))->markAsRequired()])
                     ->schema([
                         Select::make('product_id')->hiddenLabel()->required()->searchable()->live()
                             ->options(fn () => Product::query()->where('track_stock', true)->pluck('name', 'id'))
@@ -77,7 +79,7 @@ class StockAdjustmentResource extends Resource
                         TextInput::make('system_quantity')->hiddenLabel()->numeric()->disabled()->dehydrated(),
                         TextInput::make('actual_quantity')->hiddenLabel()->numeric()->required(),
                     ])
-                    ->minItems(1)->addActionLabel('إضافة صنف'),
+                    ->minItems(1)->addActionLabel(__('إضافة صنف')),
             ]),
         ]);
     }
@@ -86,13 +88,13 @@ class StockAdjustmentResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('number')->label('الرقم'),
-                TextEntry::make('date')->label('التاريخ')->date('Y-m-d'),
-                TextEntry::make('warehouse.name')->label('المخزن'),
-                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextEntry::make('number')->label(__('الرقم')),
+                TextEntry::make('date')->label(__('التاريخ'))->date('Y-m-d'),
+                TextEntry::make('warehouse.name')->label(__('المخزن')),
+                TextEntry::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
             ]),
-            RepeatableEntry::make('items')->label('الأصناف')->columnSpanFull()
-                ->table([EntryColumn::make('الصنف'), EntryColumn::make('بالنظام'), EntryColumn::make('الفعلي'), EntryColumn::make('الفرق')])
+            RepeatableEntry::make('items')->label(__('الأصناف'))->columnSpanFull()
+                ->table([EntryColumn::make(__('الصنف')), EntryColumn::make(__('بالنظام')), EntryColumn::make(__('الفعلي')), EntryColumn::make(__('الفرق'))])
                 ->schema([
                     TextEntry::make('product.name'),
                     TextEntry::make('system_quantity')->numeric(3),
@@ -106,11 +108,11 @@ class StockAdjustmentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('الرقم')->searchable(),
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('warehouse.name')->label('المخزن'),
-                TextColumn::make('items_count')->label('عدد الأصناف')->counts('items'),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextColumn::make('number')->label(__('الرقم'))->searchable(),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('warehouse.name')->label(__('المخزن')),
+                TextColumn::make('items_count')->label(__('عدد الأصناف'))->counts('items'),
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()]);

@@ -22,11 +22,11 @@ class LatestInvoices extends TableWidget
             ->paginated(false)
             ->recordUrl(fn (SalesInvoice $record) => SalesInvoiceResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('number')->label('الرقم'),
-                TextColumn::make('customer.name')->label('العميل')->placeholder('نقدي'),
-                TextColumn::make('total')->label('الإجمالي')->numeric(2),
-                TextColumn::make('payment_status')->label('السداد')->badge()
-                    ->formatStateUsing(fn ($state) => Labels::PAYMENT_STATUS[$state] ?? $state)
+                TextColumn::make('number')->label(__('الرقم')),
+                TextColumn::make('customer.name')->label(__('العميل'))->placeholder(__('نقدي')),
+                TextColumn::make('total')->label(__('الإجمالي'))->numeric(2),
+                TextColumn::make('payment_status')->label(__('السداد'))->badge()
+                    ->formatStateUsing(fn ($state) => __(Labels::PAYMENT_STATUS[$state] ?? $state))
                     ->color(fn ($state) => Labels::PAYMENT_STATUS_COLORS[$state] ?? 'gray'),
             ]);
     }

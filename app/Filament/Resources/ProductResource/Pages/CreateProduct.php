@@ -20,8 +20,8 @@ class CreateProduct extends CreateRecord
 
         if ($qty > 0 && $warehouse && $product->track_stock) {
             $cost = (float) $product->purchase_price;
-            Inventory::move($product, (int) $warehouse, $qty, 'opening', $cost, $product, now()->toDateString(), 'رصيد أول المدة');
-            Accounting::sync($product, now()->toDateString(), 'رصيد أول المدة - '.$product->name, [
+            Inventory::move($product, (int) $warehouse, $qty, 'opening', $cost, $product, now()->toDateString(), __('رصيد أول المدة'));
+            Accounting::sync($product, now()->toDateString(), __('رصيد أول المدة - ').$product->name, [
                 ['account_id' => Accounting::account('inventory')->id, 'debit' => round($qty * $cost, 2)],
                 ['account_id' => Accounting::account('opening_equity')->id, 'credit' => round($qty * $cost, 2)],
             ]);

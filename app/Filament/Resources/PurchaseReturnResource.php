@@ -39,8 +39,8 @@ class PurchaseReturnResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            Select::make('purchase_invoice_id')->label('الفاتورة الأصلية')->relationship('purchaseInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
-            Select::make('treasury_id')->label('استرداد نقدي إلى')->relationship('treasury', 'name')->placeholder('خصم من رصيد المورد'),
+            Select::make('purchase_invoice_id')->label(__('الفاتورة الأصلية'))->relationship('purchaseInvoice', 'number', fn ($query) => $query->whereNotNull('posted_at'))->searchable()->preload(),
+            Select::make('treasury_id')->label(__('استرداد نقدي إلى'))->relationship('treasury', 'name')->placeholder(__('خصم من رصيد المورد')),
         ];
     }
 

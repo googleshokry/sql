@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\BranchResource\Pages;
 use App\Models\Branch;
 use BackedEnum;
@@ -21,6 +22,8 @@ use UnitEnum;
 
 class BranchResource extends Resource
 {
+    use TranslatesResourceLabels;
+
     protected static ?string $model = Branch::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
@@ -41,10 +44,10 @@ class BranchResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم الفرع')->required(),
-            TextInput::make('phone')->label('الهاتف'),
-            TextInput::make('address')->label('العنوان')->columnSpanFull(),
-            Toggle::make('is_active')->label('نشط')->default(true),
+            TextInput::make('name')->label(__('اسم الفرع'))->required(),
+            TextInput::make('phone')->label(__('الهاتف')),
+            TextInput::make('address')->label(__('العنوان'))->columnSpanFull(),
+            Toggle::make('is_active')->label(__('نشط'))->default(true),
         ]);
     }
 
@@ -52,10 +55,10 @@ class BranchResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('phone')->label('الهاتف'),
-                TextColumn::make('address')->label('العنوان'),
-                IconColumn::make('is_active')->label('نشط')->boolean(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('phone')->label(__('الهاتف')),
+                TextColumn::make('address')->label(__('العنوان')),
+                IconColumn::make('is_active')->label(__('نشط'))->boolean(),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

@@ -27,10 +27,18 @@ class PanelSmokeTest extends TestCase
         $this->seed(DemoSeeder::class);
     }
 
-    public function test_every_admin_page_renders(): void
+    public function test_every_admin_page_renders_in_arabic_and_english(): void
+    {
+        foreach (['ar', 'en'] as $locale) {
+            $this->assertEveryPageRenders($locale);
+        }
+    }
+
+    protected function assertEveryPageRenders(string $locale): void
     {
         $admin = User::query()->where('email', 'admin@admin.com')->firstOrFail();
-        $this->actingAs($admin);
+        $admin->update(['locale' => $locale]);
+        $this->actingAs($admin)->withSession(['locale' => $locale]);
 
         $records = [
             'customer' => Customer::query()->first(),
@@ -60,11 +68,26 @@ class PanelSmokeTest extends TestCase
 
             $response = $this->get(route($name, $params));
             if ($response->status() !== 200 && ! ($response->status() === 403 && str_ends_with($name, '.edit'))) {
-                $failures[] = "$name => {$response->status()} ".substr(strip_tags((string) $response->exception?->getMessage()), 0, 300);
+                $failures[] = "[$locale] $name => {$response->status()} ".substr(strip_tags((string) $response->exception?->getMessage()), 0, 300);
             }
         }
 
         $this->assertSame([], $failures, implode("\n", $failures));
+    }
+
+    public function test_panel_switches_to_english(): void
+    {
+        $this->actingAs(User::query()->where('email', 'admin@admin.com')->firstOrFail());
+
+        $this->get(route('locale.switch', 'en'))->assertRedirect();
+        $this->assertSame('en', User::query()->where('email', 'admin@admin.com')->value('locale'));
+
+        $this->get('/admin')->assertOk()->assertSee('dir="ltr"', false)->assertSee('Point of sale (POS)')->assertSee('Chart of accounts')->assertDontSee('فواتير المبيعات');
+        $this->get('/admin/sales-invoices/create')->assertOk()->assertSee('Document details')->assertDontSee('بيانات المستند');
+        $this->get('/admin/trial-balance')->assertOk()->assertSee('Trial balance');
+
+        $invoice = PurchaseInvoice::query()->firstOrFail();
+        $this->get(route('print.document', ['purchase-invoice', $invoice->id]))->assertOk()->assertSee('Purchase invoice')->assertSee('dir="ltr"', false);
     }
 
     public function test_print_views_render(): void

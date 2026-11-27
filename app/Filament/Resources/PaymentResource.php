@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Models\Customer;
 use App\Models\Employee;
@@ -11,6 +12,7 @@ use App\Models\PurchaseInvoice;
 use App\Models\SalesInvoice;
 use App\Models\Supplier;
 use App\Models\Treasury;
+use App\Support\Translate;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -37,6 +39,7 @@ use UnitEnum;
 class PaymentResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Payment::class;
 
@@ -63,33 +66,33 @@ class PaymentResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(3)->columnSpanFull()->schema([
-                ToggleButtons::make('direction')->label('نوع السند')->inline()->required()->default('in')
-                    ->options(['in' => 'سند قبض', 'out' => 'سند صرف'])
+                ToggleButtons::make('direction')->label(__('نوع السند'))->inline()->required()->default('in')
+                    ->options(['in' => __('سند قبض'), 'out' => __('سند صرف')])
                     ->colors(['in' => 'success', 'out' => 'danger'])
                     ->icons(['in' => Heroicon::OutlinedArrowDownTray, 'out' => Heroicon::OutlinedArrowUpTray])
                     ->live(),
-                DatePicker::make('date')->label('التاريخ')->default(now())->required(),
-                Select::make('treasury_id')->label('الخزينة / البنك')->required()
+                DatePicker::make('date')->label(__('التاريخ'))->default(now())->required(),
+                Select::make('treasury_id')->label(__('الخزينة / البنك'))->required()
                     ->options(fn () => Treasury::query()->where('is_active', true)->pluck('name', 'id'))
                     ->default(fn () => Treasury::query()->where('is_default', true)->value('id')),
 
-                Select::make('party_type')->label('الطرف')->options(self::PARTY_TYPES)->default(Customer::class)->live()
+                Select::make('party_type')->label(__('الطرف'))->options(Translate::options(self::PARTY_TYPES))->default(Customer::class)->live()
                     ->afterStateUpdated(function (Set $set) {
                         $set('party_id', null);
                         $set('payable_id', null);
                     }),
-                Select::make('party_id')->label('الاسم')->searchable()->live()
+                Select::make('party_id')->label(__('الاسم'))->searchable()->live()
                     ->visible(fn (Get $get) => filled($get('party_type')))
                     ->required(fn (Get $get) => filled($get('party_type')))
                     ->options(fn (Get $get) => filled($get('party_type')) && class_exists($get('party_type'))
                         ? $get('party_type')::query()->pluck('name', 'id') : [])
                     ->afterStateUpdated(fn (Set $set) => $set('payable_id', null)),
-                Select::make('account_id')->label('الحساب المقابل')->searchable()
+                Select::make('account_id')->label(__('الحساب المقابل'))->searchable()
                     ->relationship('account', 'name', fn (Builder $query) => $query->where('is_group', false))
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->code} - {$record->name}")
                     ->visible(fn (Get $get) => blank($get('party_type')))
                     ->required(fn (Get $get) => blank($get('party_type'))),
-                Select::make('payable_id')->label('مقابل فاتورة (اختياري)')->searchable()
+                Select::make('payable_id')->label(__('مقابل فاتورة (اختياري)'))->searchable()
                     ->visible(fn (Get $get) => in_array($get('party_type'), [Customer::class, Supplier::class]))
                     ->options(function (Get $get) {
                         $model = $get('party_type') === Customer::class ? SalesInvoice::class : PurchaseInvoice::class;
@@ -97,7 +100,7 @@ class PaymentResource extends Resource
 
                         return $model::query()->where($key, $get('party_id'))->whereNotNull('posted_at')
                             ->where(fn ($q) => $q->where('payment_status', '!=', 'paid')->orWhere('id', $get('payable_id')))
-                            ->get()->mapWithKeys(fn ($i) => [$i->id => "{$i->number} - المتبقي ".number_format($i->remainingAmount(), 2)]);
+                            ->get()->mapWithKeys(fn ($i) => [$i->id => __(':number - المتبقي :amount', ['number' => $i->number, 'amount' => number_format($i->remainingAmount(), 2)])]);
                     })
                     ->afterStateUpdated(function ($state, Get $get, Set $set) {
                         $model = $get('party_type') === Customer::class ? SalesInvoice::class : PurchaseInvoice::class;
@@ -107,10 +110,10 @@ class PaymentResource extends Resource
                     })
                     ->live(),
 
-                TextInput::make('amount')->label('المبلغ')->numeric()->required()->minValue(0.01),
-                Select::make('method')->label('طريقة الدفع')->options(Payment::METHODS)->default('cash')->required(),
-                TextInput::make('reference')->label('رقم مرجعي / شيك'),
-                TextInput::make('notes')->label('البيان')->columnSpanFull(),
+                TextInput::make('amount')->label(__('المبلغ'))->numeric()->required()->minValue(0.01),
+                Select::make('method')->label(__('طريقة الدفع'))->options(Translate::options(Payment::METHODS))->default('cash')->required(),
+                TextInput::make('reference')->label(__('رقم مرجعي / شيك')),
+                TextInput::make('notes')->label(__('البيان'))->columnSpanFull(),
             ]),
         ]);
     }
@@ -139,31 +142,31 @@ class PaymentResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['party', 'treasury', 'payable', 'account']))
             ->columns([
-                TextColumn::make('number')->label('الرقم')->searchable()->weight('bold'),
-                TextColumn::make('direction')->label('النوع')->badge()
-                    ->formatStateUsing(fn ($state) => $state === 'in' ? 'قبض' : 'صرف')
+                TextColumn::make('number')->label(__('الرقم'))->searchable()->weight('bold'),
+                TextColumn::make('direction')->label(__('النوع'))->badge()
+                    ->formatStateUsing(fn ($state) => $state === 'in' ? __('قبض') : __('صرف'))
                     ->color(fn ($state) => $state === 'in' ? 'success' : 'danger'),
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('party_name')->label('الطرف')->state(fn (Payment $record) => $record->party?->name ?? $record->account?->name ?? '-'),
-                TextColumn::make('payable_number')->label('الفاتورة')->state(fn (Payment $record) => $record->payable?->number ?? '-'),
-                TextColumn::make('treasury.name')->label('الخزينة'),
-                TextColumn::make('method')->label('الطريقة')->formatStateUsing(fn ($state) => Payment::METHODS[$state] ?? $state)->toggleable(),
-                TextColumn::make('amount')->label('المبلغ')->numeric(2)->summarize(Sum::make()->label('')),
-                TextColumn::make('notes')->label('البيان')->limit(30)->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('party_name')->label(__('الطرف'))->state(fn (Payment $record) => $record->party?->name ?? $record->account?->name ?? '-'),
+                TextColumn::make('payable_number')->label(__('الفاتورة'))->state(fn (Payment $record) => $record->payable?->number ?? '-'),
+                TextColumn::make('treasury.name')->label(__('الخزينة')),
+                TextColumn::make('method')->label(__('الطريقة'))->formatStateUsing(fn ($state) => __(Payment::METHODS[$state] ?? $state))->toggleable(),
+                TextColumn::make('amount')->label(__('المبلغ'))->numeric(2)->summarize(Sum::make()->label('')),
+                TextColumn::make('notes')->label(__('البيان'))->limit(30)->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('direction')->label('النوع')->options(['in' => 'قبض', 'out' => 'صرف']),
-                SelectFilter::make('treasury_id')->label('الخزينة')->relationship('treasury', 'name'),
-                SelectFilter::make('method')->label('الطريقة')->options(Payment::METHODS),
+                SelectFilter::make('direction')->label(__('النوع'))->options(['in' => __('قبض'), 'out' => __('صرف')]),
+                SelectFilter::make('treasury_id')->label(__('الخزينة'))->relationship('treasury', 'name'),
+                SelectFilter::make('method')->label(__('الطريقة'))->options(Translate::options(Payment::METHODS)),
                 Filter::make('date')
-                    ->schema([DatePicker::make('from')->label('من'), DatePicker::make('to')->label('إلى')])
+                    ->schema([DatePicker::make('from')->label(__('من')), DatePicker::make('to')->label(__('إلى'))])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $v) => $q->whereDate('date', '>=', $v))
                         ->when($data['to'] ?? null, fn ($q, $v) => $q->whereDate('date', '<=', $v))),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([
-                Action::make('print')->label('طباعة')->icon(Heroicon::OutlinedPrinter)->color('gray')
+                Action::make('print')->label(__('طباعة'))->icon(Heroicon::OutlinedPrinter)->color('gray')
                     ->url(fn (Payment $record) => route('print.document', ['payment', $record]))->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make(),

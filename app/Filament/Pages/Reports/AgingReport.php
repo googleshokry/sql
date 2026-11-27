@@ -41,7 +41,7 @@ class AgingReport extends ReportPage
             $bucket = match (true) {
                 $days <= 30 => '0-30', $days <= 60 => '31-60', $days <= 90 => '61-90', default => '90+'
             };
-            $name = $inv->{$relation}?->name ?? 'نقدي';
+            $name = $inv->{$relation}?->name ?? __('نقدي');
             $rows[$name] ??= array_fill_keys($buckets, 0) + ['total' => 0, 'count' => 0];
             $rows[$name][$bucket] += $remaining;
             $rows[$name]['total'] += $remaining;

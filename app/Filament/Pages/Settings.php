@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\TranslatesPageLabels;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Forms\Components\FileUpload;
@@ -19,6 +20,8 @@ use UnitEnum;
 /** إعدادات الشركة والنظام */
 class Settings extends Page
 {
+    use TranslatesPageLabels;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static string|UnitEnum|null $navigationGroup = 'الإعدادات';
@@ -48,28 +51,28 @@ class Settings extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
-            Section::make('بيانات المنشأة')->columns(3)->schema([
-                TextInput::make('company_name')->label('اسم المنشأة (عربي)')->required(),
-                TextInput::make('company_name_en')->label('اسم المنشأة (إنجليزي)'),
-                FileUpload::make('logo')->label('الشعار')->image()->directory('settings')->disk('public'),
-                TextInput::make('tax_number')->label('الرقم الضريبي')->helperText('15 رقم - يظهر في الفاتورة ورمز QR'),
-                TextInput::make('commercial_register')->label('السجل التجاري'),
-                TextInput::make('phone')->label('الهاتف'),
-                TextInput::make('email')->label('البريد الإلكتروني')->email(),
-                TextInput::make('address')->label('العنوان')->columnSpan(2),
+            Section::make(__('بيانات المنشأة'))->columns(3)->schema([
+                TextInput::make('company_name')->label(__('اسم المنشأة (عربي)'))->required(),
+                TextInput::make('company_name_en')->label(__('اسم المنشأة (إنجليزي)')),
+                FileUpload::make('logo')->label(__('الشعار'))->image()->directory('settings')->disk('public'),
+                TextInput::make('tax_number')->label(__('الرقم الضريبي'))->helperText(__('15 رقم - يظهر في الفاتورة ورمز QR')),
+                TextInput::make('commercial_register')->label(__('السجل التجاري')),
+                TextInput::make('phone')->label(__('الهاتف')),
+                TextInput::make('email')->label(__('البريد الإلكتروني'))->email(),
+                TextInput::make('address')->label(__('العنوان'))->columnSpan(2),
             ]),
-            Section::make('الإعدادات المالية والضريبية')->columns(3)->schema([
-                Select::make('currency')->label('العملة')->options([
-                    'ر.س' => 'ريال سعودي (ر.س)', 'ج.م' => 'جنيه مصري (ج.م)', 'د.إ' => 'درهم إماراتي (د.إ)',
-                    'د.ك' => 'دينار كويتي (د.ك)', 'ر.ق' => 'ريال قطري (ر.ق)', 'ر.ع' => 'ريال عماني (ر.ع)', 'د.أ' => 'دينار أردني (د.أ)', '$' => 'دولار ($)',
+            Section::make(__('الإعدادات المالية والضريبية'))->columns(3)->schema([
+                Select::make('currency')->label(__('العملة'))->options([
+                    __('ر.س') => __('ريال سعودي (ر.س)'), __('ج.م') => __('جنيه مصري (ج.م)'), __('د.إ') => __('درهم إماراتي (د.إ)'),
+                    __('د.ك') => __('دينار كويتي (د.ك)'), __('ر.ق') => __('ريال قطري (ر.ق)'), __('ر.ع') => __('ريال عماني (ر.ع)'), __('د.أ') => __('دينار أردني (د.أ)'), '$' => __('دولار ($)'),
                 ])->required(),
-                TextInput::make('default_tax_rate')->label('نسبة الضريبة الافتراضية %')->numeric()->required(),
-                Toggle::make('zatca_qr')->label('إظهار رمز QR (هيئة الزكاة والضريبة) على الفاتورة')->inline(false),
-                Toggle::make('allow_negative_stock')->label('السماح بالبيع بالسالب (بدون رصيد)')->inline(false),
+                TextInput::make('default_tax_rate')->label(__('نسبة الضريبة الافتراضية %'))->numeric()->required(),
+                Toggle::make('zatca_qr')->label(__('إظهار رمز QR (هيئة الزكاة والضريبة) على الفاتورة'))->inline(false),
+                Toggle::make('allow_negative_stock')->label(__('السماح بالبيع بالسالب (بدون رصيد)'))->inline(false),
             ]),
-            Section::make('الفواتير')->columns(2)->schema([
-                Textarea::make('invoice_terms')->label('الشروط والأحكام الافتراضية')->rows(3),
-                Textarea::make('invoice_footer')->label('تذييل الفاتورة')->rows(3),
+            Section::make(__('الفواتير'))->columns(2)->schema([
+                Textarea::make('invoice_terms')->label(__('الشروط والأحكام الافتراضية'))->rows(3),
+                Textarea::make('invoice_footer')->label(__('تذييل الفاتورة'))->rows(3),
             ]),
         ]);
     }
@@ -81,6 +84,6 @@ class Settings extends Page
             $data[$bool] = ! empty($data[$bool]) ? '1' : '0';
         }
         Setting::setMany($data);
-        Notification::make()->title('تم حفظ الإعدادات')->success()->send();
+        Notification::make()->title(__('تم حفظ الإعدادات'))->success()->send();
     }
 }

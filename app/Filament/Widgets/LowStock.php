@@ -19,10 +19,10 @@ class LowStock extends TableWidget
             ->query(Product::query()->lowStock()->withSum('stocks as qty', 'quantity'))
             ->paginated([5])
             ->columns([
-                TextColumn::make('name')->label('الصنف'),
-                TextColumn::make('qty')->label('الكمية')->numeric(3)->color('danger')->placeholder('0'),
-                TextColumn::make('min_stock')->label('حد الطلب')->numeric(3),
+                TextColumn::make('name')->label(__('الصنف')),
+                TextColumn::make('qty')->label(__('الكمية'))->numeric(3)->color('danger')->placeholder('0'),
+                TextColumn::make('min_stock')->label(__('حد الطلب'))->numeric(3),
             ])
-            ->emptyStateHeading('لا توجد أصناف تحت حد الطلب 👍');
+            ->emptyStateHeading(__('لا توجد أصناف تحت حد الطلب 👍'));
     }
 }

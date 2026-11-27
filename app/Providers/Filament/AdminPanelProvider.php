@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Http\Middleware\SetLocale;
 use App\Models\Setting;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName(fn () => Setting::get('company_name', config('app.name')))
+            ->brandName(fn () => app()->getLocale() === 'en' && Setting::get('company_name_en') ? Setting::get('company_name_en') : Setting::get('company_name', config('app.name')))
             ->colors([
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
@@ -41,14 +43,14 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth('full')
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->navigationGroups([
-                NavigationGroup::make('المبيعات')->icon(Heroicon::OutlinedShoppingBag),
-                NavigationGroup::make('المشتريات')->icon(Heroicon::OutlinedTruck),
-                NavigationGroup::make('المخزون')->icon(Heroicon::OutlinedArchiveBox),
-                NavigationGroup::make('المالية')->icon(Heroicon::OutlinedWallet),
-                NavigationGroup::make('المحاسبة')->icon(Heroicon::OutlinedCalculator),
-                NavigationGroup::make('التقارير')->icon(Heroicon::OutlinedChartBar),
-                NavigationGroup::make('الموارد البشرية')->icon(Heroicon::OutlinedUserGroup),
-                NavigationGroup::make('الإعدادات')->icon(Heroicon::OutlinedCog6Tooth)->collapsed(),
+                NavigationGroup::make(fn (): string => __('المبيعات'))->icon(Heroicon::OutlinedShoppingBag),
+                NavigationGroup::make(fn (): string => __('المشتريات'))->icon(Heroicon::OutlinedTruck),
+                NavigationGroup::make(fn (): string => __('المخزون'))->icon(Heroicon::OutlinedArchiveBox),
+                NavigationGroup::make(fn (): string => __('المالية'))->icon(Heroicon::OutlinedWallet),
+                NavigationGroup::make(fn (): string => __('المحاسبة'))->icon(Heroicon::OutlinedCalculator),
+                NavigationGroup::make(fn (): string => __('التقارير'))->icon(Heroicon::OutlinedChartBar),
+                NavigationGroup::make(fn (): string => __('الموارد البشرية'))->icon(Heroicon::OutlinedUserGroup),
+                NavigationGroup::make(fn (): string => __('الإعدادات'))->icon(Heroicon::OutlinedCog6Tooth)->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -56,12 +58,19 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => Blade::render('<link rel="stylesheet" href="{{ asset(\'css/erp.css\') }}">'))
+            ->userMenuItems([
+                Action::make('switchLanguage')
+                    ->label(fn (): string => app()->getLocale() === 'ar' ? 'English' : 'العربية')
+                    ->icon(Heroicon::OutlinedLanguage)
+                    ->url(fn (): string => route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar')),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
+                SetLocale::class,
                 PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\SalaryAdvanceResource\Pages;
 use App\Models\SalaryAdvance;
 use BackedEnum;
@@ -23,6 +24,7 @@ use UnitEnum;
 class SalaryAdvanceResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = SalaryAdvance::class;
 
@@ -41,12 +43,12 @@ class SalaryAdvanceResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('employee_id')->label('الموظف')->relationship('employee', 'name')->searchable()->preload()->required(),
-            DatePicker::make('date')->label('التاريخ')->default(now())->required(),
-            TextInput::make('amount')->label('مبلغ السلفة')->numeric()->required()->minValue(1),
-            TextInput::make('monthly_deduction')->label('القسط الشهري من الراتب')->numeric()->default(0)->helperText('0 = تخصم بالكامل من أول راتب'),
-            Select::make('treasury_id')->label('صرفت من')->relationship('treasury', 'name')->required(),
-            TextInput::make('notes')->label('ملاحظات'),
+            Select::make('employee_id')->label(__('الموظف'))->relationship('employee', 'name')->searchable()->preload()->required(),
+            DatePicker::make('date')->label(__('التاريخ'))->default(now())->required(),
+            TextInput::make('amount')->label(__('مبلغ السلفة'))->numeric()->required()->minValue(1),
+            TextInput::make('monthly_deduction')->label(__('القسط الشهري من الراتب'))->numeric()->default(0)->helperText(__('0 = تخصم بالكامل من أول راتب')),
+            Select::make('treasury_id')->label(__('صرفت من'))->relationship('treasury', 'name')->required(),
+            TextInput::make('notes')->label(__('ملاحظات')),
         ]);
     }
 
@@ -54,12 +56,12 @@ class SalaryAdvanceResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('employee.name')->label('الموظف')->searchable(),
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('amount')->label('المبلغ')->numeric(2),
-                TextColumn::make('deducted_amount')->label('المخصوم')->numeric(2),
-                TextColumn::make('remaining')->label('المتبقي')->state(fn ($record) => $record->remaining())->numeric(2)->color('danger'),
-                TextColumn::make('treasury.name')->label('الخزينة'),
+                TextColumn::make('employee.name')->label(__('الموظف'))->searchable(),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('amount')->label(__('المبلغ'))->numeric(2),
+                TextColumn::make('deducted_amount')->label(__('المخصوم'))->numeric(2),
+                TextColumn::make('remaining')->label(__('المتبقي'))->state(fn ($record) => $record->remaining())->numeric(2)->color('danger'),
+                TextColumn::make('treasury.name')->label(__('الخزينة')),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

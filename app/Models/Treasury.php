@@ -30,7 +30,7 @@ class Treasury extends Model
         });
         static::saved(function (Treasury $t) {
             $t->account?->update(['name' => $t->name]);
-            Accounting::sync($t, now()->startOfYear()->toDateString(), 'رصيد افتتاحي - '.$t->name, [
+            Accounting::sync($t, now()->startOfYear()->toDateString(), __('رصيد افتتاحي - ').$t->name, [
                 ['account_id' => $t->account_id, 'debit' => $t->opening_balance],
                 ['account_id' => Accounting::account('opening_equity')->id, 'credit' => $t->opening_balance],
             ]);

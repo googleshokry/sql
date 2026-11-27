@@ -15,9 +15,9 @@ class ListPayments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make('receipt')->label('سند قبض جديد')->color('success')
+            CreateAction::make('receipt')->label(__('سند قبض جديد'))->color('success')
                 ->url(fn () => PaymentResource::getUrl('create', ['direction' => 'in'])),
-            CreateAction::make('disbursement')->label('سند صرف جديد')->color('danger')
+            CreateAction::make('disbursement')->label(__('سند صرف جديد'))->color('danger')
                 ->url(fn () => PaymentResource::getUrl('create', ['direction' => 'out'])),
         ];
     }
@@ -25,9 +25,9 @@ class ListPayments extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('الكل'),
-            'in' => Tab::make('سندات القبض')->modifyQueryUsing(fn (Builder $query) => $query->where('direction', 'in')),
-            'out' => Tab::make('سندات الصرف')->modifyQueryUsing(fn (Builder $query) => $query->where('direction', 'out')),
+            'all' => Tab::make(__('الكل')),
+            'in' => Tab::make(__('سندات القبض'))->modifyQueryUsing(fn (Builder $query) => $query->where('direction', 'in')),
+            'out' => Tab::make(__('سندات الصرف'))->modifyQueryUsing(fn (Builder $query) => $query->where('direction', 'out')),
         ];
     }
 }

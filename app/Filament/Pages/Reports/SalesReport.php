@@ -31,10 +31,10 @@ class SalesReport extends ReportPage
     protected function data(): array
     {
         [$key, $label] = match ($this->groupBy) {
-            'customer' => ['sales_invoices.customer_id', DB::raw("coalesce(customers.name, 'عميل نقدي') as label")],
+            'customer' => ['sales_invoices.customer_id', DB::raw('coalesce(customers.name, '.DB::getPdo()->quote(__('عميل نقدي')).') as label')],
             'user' => ['sales_invoices.created_by', DB::raw("coalesce(users.name, '-') as label")],
             'day' => [DB::raw('date(sales_invoices.date)'), DB::raw('date(sales_invoices.date) as label')],
-            'category' => ['products.category_id', DB::raw("coalesce(categories.name, 'بدون تصنيف') as label")],
+            'category' => ['products.category_id', DB::raw('coalesce(categories.name, '.DB::getPdo()->quote(__('بدون تصنيف')).') as label')],
             default => ['sales_invoice_items.product_id', DB::raw('coalesce(products.name, sales_invoice_items.description) as label')],
         };
 

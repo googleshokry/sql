@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\ExpenseCategoryResource\Pages;
 use App\Models\ExpenseCategory;
 use BackedEnum;
@@ -22,6 +23,7 @@ use UnitEnum;
 class ExpenseCategoryResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = ExpenseCategory::class;
 
@@ -40,8 +42,8 @@ class ExpenseCategoryResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم البند')->required(),
-            Select::make('account_id')->label('الحساب المحاسبي')->relationship('account', 'name', fn ($query) => $query->where('type', 'expense')->where('is_group', false))->searchable()->preload()->helperText('الحساب الذي يُحمّل عليه المصروف'),
+            TextInput::make('name')->label(__('اسم البند'))->required(),
+            Select::make('account_id')->label(__('الحساب المحاسبي'))->relationship('account', 'name', fn ($query) => $query->where('type', 'expense')->where('is_group', false))->searchable()->preload()->helperText(__('الحساب الذي يُحمّل عليه المصروف')),
         ]);
     }
 
@@ -49,8 +51,8 @@ class ExpenseCategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('account.name')->label('الحساب'),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('account.name')->label(__('الحساب')),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])

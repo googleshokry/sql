@@ -39,7 +39,7 @@ class QuotationResource extends DocumentResource
     protected static function extraHeaderFields(): array
     {
         return [
-            DatePicker::make('valid_until')->label('صالح حتى')->default(now()->addDays(15)),
+            DatePicker::make('valid_until')->label(__('صالح حتى'))->default(now()->addDays(15)),
         ];
     }
 

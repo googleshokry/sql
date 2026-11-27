@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\StockTransferResource\Pages;
 use App\Filament\Support\Labels;
 use App\Models\Product;
@@ -31,6 +32,7 @@ use UnitEnum;
 class StockTransferResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = StockTransfer::class;
 
@@ -60,20 +62,20 @@ class StockTransferResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(3)->columnSpanFull()->schema([
-                DatePicker::make('date')->label('التاريخ')->default(now())->required(),
-                Select::make('from_warehouse_id')->label('من مخزن')->relationship('fromWarehouse', 'name')->required()->different('to_warehouse_id'),
-                Select::make('to_warehouse_id')->label('إلى مخزن')->relationship('toWarehouse', 'name')->required(),
-                TextInput::make('notes')->label('ملاحظات')->columnSpanFull(),
+                DatePicker::make('date')->label(__('التاريخ'))->default(now())->required(),
+                Select::make('from_warehouse_id')->label(__('من مخزن'))->relationship('fromWarehouse', 'name')->required()->different('to_warehouse_id'),
+                Select::make('to_warehouse_id')->label(__('إلى مخزن'))->relationship('toWarehouse', 'name')->required(),
+                TextInput::make('notes')->label(__('ملاحظات'))->columnSpanFull(),
             ]),
-            Section::make('الأصناف')->columnSpanFull()->schema([
+            Section::make(__('الأصناف'))->columnSpanFull()->schema([
                 Repeater::make('items')->hiddenLabel()->relationship()
-                    ->table([TableColumn::make('الصنف')->markAsRequired()->width('50%'), TableColumn::make('الكمية')->markAsRequired()])
+                    ->table([TableColumn::make(__('الصنف'))->markAsRequired()->width('50%'), TableColumn::make(__('الكمية'))->markAsRequired()])
                     ->schema([
                         Select::make('product_id')->hiddenLabel()->required()->searchable()
                             ->options(fn () => Product::query()->where('track_stock', true)->pluck('name', 'id')),
                         TextInput::make('quantity')->hiddenLabel()->numeric()->required()->minValue(0.001),
                     ])
-                    ->minItems(1)->addActionLabel('إضافة صنف'),
+                    ->minItems(1)->addActionLabel(__('إضافة صنف')),
             ]),
         ]);
     }
@@ -82,15 +84,15 @@ class StockTransferResource extends Resource
     {
         return $schema->components([
             Section::make()->columns(4)->columnSpanFull()->schema([
-                TextEntry::make('number')->label('الرقم'),
-                TextEntry::make('date')->label('التاريخ')->date('Y-m-d'),
-                TextEntry::make('fromWarehouse.name')->label('من'),
-                TextEntry::make('toWarehouse.name')->label('إلى'),
-                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
-                TextEntry::make('notes')->label('ملاحظات')->placeholder('-')->columnSpan(3),
+                TextEntry::make('number')->label(__('الرقم')),
+                TextEntry::make('date')->label(__('التاريخ'))->date('Y-m-d'),
+                TextEntry::make('fromWarehouse.name')->label(__('من')),
+                TextEntry::make('toWarehouse.name')->label(__('إلى')),
+                TextEntry::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextEntry::make('notes')->label(__('ملاحظات'))->placeholder('-')->columnSpan(3),
             ]),
-            RepeatableEntry::make('items')->label('الأصناف')->columnSpanFull()
-                ->table([EntryColumn::make('الصنف'), EntryColumn::make('الكمية')])
+            RepeatableEntry::make('items')->label(__('الأصناف'))->columnSpanFull()
+                ->table([EntryColumn::make(__('الصنف')), EntryColumn::make(__('الكمية'))])
                 ->schema([TextEntry::make('product.name'), TextEntry::make('quantity')->numeric(3)]),
         ]);
     }
@@ -99,12 +101,12 @@ class StockTransferResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('الرقم')->searchable(),
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('fromWarehouse.name')->label('من'),
-                TextColumn::make('toWarehouse.name')->label('إلى'),
-                TextColumn::make('items_count')->label('عدد الأصناف')->counts('items'),
-                TextColumn::make('status')->label('الحالة')->badge()->formatStateUsing(fn ($state) => Labels::STATUS[$state] ?? $state)->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
+                TextColumn::make('number')->label(__('الرقم'))->searchable(),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('fromWarehouse.name')->label(__('من')),
+                TextColumn::make('toWarehouse.name')->label(__('إلى')),
+                TextColumn::make('items_count')->label(__('عدد الأصناف'))->counts('items'),
+                TextColumn::make('status')->label(__('الحالة'))->badge()->formatStateUsing(fn ($state) => __(Labels::STATUS[$state] ?? $state))->color(fn ($state) => Labels::STATUS_COLORS[$state] ?? 'gray'),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()]);

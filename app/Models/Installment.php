@@ -46,7 +46,7 @@ class Installment extends Model
             'payable_type' => $plan->sales_invoice_id ? SalesInvoice::class : null,
             'payable_id' => $plan->sales_invoice_id,
             'amount' => $amount,
-            'notes' => "تحصيل القسط رقم {$this->sequence} - {$plan->number}",
+            'notes' => __('تحصيل القسط رقم :sequence - :plan', ['sequence' => $this->sequence, 'plan' => $plan->number]),
         ]);
 
         $this->update([

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <title>@yield('title')</title>
@@ -20,7 +20,7 @@
         table.items { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
         table.items th { background: #4f46e5; color: #fff; padding: 7px; font-weight: 600; }
         table.items td { border-bottom: 1px solid #e5e7eb; padding: 7px; text-align: center; }
-        table.items td.desc { text-align: right; }
+        table.items td.desc { text-align: start; }
         .totals { width: 320px; margin-inline-start: auto; border-collapse: collapse; }
         .totals td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
         .totals tr.grand td { font-weight: 800; font-size: 15px; background: #eef2ff; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class="toolbar">
-    <button onclick="window.print()">🖨️ طباعة</button>
+    <button onclick="window.print()">🖨️ {{ __('طباعة') }}</button>
     @yield('toolbar')
 </div>
 @yield('content')

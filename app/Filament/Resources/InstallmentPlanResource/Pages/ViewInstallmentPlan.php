@@ -13,7 +13,7 @@ class ViewInstallmentPlan extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('cancel')->label('إلغاء الخطة')->color('danger')->requiresConfirmation()
+            Action::make('cancel')->label(__('إلغاء الخطة'))->color('danger')->requiresConfirmation()
                 ->visible(fn () => $this->record->status === 'active')
                 ->action(fn () => $this->record->update(['status' => 'cancelled'])),
         ];

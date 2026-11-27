@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\StockMovementResource\Pages;
 use App\Models\StockMovement;
 use App\Services\Inventory;
+use App\Support\Translate;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
@@ -21,6 +23,7 @@ use UnitEnum;
 class StockMovementResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = StockMovement::class;
 
@@ -45,21 +48,21 @@ class StockMovementResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('date')->label('التاريخ')->date('Y-m-d')->sortable(),
-                TextColumn::make('product.name')->label('الصنف')->searchable(),
-                TextColumn::make('warehouse.name')->label('المخزن'),
-                TextColumn::make('type')->label('نوع الحركة')->badge()->formatStateUsing(fn ($state) => Inventory::TYPES[$state] ?? $state),
-                TextColumn::make('reference_number')->label('المستند')->state(fn ($record) => $record->reference?->number ?? '-'),
-                TextColumn::make('quantity')->label('الكمية')->numeric(3)->color(fn ($state) => $state > 0 ? 'success' : 'danger'),
-                TextColumn::make('unit_cost')->label('التكلفة')->numeric(2),
-                TextColumn::make('balance_after')->label('الرصيد بعد الحركة')->numeric(3),
+                TextColumn::make('date')->label(__('التاريخ'))->date('Y-m-d')->sortable(),
+                TextColumn::make('product.name')->label(__('الصنف'))->searchable(),
+                TextColumn::make('warehouse.name')->label(__('المخزن')),
+                TextColumn::make('type')->label(__('نوع الحركة'))->badge()->formatStateUsing(fn ($state) => __(Inventory::TYPES[$state] ?? $state)),
+                TextColumn::make('reference_number')->label(__('المستند'))->state(fn ($record) => $record->reference?->number ?? '-'),
+                TextColumn::make('quantity')->label(__('الكمية'))->numeric(3)->color(fn ($state) => $state > 0 ? 'success' : 'danger'),
+                TextColumn::make('unit_cost')->label(__('التكلفة'))->numeric(2),
+                TextColumn::make('balance_after')->label(__('الرصيد بعد الحركة'))->numeric(3),
             ])
             ->filters([
-                SelectFilter::make('product_id')->label('الصنف')->relationship('product', 'name')->searchable()->preload(),
-                SelectFilter::make('warehouse_id')->label('المخزن')->relationship('warehouse', 'name'),
-                SelectFilter::make('type')->label('النوع')->options(Inventory::TYPES),
+                SelectFilter::make('product_id')->label(__('الصنف'))->relationship('product', 'name')->searchable()->preload(),
+                SelectFilter::make('warehouse_id')->label(__('المخزن'))->relationship('warehouse', 'name'),
+                SelectFilter::make('type')->label(__('النوع'))->options(Translate::options(Inventory::TYPES)),
                 Filter::make('date')
-                    ->schema([DatePicker::make('from')->label('من'), DatePicker::make('to')->label('إلى')])
+                    ->schema([DatePicker::make('from')->label(__('من')), DatePicker::make('to')->label(__('إلى'))])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $v) => $q->whereDate('date', '>=', $v))
                         ->when($data['to'] ?? null, fn ($q, $v) => $q->whereDate('date', '<=', $v))),

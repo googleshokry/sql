@@ -19,10 +19,10 @@ class UpcomingActivities extends TableWidget
             ->query(CrmActivity::query()->with('customer')->where('status', 'pending')->orderBy('scheduled_at'))
             ->paginated([5])
             ->columns([
-                TextColumn::make('scheduled_at')->label('الموعد')->dateTime('Y-m-d H:i'),
-                TextColumn::make('customer.name')->label('العميل'),
-                TextColumn::make('subject')->label('الموضوع')->limit(30),
+                TextColumn::make('scheduled_at')->label(__('الموعد'))->dateTime('Y-m-d H:i'),
+                TextColumn::make('customer.name')->label(__('العميل')),
+                TextColumn::make('subject')->label(__('الموضوع'))->limit(30),
             ])
-            ->emptyStateHeading('لا توجد متابعات');
+            ->emptyStateHeading(__('لا توجد متابعات'));
     }
 }

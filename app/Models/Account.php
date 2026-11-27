@@ -25,7 +25,7 @@ class Account extends Model
     {
         static::deleting(function (Account $account) {
             if ($account->is_system || $account->lines()->exists() || $account->children()->exists()) {
-                throw new BusinessException('لا يمكن حذف حساب نظامي أو عليه حركات أو له حسابات فرعية.');
+                throw new BusinessException(__('لا يمكن حذف حساب نظامي أو عليه حركات أو له حسابات فرعية.'));
             }
         });
     }

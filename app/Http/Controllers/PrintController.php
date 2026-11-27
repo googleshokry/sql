@@ -36,13 +36,14 @@ class PrintController extends Controller
 
         abort_unless(isset(self::DOCUMENTS[$type]), 404);
         [$model, $title, $titleEn] = self::DOCUMENTS[$type];
+        $title = __($title);
         $doc = $model::with(['items.product.unit', 'branch', 'warehouse'])->findOrFail($id);
         $party = $doc->party();
 
         $qr = null;
         if ($type === 'sales-invoice' && ($settings['zatca_qr'] ?? '1') === '1') {
             if (! $party?->tax_number) {
-                $title = 'فاتورة ضريبية مبسطة';
+                $title = __('فاتورة ضريبية مبسطة');
                 $titleEn = 'Simplified Tax Invoice';
             }
             $qr = Zatca::qrDataUri(Zatca::tlv(

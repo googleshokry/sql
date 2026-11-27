@@ -29,7 +29,7 @@ trait IsDocument
 
         static::deleting(function ($model) {
             if ($model->isPosted()) {
-                throw new \RuntimeException('لا يمكن حذف مستند مُرحّل. قم بإلغاء الترحيل أولاً.');
+                throw new \RuntimeException(__('لا يمكن حذف مستند مُرحّل. قم بإلغاء الترحيل أولاً.'));
             }
         });
     }

@@ -36,6 +36,14 @@ class PartyStatement extends ReportPage
         $this->id = null;
     }
 
+    /**
+     * @return array{options: mixed, record: mixed, rows: array<int, array<string, mixed>>, opening: float, closing: float, totals: array{0: float, 1: float}}
+     */
+    public function statementData(): array
+    {
+        return $this->data();
+    }
+
     protected function data(): array
     {
         $model = $this->party === 'supplier' ? Supplier::class : Customer::class;

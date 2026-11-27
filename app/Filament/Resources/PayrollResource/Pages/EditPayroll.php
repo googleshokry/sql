@@ -14,7 +14,7 @@ class EditPayroll extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('regenerate')->label('إعادة توليد البنود')->color('gray')->requiresConfirmation()
+            Action::make('regenerate')->label(__('إعادة توليد البنود'))->color('gray')->requiresConfirmation()
                 ->action(function () {
                     $this->record->generateItems();
                     $this->fillForm();

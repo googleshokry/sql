@@ -25,7 +25,7 @@ class Posting
     public static function post(Model $doc): void
     {
         if ($doc->isPosted()) {
-            throw new BusinessException('المستند مُرحّل بالفعل.');
+            throw new BusinessException(__('المستند مُرحّل بالفعل.'));
         }
 
         DB::transaction(function () use ($doc) {
@@ -37,7 +37,7 @@ class Posting
                 $doc instanceof StockTransfer => static::postStockTransfer($doc),
                 $doc instanceof StockAdjustment => static::postStockAdjustment($doc),
                 $doc instanceof Payroll => static::postPayroll($doc),
-                default => throw new BusinessException('هذا المستند لا يدعم الترحيل.'),
+                default => throw new BusinessException(__('هذا المستند لا يدعم الترحيل.')),
             };
 
             $doc->forceFill(['status' => 'posted', 'posted_at' => now()])->saveQuietly();
@@ -85,14 +85,14 @@ class Posting
         return $doc->warehouse_id
             ?? Warehouse::query()->where('is_default', true)->value('id')
             ?? Warehouse::query()->value('id')
-            ?? throw new BusinessException('يجب إنشاء مخزن أولاً.');
+            ?? throw new BusinessException(__('يجب إنشاء مخزن أولاً.'));
     }
 
     protected static function ensureItems(Model $doc): void
     {
         $doc->load('items.product');
         if ($doc->items->isEmpty()) {
-            throw new BusinessException('لا يمكن ترحيل مستند بدون بنود.');
+            throw new BusinessException(__('لا يمكن ترحيل مستند بدون بنود.'));
         }
     }
 
@@ -112,7 +112,7 @@ class Posting
         }
 
         $customer = $doc->customer;
-        Accounting::sync($doc, $doc->date, "فاتورة مبيعات {$doc->number} ".($customer?->name ?? 'عميل نقدي'), [
+        Accounting::sync($doc, $doc->date, __('فاتورة مبيعات')." {$doc->number} ".($customer?->name ?? __('عميل نقدي')), [
             ['account_id' => Accounting::account('receivable')->id, 'debit' => $doc->total, 'party' => $customer],
             ['account_id' => Accounting::account('sales')->id, 'credit' => (float) $doc->subtotal - (float) $doc->discount_amount],
             ['account_id' => Accounting::account('shipping_revenue')->id, 'credit' => $doc->shipping],
@@ -139,7 +139,7 @@ class Posting
         }
 
         $customer = $doc->customer;
-        Accounting::sync($doc, $doc->date, "مرتجع مبيعات {$doc->number} ".($customer?->name ?? ''), [
+        Accounting::sync($doc, $doc->date, __('مرتجع مبيعات')." {$doc->number} ".($customer?->name ?? ''), [
             ['account_id' => Accounting::account('sales_returns')->id, 'debit' => $doc->netAmount()],
             ['account_id' => Accounting::account('vat_output')->id, 'debit' => $doc->tax_amount],
             ['account_id' => Accounting::account('receivable')->id, 'credit' => $doc->total, 'party' => $customer],
@@ -158,7 +158,7 @@ class Posting
                 'payable_type' => $doc->getMorphClass(),
                 'payable_id' => $doc->id,
                 'amount' => $doc->total,
-                'notes' => "رد قيمة مرتجع {$doc->number}",
+                'notes' => __('رد قيمة مرتجع')." {$doc->number}",
             ]);
         }
     }
@@ -181,7 +181,7 @@ class Posting
 
         $net = (float) $doc->subtotal - (float) $doc->discount_amount;
         $supplier = $doc->supplier;
-        Accounting::sync($doc, $doc->date, "فاتورة مشتريات {$doc->number} ".($supplier?->name ?? ''), [
+        Accounting::sync($doc, $doc->date, __('فاتورة مشتريات')." {$doc->number} ".($supplier?->name ?? ''), [
             ['account_id' => Accounting::account('inventory')->id, 'debit' => round($net - $nonStock + (float) $doc->shipping, 2)],
             ['account_id' => Accounting::account('general_expenses')->id, 'debit' => round($nonStock, 2)],
             ['account_id' => Accounting::account('vat_input')->id, 'debit' => $doc->tax_amount],
@@ -201,7 +201,7 @@ class Posting
         }
 
         $supplier = $doc->supplier;
-        Accounting::sync($doc, $doc->date, "مرتجع مشتريات {$doc->number} ".($supplier?->name ?? ''), [
+        Accounting::sync($doc, $doc->date, __('مرتجع مشتريات')." {$doc->number} ".($supplier?->name ?? ''), [
             ['account_id' => Accounting::account('payable')->id, 'debit' => $doc->total, 'party' => $supplier],
             ['account_id' => Accounting::account('inventory')->id, 'credit' => $doc->netAmount()],
             ['account_id' => Accounting::account('vat_input')->id, 'credit' => $doc->tax_amount],
@@ -217,7 +217,7 @@ class Posting
                 'payable_type' => $doc->getMorphClass(),
                 'payable_id' => $doc->id,
                 'amount' => $doc->total,
-                'notes' => "استرداد قيمة مرتجع مشتريات {$doc->number}",
+                'notes' => __('استرداد قيمة مرتجع مشتريات')." {$doc->number}",
             ]);
         }
     }
@@ -226,7 +226,7 @@ class Posting
     {
         static::ensureItems($doc);
         if ($doc->from_warehouse_id === $doc->to_warehouse_id) {
-            throw new BusinessException('لا يمكن التحويل لنفس المخزن.');
+            throw new BusinessException(__('لا يمكن التحويل لنفس المخزن.'));
         }
         foreach ($doc->items as $item) {
             $cost = (float) $item->product->cost_price;
@@ -244,12 +244,12 @@ class Posting
             $item->update(['system_quantity' => $system]);
             $diff = (float) $item->actual_quantity - $system;
             $cost = (float) $item->product->cost_price;
-            Inventory::move($item->product, $doc->warehouse_id, $diff, 'adjustment', $cost, $doc, $doc->date, 'تسوية جرد');
+            Inventory::move($item->product, $doc->warehouse_id, $diff, 'adjustment', $cost, $doc, $doc->date, __('تسوية جرد'));
             $value += $diff * $cost;
         }
 
         $value = round($value, 2);
-        Accounting::sync($doc, $doc->date, "تسوية جرد {$doc->number}", [
+        Accounting::sync($doc, $doc->date, __('تسوية جرد')." {$doc->number}", [
             ['account_id' => Accounting::account('inventory')->id, 'debit' => $value],
             ['account_id' => Accounting::account('inventory_adjustments')->id, 'credit' => $value],
         ]);
@@ -259,10 +259,10 @@ class Posting
     {
         $doc->load('items.employee.advances');
         if ($doc->items->isEmpty()) {
-            throw new BusinessException('مسير الرواتب فارغ.');
+            throw new BusinessException(__('مسير الرواتب فارغ.'));
         }
         if (! $doc->treasury) {
-            throw new BusinessException('اختر الخزينة التي سيتم صرف الرواتب منها.');
+            throw new BusinessException(__('اختر الخزينة التي سيتم صرف الرواتب منها.'));
         }
 
         $lines = [];
@@ -280,7 +280,7 @@ class Posting
         $lines[] = ['account_id' => Accounting::account('salaries')->id, 'debit' => round($gross, 2)];
         $lines[] = ['account_id' => $doc->treasury->account_id, 'credit' => round($net, 2)];
 
-        Accounting::sync($doc, now()->parse($doc->month.'-01')->endOfMonth()->toDateString(), "مسير رواتب شهر {$doc->month}", $lines);
+        Accounting::sync($doc, now()->parse($doc->month.'-01')->endOfMonth()->toDateString(), __('مسير رواتب شهر')." {$doc->month}", $lines);
     }
 
     protected static function deductAdvances($employee, float $amount): void

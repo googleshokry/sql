@@ -1,8 +1,8 @@
 <div>
-    <label>من تاريخ</label>
+    <label>{{ __('من تاريخ') }}</label>
     <input type="date" wire:model.live="from">
 </div>
 <div>
-    <label>إلى تاريخ</label>
+    <label>{{ __('إلى تاريخ') }}</label>
     <input type="date" wire:model.live="to">
 </div>

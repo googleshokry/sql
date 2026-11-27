@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\HasRoleAccess;
+use App\Filament\Concerns\TranslatesResourceLabels;
 use App\Filament\Resources\WarehouseResource\Pages;
 use App\Models\ProductStock;
 use App\Models\Warehouse;
@@ -25,6 +26,7 @@ use UnitEnum;
 class WarehouseResource extends Resource
 {
     use HasRoleAccess;
+    use TranslatesResourceLabels;
 
     protected static ?string $model = Warehouse::class;
 
@@ -43,11 +45,11 @@ class WarehouseResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('اسم المخزن')->required(),
-            Select::make('branch_id')->label('الفرع')->relationship('branch', 'name'),
-            TextInput::make('address')->label('العنوان')->columnSpanFull(),
-            Toggle::make('is_default')->label('المخزن الافتراضي'),
-            Toggle::make('is_active')->label('نشط')->default(true),
+            TextInput::make('name')->label(__('اسم المخزن'))->required(),
+            Select::make('branch_id')->label(__('الفرع'))->relationship('branch', 'name'),
+            TextInput::make('address')->label(__('العنوان'))->columnSpanFull(),
+            Toggle::make('is_default')->label(__('المخزن الافتراضي')),
+            Toggle::make('is_active')->label(__('نشط'))->default(true),
         ]);
     }
 
@@ -55,11 +57,11 @@ class WarehouseResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->searchable(),
-                TextColumn::make('branch.name')->label('الفرع'),
-                TextColumn::make('stock_value')->label('قيمة المخزون')->numeric(2)->state(fn ($record) => ProductStock::query()->where('warehouse_id', $record->id)->join('products', 'products.id', '=', 'product_stocks.product_id')->sum(\DB::raw('product_stocks.quantity * products.cost_price'))),
-                IconColumn::make('is_default')->label('افتراضي')->boolean(),
-                IconColumn::make('is_active')->label('نشط')->boolean(),
+                TextColumn::make('name')->label(__('الاسم'))->searchable(),
+                TextColumn::make('branch.name')->label(__('الفرع')),
+                TextColumn::make('stock_value')->label(__('قيمة المخزون'))->numeric(2)->state(fn ($record) => ProductStock::query()->where('warehouse_id', $record->id)->join('products', 'products.id', '=', 'product_stocks.product_id')->sum(\DB::raw('product_stocks.quantity * products.cost_price'))),
+                IconColumn::make('is_default')->label(__('افتراضي'))->boolean(),
+                IconColumn::make('is_active')->label(__('نشط'))->boolean(),
             ])
             ->defaultSort('id', 'desc')
             ->recordActions([EditAction::make(), DeleteAction::make()])
