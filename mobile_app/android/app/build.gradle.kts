@@ -36,12 +36,12 @@ android {
     productFlavors {
         create("full") {
             dimension = "app"
-            resValue("string", "app_name", "كاشير المطعم")
+            manifestPlaceholders["appName"] = "كاشير المطعم"
         }
         create("driver") {
             dimension = "app"
             applicationIdSuffix = ".driver"
-            resValue("string", "app_name", "طيار المطعم")
+            manifestPlaceholders["appName"] = "طيار المطعم"
         }
     }
 
